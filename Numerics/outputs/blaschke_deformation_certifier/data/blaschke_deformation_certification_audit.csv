@@ -1,0 +1,16 @@
+check,passed
+map lock,True
+complete Arb boundary cover,True
+exact finite Chebyshev prefix,True
+explicit infinite-tail remainder,True
+branchwise profile,True
+combined row,True
+resolved-response boundary cover,True
+resolved coherent prefix,True
+resolved response remainder,True
+selected response no larger than coherent candidate,True
+selected response no larger than scaled candidate,True
+selected response no larger than whole-ellipse fallback,True
+selected output factor identity,True
+24-process mpmath row-block assembly,True
+zero trivial and twenty-four nontrivial targets,True

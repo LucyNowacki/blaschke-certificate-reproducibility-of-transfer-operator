@@ -1,0 +1,34 @@
+{
+  "producer_cell": "Cell 24C",
+  "module_sha256": "dbe80820b21637e2cd3f24e28f6c4ee0288af81197af40a4e6871511bfa17501",
+  "summary": {
+    "map_label": "blaschke_mu_0p3",
+    "N": 600,
+    "rho": "2.725",
+    "r": "2.473669807791324",
+    "mu": "0.3",
+    "cells": 65536,
+    "precision_bits": 192,
+    "prefix_terms": 24,
+    "J": 623,
+    "branchwise_profile_cert_u": 3.3264421486719304e-20,
+    "combined_row_cert_u": 3.3264421486719304e-20,
+    "combined_over_branchwise_u": 1.0000000000000002,
+    "maximum_branch_radius_u": 2.292888073691716,
+    "branchwise_max_cell": 25445,
+    "combined_max_cell": 25445,
+    "seconds": 20.37470293045044,
+    "boundary_cover_certified": true,
+    "exact_prefix_certified": true,
+    "geometric_remainder_certified": true,
+    "branchwise_profile_certified": true,
+    "combined_row_certified": true,
+    "status": "complete Arb boundary cover with exact Chebyshev prefix and certified geometric remainder"
+  },
+  "interval_enclosures": {
+    "branchwise_profile": "[3.32644214867192972737608184506590966251370579874511722611017e-20 +/- 1.21e-80]",
+    "combined_row": "[3.32644214867192972737608184506590966251370579874511722611017e-20 +/- 1.21e-80]",
+    "maximum_branch_radius": "[2.29288807369171559606068152519121229350676698774438197227981 +/- 4.06e-60]"
+  },
+  "profile_path": "outputs/blaschke_deformation_certifier/data/blaschke_deformation_input_tail_boundary_profile_N600.csv"
+}

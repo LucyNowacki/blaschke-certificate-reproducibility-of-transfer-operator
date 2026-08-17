@@ -1,0 +1,3 @@
+precision_bits,available_decimal_digits,required_decimal_digits,precision_margin_digits,eta_A_upper,spectral_use_ready,role
+1024,308.25471555991675,521.2233905597693,-212.96867499985257,6.164391613063899e+154,False,starting precision audit
+2048,616.5094311198335,521.2233905597693,95.28604056006418,3.38762223735399e-154,True,promoted production precision

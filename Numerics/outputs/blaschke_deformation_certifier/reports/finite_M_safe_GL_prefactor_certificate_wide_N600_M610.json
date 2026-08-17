@@ -1,0 +1,35 @@
+{
+  "producer_cell": "Cell 24A",
+  "method": "Chebyshev truncation plus positivity and mass of Gauss--Legendre weights",
+  "input": {
+    "outputs/blaschke_deformation_certifier/data/branch_image_wide_candidate_single_space_row_N600_M610_D_M_1_diagnostic.csv": "32e2a96c3458bb74a567509ab3d57482a28e07796a0952b6c6afb9b882970969"
+  },
+  "intervals": {
+    "C_GL_safe": "[13.5172413793103448275862068965517241379310344827586206897 +/- 5.66e-56]",
+    "C_GL_core_D_M_1": "[3.73235806274221835124319684763873179979188084499415273726 +/- 6.66e-57]",
+    "D_safe": "[3.621635746646193000000000000000000000000000000000000000000254984809816 +/- 2.90e-70]",
+    "B_mat_unstar_safe": "[1.392129385291224986371469254087200000000000000000000000000420497607729e-30 +/- 3.70e-100]",
+    "kappa_Bmat_unstar_safe": "[8.441453267950020404986824644249249783663338538400000000005198602149952e-28 +/- 4.05e-98]"
+  },
+  "certificate": {
+    "map_label": "blaschke_mu_0p3",
+    "N": 600,
+    "M": 610,
+    "rho": 2.45,
+    "precision_bits": 192,
+    "C_GL_safe_u": 13.517241379310347,
+    "C_GL_core_D_M_1_l": 3.7323580627422177,
+    "C_GL_core_D_M_1_u": 3.7323580627422186,
+    "D_safe_u": 3.6216357466461933,
+    "output_schema_version": 2,
+    "output_leakage_count": 1,
+    "B_out_interval_u": 1.8172892061926346e-20,
+    "B_mat_unstar_D_M_1_diagnostic_u": 3.8439243553977042e-31,
+    "B_mat_unstar_safe_u": 1.3921293852912251e-30,
+    "kappa_Bmat_unstar_D_M_1_diagnostic_u": 2.3308399459463055e-28,
+    "kappa_Bmat_unstar_safe_u": 8.441453267950022e-28,
+    "epsilon_safe_u": 1.1641169413997096e-17,
+    "finite_M_prefactor_certified": true,
+    "status": "unconditional wide-row finite-M prefactor certificate"
+  }
+}

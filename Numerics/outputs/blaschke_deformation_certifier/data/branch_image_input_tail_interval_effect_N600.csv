@@ -1,0 +1,2 @@
+N,M,cells,old_two_B_out,old_B_in,new_branch_image_B_in_u,old_collocation,old_epsilon,new_epsilon_candidate,input_reduction_factor,epsilon_reduction_factor,output_to_new_input_ratio
+600,610,65536,5.645999e-09,7.3378515e-09,4.530641174147597e-09,8.56e-14,1.29839362e-08,1.01767257741476e-08,0.6174342958763335,0.7837935751831251,1.2461810112477618

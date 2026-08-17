@@ -1,0 +1,18 @@
+{
+  "N": 600,
+  "M": 610,
+  "rho": 2.45,
+  "r": 2.225974769705636,
+  "r_tau": 2.083512384444475,
+  "q_out": 0.908561130492096,
+  "q_gap": 0.936,
+  "q_star": 0.936,
+  "epsilon_X": 1.1641169413997097e-17,
+  "finite_M_prefactor_certified": true,
+  "sampled_validation_passes": 15,
+  "target_packets": 15,
+  "algebraic_count": 19,
+  "worst_epsilon_m_gamma": 0.495680416526457,
+  "contour_interval_certified": false,
+  "moat_status": "sampled finite-section moat diagnostic"
+}

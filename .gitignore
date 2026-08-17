@@ -1,0 +1,4 @@
+# The referee archive is generated only after the deployment commit is clean.
+Numerics/outputs/blaschke_deformation_certifier/reproducibility/
+__pycache__/
+*.pyc

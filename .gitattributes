@@ -1,0 +1,10 @@
+# Preserve generated numerical evidence byte-for-byte and suppress text diffs.
+Numerics/outputs/**/*.csv binary
+Numerics/outputs/**/*.npz binary
+Numerics/outputs/**/*.parquet binary
+Numerics/outputs/**/*.pkl.gz binary
+Numerics/outputs/**/*.png binary
+Numerics/outputs/**/*.pdf binary
+
+# Notebook JSON is validated structurally by the deployment tests.
+*.ipynb -diff
