@@ -49,7 +49,7 @@
     "old_B_out_comparator": 2.3584001910897977e-20,
     "prefactor_improvement_vs_old": 826.3392493554239,
     "B_out_improvement_vs_old": 826.3392493554239,
-    "seconds": 13.964072942733765,
+    "seconds": 13.85007357597351,
     "response_boundary_cover_certified": true,
     "response_coherent_prefix_certified": true,
     "response_remainder_certified": true,

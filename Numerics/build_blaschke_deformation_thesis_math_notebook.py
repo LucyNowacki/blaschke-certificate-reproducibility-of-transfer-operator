@@ -40,7 +40,7 @@ INLINE_HELPERS = (
         46,
         "blaschke_deformation_certification",
         "blaschke_deformation_certification.py",
-        "Phase 2 deterministic unresolved-tail certification",
+        "Phase 2 resolved-response and unresolved-input certification",
     ),
     (
         126,
