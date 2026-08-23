@@ -14,6 +14,26 @@ from build_blaschke_deformation_thesis_math_notebook import (
 
 HERE = Path(__file__).resolve().parent
 NOTEBOOK = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
+TEMPLATE = HERE / "blaschke_deformation_certifier_template.ipynb"
+SOURCE = HERE / "blaschke_deformation_certifier.ipynb"
+BUILDER = HERE / "build_blaschke_deformation_thesis_math_notebook.py"
+CONTOUR_HELPER = HERE / "blaschke_deformation_contour_certification.py"
+DETERMINISTIC_HELPER = HERE / "blaschke_deformation_certification.py"
+
+OBSOLETE_TERMS = (
+    "Phase 2 deterministic " + "unresolved-tail certification",
+    "triangular_" + "argument_principle_count",
+)
+CURRENT_PHASE2_TERM = (
+    "Phase 2 resolved-response and unresolved-input certification"
+)
+SYMMETRIC_INTERVAL_SOURCE = (
+    "SBJ13 equation (21); same benchmark in ASBJ24 Section 3.2"
+)
+SYMMETRIC_PROVENANCE_WARNING = (
+    "The external formula supplies target identities and multiplicities, "
+    "not finite counts or contour moats."
+)
 
 
 class InlineHelperProvenanceTests(unittest.TestCase):
@@ -60,6 +80,34 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             )
         with self.assertRaises(AssertionError):
             validate_inline_helper_sync(altered)
+
+    def test_deployment_contains_no_obsolete_certification_terms(self) -> None:
+        paths = (
+            TEMPLATE,
+            SOURCE,
+            NOTEBOOK,
+            BUILDER,
+            CONTOUR_HELPER,
+            DETERMINISTIC_HELPER,
+        )
+        for path in paths:
+            text = path.read_text(encoding="utf-8")
+            for obsolete in OBSOLETE_TERMS:
+                self.assertNotIn(obsolete, text, msg=str(path))
+
+    def test_current_phase2_description_is_present(self) -> None:
+        for path in (TEMPLATE, SOURCE, NOTEBOOK, BUILDER):
+            self.assertIn(
+                CURRENT_PHASE2_TERM,
+                path.read_text(encoding="utf-8"),
+                msg=str(path),
+            )
+
+    def test_symmetric_interval_spectrum_provenance_is_locked(self) -> None:
+        for path in (TEMPLATE, SOURCE, NOTEBOOK):
+            text = path.read_text(encoding="utf-8")
+            self.assertIn(SYMMETRIC_INTERVAL_SOURCE, text, msg=str(path))
+            self.assertIn(SYMMETRIC_PROVENANCE_WARNING, text, msg=str(path))
 
 
 if __name__ == "__main__":

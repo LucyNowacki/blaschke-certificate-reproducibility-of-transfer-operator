@@ -38,8 +38,8 @@
     "contour_eta_schur_upper": "1.8946275047218601295152719845981765810790439192279607332331305952861794537038972e-15",
     "contour_target_count": 24,
     "contour_total_multiplicity": 30,
-    "contour_minimum_lifted_moat_lower": "1.636120221822048e-13",
-    "contour_maximum_small_gain_product_upper": "2.033128947087571e-07",
+    "contour_minimum_lifted_moat_lower": "1.636120221822047e-13",
+    "contour_maximum_small_gain_product_upper": "2.033128947087571e-7",
     "process_workers": 24
   },
   "upstream_artifact_names": [

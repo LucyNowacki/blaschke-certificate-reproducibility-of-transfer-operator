@@ -15,7 +15,7 @@
   "eta_schur_upper_text": "1.8946275047218601295152719845981765810790439192279607332331305952861794537038972e-15",
   "schur_similarity_certified": true,
   "similarity_identity": "A_N_circ Q = Q T + R",
-  "elapsed_seconds": 12.39716100692749,
+  "elapsed_seconds": 10.25084924697876,
   "status": "interval-certified exact-binary Schur similarity",
   "map_label": "blaschke_mu_0p3",
   "rho": "2.725",
@@ -23,7 +23,7 @@
   "midpoint_sha256": "db40178a19594986ddc4aea5b60b51ec751b98734e85fdba10f64e3e5995e6fb",
   "matrix_payload_sha256": "30f6b0954c9a1c78eb44670b8b2a9883914f95a7d6a6cb454243c42c78fa2742",
   "source_hashes": {
-    "blaschke_deformation_contour_certification.py": "55f76dde4fc2c80692feb5d3aac9b18184a915b5c78427c45e53d13a513946c4",
+    "blaschke_deformation_contour_certification.py": "37ed46c7db5b776a8e7e09f0a13536ecc80f0fbc4a8c74b0ed681beba136e798",
     "blaschke_deformation_spectral_certification.py": "25734219103111e746f078618d34ea0e3610aca4c55f399eeda737f750ac556d"
   },
   "cache_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_24_target_N600_M610_validated_schur.npz",

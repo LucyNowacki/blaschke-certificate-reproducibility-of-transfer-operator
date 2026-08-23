@@ -17,7 +17,7 @@
     "maximum_branch_radius_u": 2.292888073691716,
     "branchwise_max_cell": 25445,
     "combined_max_cell": 25445,
-    "seconds": 20.476964235305786,
+    "seconds": 20.67326593399048,
     "boundary_cover_certified": true,
     "exact_prefix_certified": true,
     "geometric_remainder_certified": true,

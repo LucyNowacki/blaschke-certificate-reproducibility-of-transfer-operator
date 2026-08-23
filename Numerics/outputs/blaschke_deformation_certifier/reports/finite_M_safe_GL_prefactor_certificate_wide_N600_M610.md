@@ -2,7 +2,7 @@
 
 N=600, M=610, rho=2.45.
 
-D_safe <= 3.62163574664619325e+00.
+D_safe <= 3.6216357466461933.
 
 Transported unstarred matrix contribution <= 8.44145326795002151e-28.
 

@@ -10,10 +10,12 @@ Whole-ellipse finite-restriction fallback: 1.29484356379656482e+01.
 Selected cellwise response upper: 2.12513094458366014e+00.
 Certified output-tail contribution B_out: 2.8540338522337406e-23.
 Final selected input contribution B_in: 3.3264421486719304e-20.
-Input selection: coherent_row.
+Input selection: coherent_branchwise_intersection.
+The selected unresolved-input intersection equals the branchwise upper on every deployed boundary cell; no cancellation gain is claimed.
 Final selected matrix contribution: 1.0872470878179354e-28.
 Matrix selection: starred.
-Final deterministic epsilon: 3.3264433839017426342178575983234893950031511766904e-20.
+Final deterministic epsilon upper: 0.000000000000000000033264433839017426342178575983234893950031511766904056153480096.
+Auxiliary triangle epsilon upper: 0.000000000000000000033292961933966350187793540000000000000000000000000000000014486.
 
 The Cell 24B provisional radius has been replaced by the authoritative Cell 24C aggregation.
 

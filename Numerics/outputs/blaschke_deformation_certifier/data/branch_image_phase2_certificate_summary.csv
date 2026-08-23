@@ -1,5 +1,5 @@
 source,N,M,rho,r,r_tau,q_star,B_out,B_in,collocation,epsilon,status
-old whole-ellipse final Schur row,600,610,1.5999,1.5120424496482183,1.462145048809827,0.967,2.8229995e-09,7.3378515e-09,8.56e-14,7.86223484896828e-09,old deployed thesis row
+historical whole-ellipse certificate row,600,610,1.5999,1.5120424496482183,1.462145048809827,0.967,2.8229995e-09,7.3378515e-09,8.56e-14,7.86223484896828e-09,old deployed thesis row
 branch-image balanced candidate,600,610,2.725,2.473669807791324,2.293091911822557,0.927,2.3584001910897944e-20,3.5227998399119393e-20,1.0872470878179354e-28,4.239359652777834e-20,balanced branch-image row with unconditional safe finite-M certificate
 branch-image plus response-prefactor row,600,610,2.725,2.473669807791324,2.293091911822557,0.927,2.8540338522337406e-23,3.3264421486719304e-20,1.0872470878179354e-28,3.326443383901743e-20,unconditional selected resolved-response single-space row with safe finite-M certificate
 wide branch-image candidate,600,610,2.45,2.225974769705636,2.083512384444475,0.936,1.8172892061926346e-20,1.1641155228400739e-17,7.49981118320665e-28,1.164116941390293e-17,wide branch-image row with unconditional safe finite-M certificate

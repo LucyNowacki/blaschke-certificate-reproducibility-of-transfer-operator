@@ -1,6 +1,11 @@
 {
   "blaschke_mu_0p3": {
-    "status": "stored theorem-level Blaschke branch-image row with sampled contour validation",
+    "status": "historical wide deterministic row with sampled first-fifteen contour diagnostics",
+    "record_role": "historical_exploratory_diagnostic",
+    "authoritative_for_current_thesis": false,
+    "theorem_gate_eligible": false,
+    "superseded_by_deterministic_certificate": "outputs/blaschke_deformation_certifier/data/branch_image_phase2_certified_single_space_row_N600_M610.csv",
+    "superseded_by_spectral_certificate": "outputs/blaschke_deformation_certifier/reports/blaschke_deformation_24_target_N600_M610_spectral_certificate.json",
     "sources": [
       "outputs/blaschke_deformation_certifier/data/final_blaschke_branch-image_first15_phase4_summary.json",
       "outputs/blaschke_deformation_certifier/data/final_blaschke_branch-image_wide_N600_schur_certificate.csv",
@@ -78,7 +83,7 @@
     "deterministic_status": "theorem_certified",
     "contour_status": "sampled_not_interval_certified",
     "sampled_contour_rows": 15,
-    "notes": "Exact target families and the stored single-space Schur row are certified; contour minima remain sampled.",
+    "notes": "Historical wide deterministic row only; sampled contour minima are not theorem gates.",
     "selected_by": "Cell 4 Config.selected_map_label",
     "dps": 180,
     "process_workers": 24,

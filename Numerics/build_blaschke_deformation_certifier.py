@@ -26,7 +26,7 @@ TARGET = HERE / "blaschke_deformation_certifier.ipynb"
 # Updated after the deployment template is refreshed deliberately with
 # ``--refresh-template``. Ordinary builds refuse unreviewed template drift.
 LOCKED_TEMPLATE_SHA256 = (
-    "24c8797ba6f69f9ee6420c8c5e2ed7fd3ef3a22bdd7e4e5106b80d95ed54b247"
+    "1094acf61e4e3c6eccd426e140c55866185175edbb08cc2a14ed9cc7462c38d0"
 )
 
 
@@ -82,7 +82,8 @@ def _replace_in_order(
 FINAL_PHASE2_REFRESH = r'''
 # Cell 24C is the authoritative Phase 2 aggregation point. Rewrite the
 # provisional Cell 24B candidate and its human-readable report after the final
-# coherent, branchwise and whole-ellipse input selection has been made.
+# direct-coherent intersection, branchwise and whole-ellipse input selection
+# has been made.
 import csv
 import math
 
@@ -113,6 +114,9 @@ _rp_candidate.update({
     "new_epsilon_response_prefactor_candidate_text": str(
         PHASE2_FINAL_CERT["epsilon"]
     ),
+    "epsilon_triangle_check_text": PHASE2_FINAL_CERT[
+        "epsilon_triangle_upper_text"
+    ],
     "noncollocation_rss_without_collocation": _phase2_export_upper_float(
         PHASE2_FINAL_CERT["noncollocation_rss"]
     ),
@@ -120,8 +124,8 @@ _rp_candidate.update({
         PHASE2_FINAL_CERT["noncollocation_rss"]
     ),
     "status": (
-        "authoritative selected resolved-response row with final coherent "
-        "input and best certified matrix aggregation"
+        "authoritative selected resolved-response row with the certified "
+        "unresolved-input intersection and best matrix aggregation"
     ),
 })
 if "B_in_whole_ellipse_fallback" in PHASE2_FINAL_CERT:
@@ -138,7 +142,10 @@ _rp_provenance["final_phase2_refresh"] = {
     "B_in_selection": str(PHASE2_FINAL_CERT["B_in_selection"]),
     "B_in_selected_cert_text": str(PHASE2_FINAL_CERT["B_in"]),
     "matrix_selection": str(PHASE2_FINAL_CERT["matrix_selection"]),
-    "epsilon_cert_text": str(PHASE2_FINAL_CERT["epsilon"]),
+    "epsilon_cert_text": PHASE2_FINAL_CERT["epsilon_upper_text"],
+    "epsilon_triangle_cert_text": PHASE2_FINAL_CERT[
+        "epsilon_triangle_upper_text"
+    ],
 }
 _rp_json_path.write_text(
     json.dumps(_rp_provenance, indent=2), encoding="utf-8"
@@ -161,9 +168,12 @@ _rp_report_lines = [
     f"Certified output-tail contribution B_out: {mp.nstr(PHASE2_FINAL_CERT['B_out'], 50)}.",
     f"Final selected input contribution B_in: {mp.nstr(PHASE2_FINAL_CERT['B_in'], 50)}.",
     f"Input selection: {PHASE2_FINAL_CERT['B_in_selection']}.",
+    "The selected unresolved-input intersection equals the branchwise upper "
+    "on every deployed boundary cell; no cancellation gain is claimed.",
     f"Final selected matrix contribution: {mp.nstr(PHASE2_FINAL_CERT['collocation'], 50)}.",
     f"Matrix selection: {PHASE2_FINAL_CERT['matrix_selection']}.",
-    f"Final deterministic epsilon: {mp.nstr(PHASE2_FINAL_CERT['epsilon'], 50)}.",
+    f"Final deterministic epsilon upper: {PHASE2_FINAL_CERT['epsilon_upper_text']}.",
+    f"Auxiliary triangle epsilon upper: {PHASE2_FINAL_CERT['epsilon_triangle_upper_text']}.",
     "",
     "The Cell 24B provisional radius has been replaced by the authoritative Cell 24C aggregation.",
     "",
@@ -350,8 +360,8 @@ _repro_plan_path.write_text(
     ),
     encoding="utf-8",
 )
-if os.environ.get("BLASCHKE_SKIP_ARCHIVE", "0") in {"1", "true", "True"}:
-    reproducibility_bundle = {
+def _deferred_reproducibility_record(*, execution_status, repository_dirty, reason):
+    return {
         "archive_path": "deferred until clean-commit finalisation",
         "manifest_path": str(_repro_plan_path),
         "checksum_path": "deferred until clean-commit finalisation",
@@ -359,21 +369,42 @@ if os.environ.get("BLASCHKE_SKIP_ARCHIVE", "0") in {"1", "true", "True"}:
         "archive_bytes": 0,
         "packaged_file_count": 0,
         "repository_commit": "deferred",
-        "repository_dirty": None,
-        "execution_status": "deferred_until_clean_commit",
+        "repository_dirty": repository_dirty,
+        "execution_status": execution_status,
+        "deferred_reason": reason,
     }
+
+
+if os.environ.get("BLASCHKE_SKIP_ARCHIVE", "0") in {"1", "true", "True"}:
+    reproducibility_bundle = _deferred_reproducibility_record(
+        execution_status="deferred_by_environment",
+        repository_dirty=None,
+        reason="Archive creation was deferred by BLASCHKE_SKIP_ARCHIVE.",
+    )
 else:
-    reproducibility_bundle = build_reproducibility_bundle(
-        repo_root=_repro_repo_root,
-        notebook_path=(
-            _repro_repo_root
-            / "Numerics"
-            / "blaschke_deformation_certifier_thesis_math.ipynb"
-        ),
-        output_dir=OUTPUT_DIR,
-        precision_settings=_repro_precision_settings,
-        upstream_artifact_names=_certifier_seed_names,
-    )'''
+    try:
+        reproducibility_bundle = build_reproducibility_bundle(
+            repo_root=_repro_repo_root,
+            notebook_path=(
+                _repro_repo_root
+                / "Numerics"
+                / "blaschke_deformation_certifier_thesis_math.ipynb"
+            ),
+            output_dir=OUTPUT_DIR,
+            precision_settings=_repro_precision_settings,
+            upstream_artifact_names=_certifier_seed_names,
+        )
+    except RuntimeError as exc:
+        if "requires a clean deployment commit" not in str(exc):
+            raise
+        reproducibility_bundle = _deferred_reproducibility_record(
+            execution_status="deferred_dirty_worktree",
+            repository_dirty=True,
+            reason=(
+                "Archive creation was deferred because the deployment worktree "
+                "is dirty. Commit the intended deployment state and rerun Cell 104."
+            ),
+        )'''
         source = _checked_replace(
             source,
             call,
@@ -387,7 +418,9 @@ else:
         "map_label": "blaschke_mu_0p3",
         "trivial_targets": 0,
         "nontrivial_targets": 24,
-        "phase2_final_epsilon": "3.32644338390174263421785759832e-20",
+        "phase2_final_epsilon": (
+            "3.3264433839017426342178575983234893950031511766904e-20"
+        ),
         "count_route": "24 Schur-derived finite algebraic counts",
         "moat_routes": "17 Schur-triangular and 7 Laurent complete-circle moats",
     }
@@ -425,16 +458,69 @@ def _validate(notebook: dict[str, Any]) -> None:
         raise AssertionError("Cell 24B does not use a stable helper provenance key.")
     if "authoritative Phase 2 aggregation point" not in cell24c:
         raise AssertionError("Cell 24C does not refresh the provisional artefacts.")
+    if not all(
+        marker in cell24c
+        for marker in (
+            "coherent_branchwise_intersection",
+            "epsilon_upper_text",
+            "epsilon_triangle_upper_text",
+        )
+    ):
+        raise AssertionError(
+            "Cell 24C does not preserve neutral input provenance and exact upper texts."
+        )
     if "_hardy_source_files = (_spectral_cert_module_path,)" not in hardy:
         raise AssertionError("The Hardy checkpoint has extraneous source dependencies.")
     if "_contour_deterministic_module_path" in contour:
         raise AssertionError("The contour moat cache depends on deterministic epsilon code.")
+    if "epsilon_report_path" in contour:
+        raise AssertionError("Cell 103 still parses epsilon from a prose report.")
+    if not all(
+        marker in contour
+        for marker in (
+            "epsilon_certificate_path",
+            "branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv",
+        )
+    ):
+        raise AssertionError("Cell 103 does not load the machine-readable epsilon certificate.")
     if "INLINE_MODULE_PATHS" in contour:
         raise AssertionError("The source Cell 103 depends on inline-only state.")
+    if not all(
+        marker in contour
+        for marker in (
+            "_directional_endpoint_text",
+            "ROUND_FLOOR",
+            "ROUND_CEILING",
+            "CELL103_MINIMUM_CERTIFIED_MOAT_TEXT",
+            "CELL103_MAXIMUM_SMALL_GAIN_TEXT",
+        )
+    ):
+        raise AssertionError(
+            "Cell 103 does not use directional presentation endpoints."
+        )
     if "blaschke_deformation_certifier_thesis_math.ipynb" not in cell104:
         raise AssertionError("Cell 104 does not package the executed counterpart.")
     if "BLASCHKE_SKIP_ARCHIVE" not in cell104:
         raise AssertionError("Cell 104 cannot defer packaging until a clean commit.")
+    if "deferred_dirty_worktree" not in cell104:
+        raise AssertionError("Cell 104 does not defer a dirty-worktree archive cleanly.")
+    if not all(
+        marker in cell104
+        for marker in (
+            "CELL103_MINIMUM_CERTIFIED_MOAT_TEXT",
+            "CELL103_MAXIMUM_SMALL_GAIN_TEXT",
+        )
+    ):
+        raise AssertionError(
+            "Cell 104 does not preserve directional contour summary texts."
+        )
+    metadata = notebook.get("metadata", {}).get(
+        "blaschke_deformation_certifier", {}
+    )
+    if metadata.get("phase2_final_epsilon") != (
+        "3.3264433839017426342178575983234893950031511766904e-20"
+    ):
+        raise AssertionError("The exact Phase 2 epsilon metadata is stale.")
     for update_number in (89, 98):
         update = _source(
             _unique_cell(cells, f"## Historical notebook update {update_number}")

@@ -2,7 +2,7 @@
 
 Promoted row: N=600, M=610.
 Branch-image radii: rho=2.725, r=2.473669807791324, r_tau=2.293091911822557.
-q_out=0.9077687368041556, q_gap=0.92700000000000005, q_star=0.92700000000000005.
+q_out approximately 0.9077687368041556; certified q_gap <= 0.92700000000000005; certified q_star <= 0.92700000000000005.
 
 ## Bound components
 
@@ -14,15 +14,15 @@ q_out=0.9077687368041556, q_gap=0.92700000000000005, q_star=0.92700000000000005.
 - response selection: cellwise minimum of coherent packet, scaled Legendre, and whole-ellipse fallback certificates
 - response prefix and cells: 24 modes over 65536 cells
 - selected input tail: 3.3264421486719304e-20
-- input selection: coherent_row
-- coherent-row input upper: 3.3264421486719304e-20
+- input selection: coherent_branchwise_intersection
+- selected coherent-branchwise intersection upper: 3.3264421486719304e-20
 - branchwise input upper: 3.3264421486719304e-20
-- best transported Schur matrix defect: 1.0872470878179354e-28
+- best transported collocation matrix defect: 1.0872470878179354e-28
 - matrix selection: starred
-- total epsilon_X: 3.32644338390174263421785759832e-20
-- auxiliary triangle epsilon_X: 3.329296193396635018779354e-20
+- total epsilon_X upper: 0.000000000000000000033264433839017426342178575983234893950031511766904056153480096
+- auxiliary triangle epsilon_X upper: 0.000000000000000000033292961933966350187793540000000000000000000000000000000014486
 - response prefactor certified: True
 - finite-M quadrature prefactor certified: True
 - complete row theorem-certified: True
 
-The branch-image row selects the best supplied coherent, branchwise and whole-ellipse input certificate.  On the output side it selects cellwise among the coherent packet, scaled-Legendre and whole-ellipse resolved-response certificates before applying the common output-tail factor.
+For the unresolved input, the selected coherent-branchwise intersection equals the branchwise upper on every boundary cell; the deployed row therefore demonstrates no unresolved-tail cancellation gain.  On the resolved-output side, the cellwise coherent packet certificate is sharper than the scaled-Legendre and whole-ellipse fallbacks before the common output-tail factor is applied.

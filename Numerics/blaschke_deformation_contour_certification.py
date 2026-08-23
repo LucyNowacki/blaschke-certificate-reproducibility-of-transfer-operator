@@ -23,7 +23,6 @@ import json
 import math
 from pathlib import Path
 import pickle
-import re
 import time
 from typing import Iterable
 
@@ -292,16 +291,30 @@ def _contour_plan_rows(contours: Iterable[TargetContour]) -> list[dict[str, obje
     return rows
 
 
-def _load_epsilon(report_path: Path) -> tuple[arb, str]:
-    text = Path(report_path).read_text(encoding="utf-8")
-    match = re.search(
-        r"total epsilon_X:\s*([0-9]+(?:\.[0-9]+)?(?:e[+-]?[0-9]+)?)",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if match is None:
-        raise ValueError("The deterministic report does not expose total epsilon_X.")
-    value = match.group(1)
+def _load_epsilon(
+    certificate_path: Path,
+    config: ContourCertificateConfig,
+) -> tuple[arb, str]:
+    with Path(certificate_path).open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    if len(rows) != 1:
+        raise ValueError("The deterministic epsilon certificate must contain one row.")
+    row = rows[0]
+    expected = {
+        "N": str(config.N),
+        "M": str(config.M),
+        "rho": str(config.rho),
+        "r": str(config.r),
+        "phase2_aggregation_status": "authoritative Cell 24C refresh",
+    }
+    for key, value in expected.items():
+        if str(row.get(key, "")) != value:
+            raise ValueError(f"Deterministic epsilon geometry mismatch for {key}.")
+    if str(row.get("total_certified", "")).lower() != "true":
+        raise ArithmeticError("The deterministic epsilon row is not certified.")
+    value = str(row.get("new_epsilon_response_prefactor_candidate_text", ""))
+    if not value:
+        raise ValueError("The deterministic epsilon certificate has no exact text value.")
     epsilon = arb(value)
     if epsilon.lower() <= 0:
         raise ArithmeticError("The deterministic perturbation radius is not positive.")
@@ -1026,7 +1039,7 @@ def _reaggregate_existing_certificate(
             "geometry_input_hashes": {
                 key: value
                 for key, value in input_hashes.items()
-                if key != "epsilon_report"
+                if key != "epsilon_certificate"
             },
             "input_hashes": dict(input_hashes),
             "small_gain_reaggregation_seconds": time.time() - started,
@@ -1047,7 +1060,7 @@ def certify_all_target_contours(
     matrix_payload_path: Path,
     matrix_midpoint_path: Path,
     matrix_report_path: Path,
-    epsilon_report_path: Path,
+    epsilon_certificate_path: Path,
     source_files: Iterable[Path],
     force: bool = False,
     progress: bool = True,
@@ -1064,7 +1077,7 @@ def certify_all_target_contours(
     }
     input_hashes = {
         **geometry_input_hashes,
-        "epsilon_report": sha256_file(epsilon_report_path),
+        "epsilon_certificate": sha256_file(epsilon_certificate_path),
     }
     if not force and paths["report"].exists() and paths["certificate"].exists():
         existing = json.loads(paths["report"].read_text(encoding="utf-8"))
@@ -1085,7 +1098,7 @@ def certify_all_target_contours(
                     **existing,
                     "execution_status": "reused_validated_checkpoint",
                 }
-            epsilon, epsilon_text = _load_epsilon(epsilon_report_path)
+            epsilon, epsilon_text = _load_epsilon(epsilon_certificate_path, config)
             return _reaggregate_existing_certificate(
                 existing=existing,
                 rows=existing_rows,
@@ -1103,7 +1116,7 @@ def certify_all_target_contours(
         config,
     )
     payload_metadata = _load_exact_payload_metadata(matrix_payload_path)
-    epsilon, epsilon_text = _load_epsilon(epsilon_report_path)
+    epsilon, epsilon_text = _load_epsilon(epsilon_certificate_path, config)
     eta_A = arb(str(matrix_report["eta_A_upper_text"])).upper()
     contours = _validate_target_contour_plan(
         _target_contours(config),
@@ -1370,7 +1383,11 @@ def _default_paths(root: Path) -> dict[str, Path]:
         "payload": output / "data" / f"{stem}.pkl.gz",
         "midpoint": output / "data" / f"{stem}_diagnostic_midpoint.npz",
         "matrix_report": output / "reports" / f"{stem}_certificate.json",
-        "epsilon_report": output / "reports" / "branch_image_phase2_certificate_report.md",
+        "epsilon_certificate": (
+            output
+            / "data"
+            / "branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv"
+        ),
     }
 
 
@@ -1388,7 +1405,7 @@ def main() -> None:
         matrix_payload_path=paths["payload"],
         matrix_midpoint_path=paths["midpoint"],
         matrix_report_path=paths["matrix_report"],
-        epsilon_report_path=paths["epsilon_report"],
+        epsilon_certificate_path=paths["epsilon_certificate"],
         source_files=(
             Path(__file__).resolve(),
             root / "Numerics" / "blaschke_deformation_spectral_certification.py",
