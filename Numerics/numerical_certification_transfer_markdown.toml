@@ -850,16 +850,30 @@ In the stored execution, `computed` means that the complete contour route was ru
 The fixed map has $\mu=0.3$ and $\alpha=(1+\mu)/2=0.65$.  The deployed finite configuration is
 $$
 N=600,\qquad M=610,\qquad \rho=2.725,\qquad
-r=2.473669807791324.
+r=2.47366980779132410932127326\ldots .
 $$
-Here $N$ is the trial-space dimension, $M$ is the Gauss--Legendre order, $E_\rho$ is the outer analyticity ellipse, and $X=H^2(E_r)$ is the single Hardy space in which both the deterministic error and the contour resolvent are measured.  Cell 37N and its Phase 2 geometry helper evaluate a fixed $6\times6$ design of $(\rho,q_{\mathrm{gap}})$ candidates.  Each candidate is covered on the complete boundary by $65\,536$ Arb cells at $192$-bit precision.  The selected row minimises the certified historical tail-floor upper bound within that finite design, with $q_*$ and grid order as tie-breakers; this is not a proof of a continuous global optimum.  The full-boundary branch enclosure gives
+Here $N$ is the trial-space dimension, $M$ is the Gauss--Legendre order, $E_\rho$ is the outer analyticity ellipse, and $X=H^2(E_r)$ is the single Hardy space in which both the deterministic error and the contour resolvent are measured.  Cell 37N and its Phase 2 geometry helper evaluate a fixed $6\times6$ design of $(\rho,\widehat q_{\mathrm{gap}})$ candidates.  Each candidate is covered on the complete boundary by $65\,536$ Arb cells at $192$-bit precision.  The selected row minimises the certified historical tail-floor upper bound within that finite design, with $\widehat q_*$ and grid order as tie-breakers; this is not a proof of a continuous global optimum.  The full-boundary branch enclosure gives the safe outward endpoint
 $$
-r_\tau(\rho)\le 2.293091911822557,\qquad
-q_{\mathrm{out}}=\frac r\rho\le0.9077687368041556,
+r_\tau(\rho)
+\le\widehat r_\tau(\rho)
+\le2.293091911822558.
 $$
+Reserving $q_{\mathrm{out}}$, $q_{\mathrm{gap}}$, and $q_*$ for the exact theoretical quantities, the authenticated outward rate endpoints satisfy
 $$
-q_{\mathrm{gap}}=\frac{r_\tau(\rho)}r\le0.927,
-\qquad q_*=\max\{q_{\mathrm{out}},q_{\mathrm{gap}}\}=0.927,
+\frac r\rho
+\le\widehat q_{\mathrm{out}}
+:=0.9077687368041557,
+\qquad
+\frac{r_\tau(\rho)}r
+\le\widehat q_{\mathrm{gap}}
+:=0.927.
+$$
+Therefore
+$$
+q_*(r,\rho)
+\le\widehat q_*
+:=\max\{\widehat q_{\mathrm{out}},\widehat q_{\mathrm{gap}}\}
+=0.927,
 $$
 with the certified nesting $1<r_\tau(\rho)<r<\rho$.
 
@@ -1167,16 +1181,12 @@ Starting from an empty output directory does not ask the digest to prove the res
 
 **Proved at theorem level.**  The chapter proves the general implications: exact-dyadic Schur membership gives the finite algebraic count; either complete-circle route gives a resolvent moat; positive Schur and matrix-replacement margins transport the count to the mathematical Hardy block; the silent zero block changes the lifted moat to the minimum with $d_{\Gamma,0}$; and strict small gain transports the finite Riesz rank to the exact operator.
 
-**Certified numerically for this fixed run.**  Arb and exact-dyadic arithmetic verify every premise of that chain for $\mu=0.3$, $N=600$, $M=610$, the displayed $(\rho,r)$, and the twenty-four fixed pairwise-disjoint rational circles.  The numerical certificate therefore supplies computer-assisted proof, within the mathematical model and stated implementation assumptions, that
+**Certified numerically for this fixed run.**  Arb and exact-dyadic arithmetic verify every premise of that chain for $\mu=0.3$, $N=600$, $M=610$, the displayed $(\rho,r)$, and the twenty-four fixed pairwise-disjoint rational circles.  In the single ordered contour list, the theorem-facing conclusion is
 $$
-\operatorname{rank}\Pi_{\Gamma_j}(\mathcal L)=1
-\quad\hbox{for }\alpha^j, 1\le j\le18,
+\operatorname{rank}\Pi_{\Gamma_j}(\mathcal L)=m_j,
+\qquad 1\le j\le24.
 $$
-$$
-\operatorname{rank}\Pi_{\Gamma_j}(\mathcal L)=2
-\quad\hbox{for }\mu^j, 1\le j\le6,
-$$
-and that the twenty-four disjoint nonzero contours contain total algebraic multiplicity $30$.
+The ordered list consists of eighteen $\alpha$-centred simple packets with $m_j=1$ and six $\mu$-centred multiplicity-two packets with $m_j=2$.  Thus the numerical certificate supplies computer-assisted proof, within the mathematical model and stated implementation assumptions, that the twenty-four disjoint nonzero contours contain total algebraic multiplicity $30$.  The family exponents label packet centres; they are not a second use of the ordered contour index $j$.
 
 **Hybrid rather than purely numerical.**  The local contour proof establishes ranks inside the fixed circles.  Identifying the enclosed exact spectral points with the names $\alpha^j$ and $\mu^j$, adding the exact simple eigenvalue $1$, and proving that every remaining nonzero point lies inside the $\alpha^{19}$ tail threshold use the external exact Blaschke spectral formula and compactness theory.  Thus the exterior classification is theorem plus external spectral identification, not an output of the contour arithmetic alone.
 

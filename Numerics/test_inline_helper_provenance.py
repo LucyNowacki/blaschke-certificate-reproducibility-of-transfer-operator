@@ -288,9 +288,20 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             "1.636120221822047\\times10^{-13}",
             "3.326443383901743\\times10^{-20}",
             "3.326443383901744\\times10^{-20}",
+            "r=2.47366980779132410932127326\\ldots",
+            "\\widehat r_\\tau(\\rho)",
+            "2.293091911822558",
+            "\\widehat q_{\\mathrm{out}}",
+            "0.9077687368041557",
+            "\\widehat q_{\\mathrm{gap}}",
+            "\\widehat q_*",
             "s_j^{(0)}",
             "\\delta_j=\\vartheta_j s_j^{(0)}",
             "m_T(U_j)",
+            "\\operatorname{rank}\\Pi_{\\Gamma_j}(\\mathcal L)=m_j",
+            "1\\le j\\le24",
+            "eighteen $\\alpha$-centred simple packets",
+            "six $\\mu$-centred multiplicity-two packets",
             "2.033128947087571\\times10^{-7}",
             "2.033128947087573\\times10^{-7}<1",
             "display/provenance drift",
@@ -302,6 +313,17 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             self.assertIn(required, source)
         self.assertNotIn("g_\\Gamma", source)
         self.assertNotIn("g_{\\Gamma", source)
+        self.assertNotIn("r=2.473669807791324.", source)
+        self.assertNotIn("2.293091911822557", source)
+        self.assertNotIn("0.9077687368041556", source)
+        self.assertNotIn(
+            "\\operatorname{rank}\\Pi_{\\Gamma_j}(\\mathcal L)=1",
+            source,
+        )
+        self.assertNotIn(
+            "\\operatorname{rank}\\Pi_{\\Gamma_j}(\\mathcal L)=2",
+            source,
+        )
         self.assertEqual(
             len(re.findall(r"(?m)^\| (?:[1-9]|1[0-9]|2[0-4]) \|", source)),
             24,

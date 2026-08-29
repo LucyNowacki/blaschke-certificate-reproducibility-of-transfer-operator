@@ -3,7 +3,7 @@
   "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
   "notebook": {
     "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-    "sha256_at_manifest_creation": "5181c5ad6378d9aef109b90efe1313ef05a4c7a9339c211754cf22b339c51b52",
+    "sha256_at_manifest_creation": "7c38f380b6d2101b2bdf8ba88fd08ccf96f9ff5ff6470fd8efd51cc464ee059e",
     "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
     "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
     "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 141-cell, 68-code-cell notebook, including Cell 0M, the two source-only diagnostic producers and final auditor Markdown Cell 110M.",
@@ -14,7 +14,7 @@
     "map_label": "blaschke_mu_0p3",
     "execution_order": "top-to-bottom stateful Jupyter execution",
     "thesis_math_builder_sha256": "6379883a48a5680c1f90a4cd4bfb15d3b2a26738ca3bc4d8004c68722490e68d",
-    "chapter_math_map_sha256": "9aff898a20c84eb1babef43ee6bab567ba6daa57fa71089c907f148602a7a590",
+    "chapter_math_map_sha256": "dd99f0b4fe7eab87f334d324e1859d98082439f26c0d1142d9f9aac99cd5fab6",
     "stored_png_count_note": "The 34-payload contract includes both PNG outputs in Cell 80N: the selected sampled profile and the restored alpha^11 profile."
   },
   "prepared_cell_indices": {
@@ -2737,10 +2737,10 @@
   "source_hash_refresh": {
     "date": "2026-08-29",
     "method": "refresh_notebook_cell_provenance.py",
-    "notebook_sha256": "5181c5ad6378d9aef109b90efe1313ef05a4c7a9339c211754cf22b339c51b52",
+    "notebook_sha256": "7c38f380b6d2101b2bdf8ba88fd08ccf96f9ff5ff6470fd8efd51cc464ee059e",
     "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
     "thesis_math_builder_sha256": "6379883a48a5680c1f90a4cd4bfb15d3b2a26738ca3bc4d8004c68722490e68d",
-    "chapter_math_map_sha256": "9aff898a20c84eb1babef43ee6bab567ba6daa57fa71089c907f148602a7a590",
+    "chapter_math_map_sha256": "dd99f0b4fe7eab87f334d324e1859d98082439f26c0d1142d9f9aac99cd5fab6",
     "visual_cell_count": 20,
     "stored_png_output_count": 34,
     "standalone_source_count": 9,
