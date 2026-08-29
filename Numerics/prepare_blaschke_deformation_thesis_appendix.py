@@ -727,22 +727,22 @@ for complete-boundary or complete-contour validated arithmetic.
     "33580cd0": r"""## Main numerical algorithm: the symmetric Blaschke transfer block
 
 The notebook is locked to the ASBJ24 symmetric Blaschke deformation
-`blaschke_mu_0p3`. Its inverse branches \(\tau_b\) and Perron--Frobenius
-weights \(\phi_b\) assemble the Legendre--Gauss transfer block
-\[
+`blaschke_mu_0p3`. Its inverse branches $\tau_b$ and Perron--Frobenius
+weights $\phi_b$ assemble the Legendre--Gauss transfer block
+$$
   (\widehat L_N^{(M)})_{k\ell}
   =
   \sum_{j=1}^{M}w_j\overline{\widetilde P_k(x_j)}
   \sum_b\phi_b(x_j)\widetilde P_\ell(\tau_b(x_j)).
-\]
-The raw block supplies empirical spectra. The pure \(r\)-scaled block supplies
+$$
+The raw block supplies empirical spectra. The pure $r$-scaled block supplies
 the separable-Frobenius collocation estimate, and
-\[
+$$
   \mathsf A_N^X(\widehat L_N^{(M)})
   =
   \mathsf T_N(r)\mathsf D_{r,N}\widehat L_N^{(M)}
   \mathsf D_{r,N}^{-1}\mathsf T_N(r)^{-1}
-\]
+$$
 is the Hardy-gauge matrix used for singular values, resolvent moats and Riesz
 ranks. These matrices are similar and share eigenvalues, but their Euclidean
 norms have different meanings. The exact Blaschke spectral formula is used

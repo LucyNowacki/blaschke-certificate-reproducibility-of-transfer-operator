@@ -85,6 +85,18 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         self.assertEqual(actual.get("id"), DEPENDENCY_MAP_CELL_ID)
         self.assertEqual(actual_source, expected["source"])
 
+    def test_cell_3m_uses_dollar_math_delimiters(self) -> None:
+        source = "".join(
+            next(
+                cell for cell in self.notebook["cells"]
+                if cell.get("id") == "33580cd0"
+            ).get("source", [])
+        )
+        for delimiter in (r"\(", r"\)", r"\[", r"\]"):
+            self.assertNotIn(delimiter, source)
+        self.assertIn("$\\tau_b$", source)
+        self.assertGreaterEqual(source.count("$$"), 4)
+
     def test_release_docs_do_not_claim_the_archive_is_still_deferred(self) -> None:
         stale_wording = "archive remains deferred"
         for path in (README, HERE / "blaschke_deformation_notebook_dependency_map.md"):

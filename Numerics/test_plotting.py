@@ -12,6 +12,7 @@ import matplotlib
 matplotlib.use("Agg", force=True)
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 HERE = Path(__file__).resolve().parent
@@ -19,6 +20,84 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import plotting
+
+
+def _assert_pairwise_disjoint(
+    testcase: unittest.TestCase,
+    artists: list[object],
+    renderer: object,
+) -> None:
+    boxes = [artist.get_window_extent(renderer=renderer) for artist in artists]
+    for index, left in enumerate(boxes):
+        for right in boxes[index + 1:]:
+            testcase.assertFalse(left.overlaps(right))
+
+
+class Phase3PlotLayoutTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.rows = pd.DataFrame(
+            {
+                "name": ["old", "branch-image", "response", "wide"],
+                "short_source": ["old", "branch-image", "response", "wide"],
+                "fitted_base": [0.97, 0.925, 0.924, 0.932],
+                "epsilon_over_qstar_power": [4.4, 2.4, 1.9, 2.0],
+                "epsilon": [7.0e-9, 4.0e-20, 3.3e-20, 1.0e-17],
+                "qstar_power": [1.6e-9, 1.7e-20, 1.7e-20, 5.0e-18],
+            }
+        )
+
+    def test_rate_legend_occupies_its_own_figure_margin(self) -> None:
+        result = plotting.plot_phase3_rate_diagnostics(
+            self.rows,
+            q_star=0.925,
+            show=False,
+        )
+        try:
+            result.figure.canvas.draw()
+            self.assertIsNone(result.axes[1].get_legend())
+            self.assertEqual(len(result.figure.legends), 1)
+            renderer = result.figure.canvas.get_renderer()
+            legend_box = result.figure.legends[0].get_window_extent(renderer=renderer)
+            for axis in result.axes:
+                self.assertFalse(
+                    legend_box.overlaps(axis.get_window_extent(renderer=renderer))
+                )
+        finally:
+            plt.close(result.figure)
+
+    def test_bridge_component_tick_labels_are_disjoint(self) -> None:
+        raw = pd.DataFrame(
+            {
+                "N": [10, 20, 10, 20],
+                "name": ["alpha^1", "alpha^1", "mu^1", "mu^1"],
+                "error": [1.0e-8, 1.0e-12, 2.0e-8, 2.0e-13],
+            }
+        )
+        components = {
+            "output leakage": 2.0e-23,
+            "input leakage": 3.0e-20,
+            "collocation defect": 8.0e-29,
+            "complete radius": 3.1e-20,
+        }
+        result = plotting.plot_phase3_empirical_deterministic_bridge(
+            raw,
+            self.rows,
+            components,
+            target_names=("alpha^1", "mu^1"),
+            epsilon=3.1e-20,
+            q_star=0.925,
+            show=False,
+        )
+        try:
+            result.figure.canvas.draw()
+            renderer = result.figure.canvas.get_renderer()
+            _assert_pairwise_disjoint(
+                self,
+                list(result.axes[2].get_xticklabels()),
+                renderer,
+            )
+        finally:
+            plt.close(result.figure)
 
 
 class Phase4LocalMoatSurfaceTests(unittest.TestCase):
