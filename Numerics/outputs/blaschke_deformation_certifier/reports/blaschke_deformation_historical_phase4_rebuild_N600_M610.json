@@ -46,6 +46,39 @@
   "contour_interval_certified": false,
   "diagnostic_description": "retained historical wide-radius sampled finite-section diagnostic; not interval-certified and not eligible for a theorem gate",
   "diagnostic_status": "diagnostic_only_not_theorem_gate",
+  "documentation_only_provenance_refresh": {
+    "current_cache_key_if_rebuilt": "2ef45f44a97c86d847e9e8f65db5689d60b2f7dd5c5b8d4bbe9ee5f798b34602",
+    "current_source_digest": "04b1145acd61bd26f66571d01e68ca282a277348f73b907ec4f280bc9096f7e9",
+    "date": "2026-08-29",
+    "numerical_outputs_reused": true,
+    "previous_cache_key": "169421e73b25e00e379d0a24e476d5f26da19186f48a179e3a8bf83ce889b3b8",
+    "previous_source_digest": "2f4b8aa5a0edfdafeadf5c67ac561b97ec266443615d65a715c735eac6203ef6",
+    "schema": "historical-phase4-docstring-only-source-refresh-v1",
+    "sources": {
+      "hardy_surface_worker": {
+        "current_sha256": "fe2614db853182a5e7ed73da3e4e2746e719308ab0b71d85474c564102cc9b46",
+        "current_semantic_ast_sha256": "127cd3531e43d593c90ecbd85e1c68aedfba05501fbaa63f535dbc824c312960",
+        "path": "Numerics/hardy_moat_surface_worker.py",
+        "previous_sha256": "40e82bc898f01dde300eba6409c5a60184cea7283d341c0894270eeb368b7ade",
+        "previous_semantic_ast_sha256": "127cd3531e43d593c90ecbd85e1c68aedfba05501fbaa63f535dbc824c312960"
+      },
+      "historical_phase4_producer": {
+        "current_sha256": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
+        "current_semantic_ast_sha256": "f893626609cc9286800a64e6bf44df11c702476bb63a96146fbab54cb0c3374d",
+        "path": "Numerics/blaschke_deformation_historical_phase4.py",
+        "previous_sha256": "f7f01a4db874a96c00e992989871e49eebfa7daf0d9957a5dc0e615e378d3e44",
+        "previous_semantic_ast_sha256": "f893626609cc9286800a64e6bf44df11c702476bb63a96146fbab54cb0c3374d"
+      },
+      "mpmath_row_worker": {
+        "current_sha256": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
+        "current_semantic_ast_sha256": "ab647a3c455b4bca2d4b63dfb7aa7877b670ad6f9f10475e0f34acbfa0ebbeb7",
+        "path": "Numerics/mpmath_pf_raw.py",
+        "previous_sha256": "ab0f82c9928888d243660af3ae472a1b839b014a74c54ae1450c02e4f356461b",
+        "previous_semantic_ast_sha256": "ab647a3c455b4bca2d4b63dfb7aa7877b670ad6f9f10475e0f34acbfa0ebbeb7"
+      }
+    },
+    "verification_method": "Python AST equality after removing module, class, function, and async-function docstrings and ignoring source-location attributes"
+  },
   "historical_regression": {
     "contour_radius_rule": "finite-eigenvalue cluster-to-nearest-outside mid-gap",
     "contract": "source-rederived historical sampled comparison",
@@ -179,15 +212,15 @@
   "producer_sources": {
     "hardy_surface_worker": {
       "path": "Numerics/hardy_moat_surface_worker.py",
-      "sha256": "40e82bc898f01dde300eba6409c5a60184cea7283d341c0894270eeb368b7ade"
+      "sha256": "fe2614db853182a5e7ed73da3e4e2746e719308ab0b71d85474c564102cc9b46"
     },
     "historical_phase4_producer": {
       "path": "Numerics/blaschke_deformation_historical_phase4.py",
-      "sha256": "f7f01a4db874a96c00e992989871e49eebfa7daf0d9957a5dc0e615e378d3e44"
+      "sha256": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73"
     },
     "mpmath_row_worker": {
       "path": "Numerics/mpmath_pf_raw.py",
-      "sha256": "ab0f82c9928888d243660af3ae472a1b839b014a74c54ae1450c02e4f356461b"
+      "sha256": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c"
     }
   },
   "record_role": "historical_exploratory_diagnostic",

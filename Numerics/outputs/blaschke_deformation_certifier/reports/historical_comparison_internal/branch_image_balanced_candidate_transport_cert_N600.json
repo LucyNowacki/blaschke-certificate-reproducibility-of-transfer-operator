@@ -6,7 +6,7 @@
     "coordinate_orientation": "c to y=D_r,N c to d=T_N(r)y",
     "geometry_configuration_digest": "d74cad2865514b372115237075e136781a02136bf7470e2d572a30a3dccb0f85",
     "inverse_backend": "numpy binary64 witness with Arb residual",
-    "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+    "inverse_witness_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
     "inverse_witness_sha256": "668d98df9a3fedf5b3ce7268deb7e3ec3b41bf505ed9d5565c99b4428ae225e6",
     "kappa_diag": "1.2530528397052667",
     "kappa_hat": "6.31070697041065609706294060500000000000000000000000000000000000000000000000000000E+2",
@@ -34,9 +34,9 @@
     "rho": "1.5999"
   },
   "configuration_digest": "caa2de57666857e1fda2275d93e35dad082bae65182c1b33095a1963eae98b11",
-  "csv_path": "outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_cert_N600.csv",
-  "csv_sha256": "273169de790b40c49a9d8d27d86ff4e92594c10e1a25ee6ba7f5f849c872f4ee",
-  "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+  "csv_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_cert_N600.csv",
+  "csv_sha256": "e1ff8517b7d7cf8d7d3429351d81fa51a46c9415d9ac729bd4db307643d245e2",
+  "inverse_witness_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
   "inverse_witness_sha256": "668d98df9a3fedf5b3ce7268deb7e3ec3b41bf505ed9d5565c99b4428ae225e6",
   "map_label": "blaschke_mu_0p3",
   "producer_schema": "phase2-transport-v2"

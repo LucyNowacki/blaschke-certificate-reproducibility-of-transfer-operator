@@ -1150,6 +1150,33 @@ class ReproducibilityBundleTests(unittest.TestCase):
         ):
             packager.refresh_reproducibility_plan(plan, report)
 
+    def test_semantic_source_digest_ignores_only_docstrings(self) -> None:
+        source_path = self.deployment.root / "semantic-source.py"
+        source_path.write_text(
+            "'''old module explanation'''\n"
+            "def square(value):\n"
+            "    '''old function explanation'''\n"
+            "    return value * value\n",
+            encoding="utf-8",
+        )
+        baseline = packager._semantic_ast_sha256(source_path)
+
+        source_path.write_text(
+            "'''new intuitive module explanation'''\n"
+            "def square(value):\n"
+            "    '''new intuitive mathematical explanation'''\n"
+            "    return value * value\n",
+            encoding="utf-8",
+        )
+        self.assertEqual(baseline, packager._semantic_ast_sha256(source_path))
+
+        source_path.write_text(
+            "def square(value):\n"
+            "    return value * value + 1\n",
+            encoding="utf-8",
+        )
+        self.assertNotEqual(baseline, packager._semantic_ast_sha256(source_path))
+
     def test_semantic_contract_matches_current_producer_filenames(self) -> None:
         config = phase4_producer.HistoricalPhase4Config.production_n600_m610()
         producer_paths = phase4_producer._artifact_paths(

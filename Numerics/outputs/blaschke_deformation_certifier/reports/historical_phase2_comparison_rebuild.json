@@ -79,23 +79,23 @@
   "producer_sources": {
     "geometry": {
       "path": "Numerics/blaschke_deformation_phase2_geometry.py",
-      "sha256": "d72256c46cd89d6b65f19a9ce7f913a7b087271550c9d755b67e85d108b45813"
+      "sha256": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa"
     },
     "historical_comparisons": {
       "path": "Numerics/blaschke_deformation_historical_comparisons.py",
-      "sha256": "cd12e23162aa037f4b35741d92b1a8cff4df1ebc3324f67d8992c55b898cd495"
+      "sha256": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5"
     },
     "matrix": {
       "path": "Numerics/blaschke_deformation_phase2_matrix.py",
-      "sha256": "23d87bcdfb12dc13fc47160b1231b324fc2a7b82ba21a66b429a655df9b57bce"
+      "sha256": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8"
     },
     "transport": {
       "path": "Numerics/blaschke_deformation_phase2_transport.py",
-      "sha256": "4f38bcdbcc78ffeceacc895227c13c5e59449f8339dc4dca13387d9c594bc89a"
+      "sha256": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5"
     }
   },
   "transport": {
-    "csv_sha256": "273169de790b40c49a9d8d27d86ff4e92594c10e1a25ee6ba7f5f849c872f4ee",
+    "csv_sha256": "e1ff8517b7d7cf8d7d3429351d81fa51a46c9415d9ac729bd4db307643d245e2",
     "inverse_witness_sha256": "668d98df9a3fedf5b3ce7268deb7e3ec3b41bf505ed9d5565c99b4428ae225e6",
     "record": {
       "N": 600,
@@ -104,7 +104,7 @@
       "coordinate_orientation": "c to y=D_r,N c to d=T_N(r)y",
       "geometry_configuration_digest": "d74cad2865514b372115237075e136781a02136bf7470e2d572a30a3dccb0f85",
       "inverse_backend": "numpy binary64 witness with Arb residual",
-      "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+      "inverse_witness_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
       "inverse_witness_sha256": "668d98df9a3fedf5b3ce7268deb7e3ec3b41bf505ed9d5565c99b4428ae225e6",
       "kappa_diag": "1.2530528397052667",
       "kappa_hat": "6.31070697041065609706294060500000000000000000000000000000000000000000000000000000E+2",
@@ -122,7 +122,7 @@
       "transport_process_workers": 24,
       "transport_row_blocks": 24
     },
-    "report_sha256": "3d6942737a5d10a06ff982502b007c996e6b36d15e60b246e3974cf74090316b"
+    "report_sha256": "d64222c486b3c665e4ca1d29167f8eaacc3177d00a4910791d24e69d41cd5326"
   },
   "zwx13_terms_used": 801
 }

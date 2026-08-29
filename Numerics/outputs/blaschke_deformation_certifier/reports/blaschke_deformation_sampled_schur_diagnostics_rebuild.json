@@ -25,7 +25,7 @@
       "module_path": null,
       "qualname": "_sampled_schur_kappa",
       "source_scope": "callable source",
-      "source_sha256": "08c43a557d259810c597f8204f254749f6644c3b31d74f54bf9517cf9d0139bc"
+      "source_sha256": "e603d359a414bebf112b60f56253ddc565701d12fb8bc75842c6a7a6ac4bd00e"
     },
     "runtime": {
       "pandas": "2.3.3",
@@ -33,10 +33,10 @@
     },
     "sampled_schur_envelope": {
       "module": "transfer_spectrum_certification",
-      "module_path": "inline:transfer_spectrum_certification",
+      "module_path": "Numerics/transfer_spectrum_certification.py",
       "qualname": "sampled_schur_envelope",
-      "source_scope": "complete inline module source",
-      "source_sha256": "ffa260206a389c524816ce72505f341f101442703978f9fbf4fafaaaa0256cfd"
+      "source_scope": "complete module file",
+      "source_sha256": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a"
     }
   },
   "map_label": "blaschke_mu_0p3",
@@ -63,7 +63,7 @@
     ],
     "path": "outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_generic_sampled_schur_envelope.csv",
     "rows": 6,
-    "sha256": "91acd7bc1def5de61c10774cb196633a82fe05b595c9ee769c6d1d87c361f5ed"
+    "sha256": "b044b18cbf8cb2329d9c2ba10c4487a81fc8bddb7d77986d5803c15c06951027"
   },
   "producer_schema": "blaschke-deformation-sampled-schur-diagnostics-v1",
   "schema_version": "2.0.0",

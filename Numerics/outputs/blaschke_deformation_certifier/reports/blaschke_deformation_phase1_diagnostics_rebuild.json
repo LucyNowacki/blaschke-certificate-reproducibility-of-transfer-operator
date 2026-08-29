@@ -90,11 +90,11 @@
     ],
     "max_clusters": 24,
     "max_power": 25,
-    "progress": true,
+    "progress": false,
     "row_block_size": null
   },
   "diagnostic_only": true,
-  "generation_id": "4374c0bdd2dc26056aa3b8d37a4e2abd15842dbfd3a5f96fdb12fbe20674fa99",
+  "generation_id": "eb9923c9320c4622f9476c74e3a508cf45fdf9a17d6a175b6c5c26101334dcda",
   "jobs": [
     {
       "M": 6,
@@ -1501,7 +1501,7 @@
       "module_path": "Numerics/mpmath_pf_raw.py",
       "qualname": "run_pair_sweep_mpmath_raw",
       "source_scope": "complete module file",
-      "source_sha256": "ab0f82c9928888d243660af3ae472a1b839b014a74c54ae1450c02e4f356461b",
+      "source_sha256": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
       "worker_api_version": "2026-08-02-process-row-block-assembly"
     },
     "reference_clusters_sha256": null,

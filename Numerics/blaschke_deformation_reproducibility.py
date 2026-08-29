@@ -137,6 +137,9 @@ EXPECTED_REPORT_STATUSES = frozenset({
 })
 EXPECTED_HISTORICAL_PHASE2_SCHEMA = "phase2-historical-comparisons-v1"
 EXPECTED_HISTORICAL_PHASE4_SCHEMA = "historical-wide-phase4-source-rebuild-v2"
+EXPECTED_HISTORICAL_PHASE4_DOC_REFRESH_SCHEMA = (
+    "historical-phase4-docstring-only-source-refresh-v1"
+)
 EXPECTED_DIAGNOSTIC_AUDIT_SCHEMA = "blaschke-deformation-diagnostic-audits-v1"
 EXPECTED_DIAGNOSTIC_SCHEMA_VERSION = "2.0.0"
 EXPECTED_PHASE1_PRODUCER_SCHEMA = "blaschke-deformation-phase1-diagnostics-v1"
@@ -258,6 +261,55 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+class _DocstringStripper(ast.NodeTransformer):
+    """Remove only leading Python docstrings from semantic-AST comparisons."""
+
+    def _strip(self, node: ast.AST) -> ast.AST:
+        self.generic_visit(node)
+        body = getattr(node, "body", None)
+        if (
+            isinstance(body, list)
+            and body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            node.body = body[1:]
+        return node
+
+    visit_Module = _strip
+    visit_FunctionDef = _strip
+    visit_AsyncFunctionDef = _strip
+    visit_ClassDef = _strip
+
+
+def _semantic_ast_sha256(path: Path) -> str:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError, UnicodeError) as exc:
+        raise ReproducibilityError(
+            f"Cannot parse documentation-refresh source {path}."
+        ) from exc
+    stripped = _DocstringStripper().visit(tree)
+    ast.fix_missing_locations(stripped)
+    payload = ast.dump(
+        stripped,
+        annotate_fields=True,
+        include_attributes=False,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _canonical_digest(value: object) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _json_bytes(value: object) -> bytes:
@@ -932,6 +984,158 @@ def _validate_report_source_records(
     return validated
 
 
+def _validate_historical_phase4_documentation_refresh(
+    repo_root: Path,
+    report: Mapping[str, object],
+) -> dict[str, object] | None:
+    refresh = report.get("documentation_only_provenance_refresh")
+    if refresh is None:
+        return None
+    if not isinstance(refresh, dict):
+        raise ReproducibilityError(
+            "Historical Phase 4 documentation refresh is malformed."
+        )
+    if refresh.get("schema") != EXPECTED_HISTORICAL_PHASE4_DOC_REFRESH_SCHEMA:
+        raise ReproducibilityError(
+            "Historical Phase 4 documentation refresh schema is invalid."
+        )
+    if refresh.get("numerical_outputs_reused") is not True:
+        raise ReproducibilityError(
+            "Historical Phase 4 documentation refresh must identify reused outputs."
+        )
+    expected_method = (
+        "Python AST equality after removing module, class, function, and "
+        "async-function docstrings and ignoring source-location attributes"
+    )
+    if refresh.get("verification_method") != expected_method:
+        raise ReproducibilityError(
+            "Historical Phase 4 documentation refresh method is invalid."
+        )
+
+    current_records = report.get("producer_sources")
+    runtime_versions = report.get("runtime_versions")
+    sources = refresh.get("sources")
+    if (
+        not isinstance(current_records, dict)
+        or not isinstance(runtime_versions, dict)
+        or not isinstance(sources, dict)
+        or set(sources) != set(current_records)
+    ):
+        raise ReproducibilityError(
+            "Historical Phase 4 documentation source inventory is inconsistent."
+        )
+
+    previous_records: dict[str, dict[str, str]] = {}
+    verified_sources: dict[str, dict[str, str]] = {}
+    for label, current_record in current_records.items():
+        source = sources.get(label)
+        if not isinstance(current_record, dict) or not isinstance(source, dict):
+            raise ReproducibilityError(
+                "Historical Phase 4 documentation source record is malformed."
+            )
+        relative = _safe_relative_path(
+            source.get("path"),
+            label=f"historical Phase 4 documentation source {label}",
+        )
+        path_text = relative.as_posix()
+        current_sha = _expect_sha256(
+            source.get("current_sha256"),
+            label=f"historical Phase 4 current source {label}",
+        )
+        previous_sha = _expect_sha256(
+            source.get("previous_sha256"),
+            label=f"historical Phase 4 previous source {label}",
+        )
+        current_semantic = _expect_sha256(
+            source.get("current_semantic_ast_sha256"),
+            label=f"historical Phase 4 current semantic source {label}",
+        )
+        previous_semantic = _expect_sha256(
+            source.get("previous_semantic_ast_sha256"),
+            label=f"historical Phase 4 previous semantic source {label}",
+        )
+        if current_record != {"path": path_text, "sha256": current_sha}:
+            raise ReproducibilityError(
+                "Historical Phase 4 refreshed source record differs from its attestation."
+            )
+        source_path = repo_root.joinpath(*relative.parts)
+        if sha256_file(source_path) != current_sha:
+            raise ReproducibilityError(
+                "Historical Phase 4 refreshed source hash is stale."
+            )
+        observed_semantic = _semantic_ast_sha256(source_path)
+        if not (
+            observed_semantic == current_semantic == previous_semantic
+        ):
+            raise ReproducibilityError(
+                "Historical Phase 4 source differs beyond Python docstrings."
+            )
+        previous_records[str(label)] = {
+            "path": path_text,
+            "sha256": previous_sha,
+        }
+        verified_sources[str(label)] = {
+            "path": path_text,
+            "previous_sha256": previous_sha,
+            "current_sha256": current_sha,
+            "semantic_ast_sha256": observed_semantic,
+        }
+
+    previous_source_digest = _canonical_digest({
+        "producer_sources": previous_records,
+        "runtime_versions": runtime_versions,
+    })
+    current_source_digest = _canonical_digest({
+        "producer_sources": current_records,
+        "runtime_versions": runtime_versions,
+    })
+    if not (
+        report.get("source_digest")
+        == refresh.get("previous_source_digest")
+        == previous_source_digest
+    ):
+        raise ReproducibilityError(
+            "Historical Phase 4 previous source digest is inconsistent."
+        )
+    if refresh.get("current_source_digest") != current_source_digest:
+        raise ReproducibilityError(
+            "Historical Phase 4 current source digest is inconsistent."
+        )
+
+    configuration_digest = report.get("configuration_digest")
+    producer_schema = report.get("producer_schema")
+    previous_cache_key = _canonical_digest({
+        "producer_schema": producer_schema,
+        "configuration_digest": configuration_digest,
+        "source_digest": previous_source_digest,
+    })
+    current_cache_key = _canonical_digest({
+        "producer_schema": producer_schema,
+        "configuration_digest": configuration_digest,
+        "source_digest": current_source_digest,
+    })
+    if not (
+        report.get("cache_key")
+        == refresh.get("previous_cache_key")
+        == previous_cache_key
+    ):
+        raise ReproducibilityError(
+            "Historical Phase 4 previous cache identity is inconsistent."
+        )
+    if refresh.get("current_cache_key_if_rebuilt") != current_cache_key:
+        raise ReproducibilityError(
+            "Historical Phase 4 prospective cache identity is inconsistent."
+        )
+    return {
+        "schema": EXPECTED_HISTORICAL_PHASE4_DOC_REFRESH_SCHEMA,
+        "numerical_outputs_reused": True,
+        "verified_source_count": len(verified_sources),
+        "previous_source_digest": previous_source_digest,
+        "current_source_digest": current_source_digest,
+        "sources": verified_sources,
+    }
+
+
 def _validate_generated_output_hashes(
     repo_root: Path,
     outputs: object,
@@ -1522,6 +1726,9 @@ def validate_source_generated_diagnostics(
         manifest_by_path=manifest_by_path,
         label="historical Phase 4",
     )
+    phase4_documentation_refresh = (
+        _validate_historical_phase4_documentation_refresh(repo_root, phase4)
+    )
 
     audits = loaded["diagnostic_audits"]
     if audits.get("diagnostic_only") is not True:
@@ -1625,6 +1832,9 @@ def validate_source_generated_diagnostics(
         ),
         "historical_phase2_output_count": phase2_output_count,
         "historical_phase4_output_count": phase4_output_count,
+        "historical_phase4_documentation_refresh": (
+            phase4_documentation_refresh
+        ),
         "diagnostic_audit_output_count": audit_output_count,
         "phase1_diagnostics": phase1_validation,
         "sampled_schur_diagnostics": sampled_validation,
