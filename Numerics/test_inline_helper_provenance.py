@@ -229,6 +229,59 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             markdown,
         )
 
+    def test_final_auditor_markdown_explains_every_terminal_certificate_layer(self) -> None:
+        cells = {
+            str(cell.get("id")): cell for cell in self.notebook["cells"]
+        }
+        source = "".join(cells["bffa1d01"].get("source", []))
+        self.assertIn(
+            "## Final auditor reading of the twenty-four-target spectral certificate",
+            source,
+        )
+        for required in (
+            "The certificate output immediately below is emitted by execution Cell 107N.",
+            "Meaning of `computed_and_certified`",
+            "How the deterministic perturbation envelope is obtained",
+            "How the finite Hardy matrix and Schur constants are certified",
+            "The two complete-circle moat routes and their transport",
+            "Row-by-row meaning of the displayed twenty-four-target table",
+            "Why lower displays round down and upper displays round up",
+            "Laurent source reconstruction and the exact meaning of provenance-only",
+            "What is proved, what is hybrid, and what is not proved",
+            "1.636120221822047\\times10^{-13}",
+            "2.033128947087571\\times10^{-7}",
+            "2.033128947087573\\times10^{-7}<1",
+            "display/provenance drift",
+            "44+36+48+48+36+40+48=300",
+            "`digest_used_in_theorem_gate = False`",
+            "Cells 108N and 109N contain only their labels",
+        ):
+            self.assertIn(required, source)
+        self.assertEqual(
+            len(re.findall(r"(?m)^\| (?:[1-9]|1[0-9]|2[0-4]) \|", source)),
+            24,
+        )
+        for delimiter in (r"\(", r"\)", r"\[", r"\]"):
+            self.assertNotIn(delimiter, source)
+
+        certificate_cell = cells["code-b33b0f47"]
+        certificate_output = "\n".join(
+            "".join(output.get("text", []))
+            for output in certificate_cell.get("outputs", [])
+            if output.get("output_type") == "stream"
+        )
+        self.assertIn(
+            "Twenty-four-target spectral certificate: computed_and_certified",
+            certificate_output,
+        )
+        for terminal_id, label in (
+            ("3e8b784c", "#108N\n"),
+            ("128b5369", "#109N\n"),
+        ):
+            terminal = cells[terminal_id]
+            self.assertEqual("".join(terminal.get("source", [])), label)
+            self.assertEqual(terminal.get("outputs", []), [])
+
     def test_all_current_cell_sources_match_a_fresh_output_free_build(self) -> None:
         expected, _ = build_curated()
         self.assertEqual(len(self.notebook["cells"]), len(expected["cells"]))

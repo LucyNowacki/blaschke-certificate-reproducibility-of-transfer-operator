@@ -775,11 +775,300 @@ mathematics = '''The exact similarity $S=Q^\circ T^\circ(Q^\circ)^{-1}$ preserve
 
 [entries."bffa1d01"]
 code_cell_ids = ["ffc45508", "code-b33b0f47", "3e8b784c", "128b5369"]
-chapter_labels = ["eq:numerics-certified-lifted-moat-resolvent-bound", "eq:numerics-certified-small-gain", "legEDMD:prop-certified-Blaschke-spectral-packets", "legEDMD:cor-certified-exterior-Blaschke-spectrum"]
+chapter_labels = ["subsec:numerics-certification-provenance", "subsec:numerics-three-gauges", "subsec:numerics-schur-envelope", "eq:numerics-single-space-envelope", "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement", "legEDMD:prop-validated-exact-binary-Schur-surrogate", "legEDMD:prop-complete-circle-triangular-Schur-moat", "legEDMD:prop-complete-circle-Laurent-moat", "legEDMD:cor-Schur-count-and-Hardy-moat-transport", "eq:numerics-certified-lifted-moat-resolvent-bound", "eq:numerics-certified-small-gain", "subsec:numerics-phase2-schur", "eq:numerics-phase2-single-space-envelope", "eq:numerics-promoted-final-epsilon", "subsec:numerics-phase4-contours", "eq:numerics-phase4-hardy-gauge-matrix", "legEDMD:prop-certified-Blaschke-spectral-packets", "legEDMD:cor-certified-exterior-Blaschke-spectrum"]
 evidence_status = ["validation_test", "certified_spectral_transfer", "presentation_only"]
-mathematics = '''The adversarial tests first verify that count, moat, replacement, silent-zero, and provenance gates fail independently.  Execution Cell 107N then uses
+heading_from = "## Structural count-and-moat provenance tests"
+heading_to = "## Final auditor reading of the twenty-four-target spectral certificate"
+replace_old = "These seven lightweight adversarial checks keep the logical gates separate. They test repeated Schur diagonals with nonnormal off-diagonal structure, an intentionally incorrect expected multiplicity, a failed Schur homotopy, a failed Laurent residual, strict exclusion of the silent zero complement, logical source hashes under temporary parent paths, and small-gain reaggregation with unchanged finite geometry."
+replace_new = "Cell 106N first runs the fail-closed structural tests. Cell 107N then reconstructs and displays the theorem-facing twenty-four-contour certificate. This final Markdown cell explains every displayed field and separates the proved operator conclusion from numerical premises, diagnostics, external identifications, and provenance checks. In the stable source labels used by the notebook, Cells 108N and 109N are deliberately empty terminals."
+mathematics = '''The certificate output immediately below is emitted by execution Cell 107N.  Cells 108N and 109N contain only their labels and perform no computation; if a notebook interface visually associates the preceding output with Cell 108N, the stable source label remains Cell 107N.  This distinction matters because an auditor should attribute every numerical claim to the code that actually formed and checked it.
+
+#### Meaning of `computed_and_certified`
+
+In the stored execution, `computed` means that the complete contour route was run: the exact-dyadic Schur similarity was validated, all twenty-four Schur diagonal count attempts were made, and the seven necessary Laurent witnesses were reconstructed.  It does not mean that a printed CSV was accepted without checking its source, geometry, matrix, and perturbation-radius hashes.  `certified` means that the program reached its terminal return only after every required strict gate was true: every Schur diagonal had unambiguous inside/outside membership, every finite count survived the Schur and Hardy-matrix homotopies, every selected moat covered the complete circle, zero was outside every enclosed region, every lifted moat was positive, every small-gain upper bound was below one, no sampled singular value entered a theorem gate, and every certified count agreed with the separately supplied benchmark multiplicity.  Any failed gate raises an exception or leaves the row unpromoted.  The status is therefore a concise report of a completed computer-assisted proof chain for this fixed configuration, not a claim that all floating-point output is automatically rigorous and not a proof-assistant verification of the source code.
+
+#### How the deterministic perturbation envelope is obtained
+
+The fixed map has $\mu=0.3$ and $\alpha=(1+\mu)/2=0.65$.  The deployed finite configuration is
 $$
-\underline s_{\mathrm{lift}}=\min\{\underline s_{\Gamma,N}^{\mathrm H},d_{\Gamma,0}\},\qquad
-\widehat\varepsilon/\underline s_{\mathrm{lift}}<1
+N=600,\qquad M=610,\qquad \rho=2.725,\qquad
+r=2.473669807791324.
 $$
-to transport each finite Schur count to the exact operator's Riesz rank.  All twenty-four counts are Schur-derived; Laurent witnesses certify moats only.  The external Blaschke formula subsequently identifies the packet names and exhausts the exterior tail, so that exterior classification is a hybrid theorem-plus-external conclusion.  Cells 108N and 109N are locked no-op terminals and add no claim.'''
+Here $N$ is the trial-space dimension, $M$ is the Gauss--Legendre order, $E_\rho$ is the outer analyticity ellipse, and $X=H^2(E_r)$ is the single Hardy space in which both the deterministic error and the contour resolvent are measured.  Cell 37N and its Phase 2 geometry helper evaluate a fixed $6\times6$ design of $(\rho,q_{\mathrm{gap}})$ candidates.  Each candidate is covered on the complete boundary by $65\,536$ Arb cells at $192$-bit precision.  The selected row minimises the certified historical tail-floor upper bound within that finite design, with $q_*$ and grid order as tie-breakers; this is not a proof of a continuous global optimum.  The full-boundary branch enclosure gives
+$$
+r_\tau(\rho)\le 2.293091911822557,\qquad
+q_{\mathrm{out}}=\frac r\rho\le0.9077687368041556,
+$$
+$$
+q_{\mathrm{gap}}=\frac{r_\tau(\rho)}r\le0.927,
+\qquad q_*=\max\{q_{\mathrm{out}},q_{\mathrm{gap}}\}=0.927,
+$$
+with the certified nesting $1<r_\tau(\rho)<r<\rho$.
+
+Cell 55N forms the theorem-facing Phase 2 envelope
+$$
+\widehat\varepsilon_{N,M}^{X,\mathrm{fin,best}}
+=
+\sqrt{\left(\mathcal B_{N,\mathrm{out}}^X\right)^2+
+       \left(\mathcal B_{N,\mathrm{in}}^X\right)^2}
++\widehat\kappa_N^{X\leftrightarrow r}
+ \widehat B_{N,M}^{\mathrm{mat,best}}.
+$$
+The output term is a certified resolved-response prefactor times the analytic Legendre tail.  The input term is the smallest available certified enclosure among the coherent--branchwise intersection, the branchwise profile, and a same-geometry whole-ellipse fallback when present.  The collocation term is the smaller certified ordinary or starred pure-$r$-scaled matrix defect after transport by the finite Hardy-gauge condition bound.  Its finite-$M$ proof uses the explicit safe Gauss--Legendre remainder
+$$
+|R_M[f]|
+\le \frac{8\rho}{\rho-1}\rho^{-2M}\|f\|_{A(E_\rho)},
+$$
+so an unspecified asymptotic quadrature multiplier is not silently set to one.  Complete-boundary Arb evaluation, an exact finite Chebyshev prefix from modes $600$ through $623$, and a certified infinite remainder give
+$$
+\mathcal B_{600,\mathrm{out}}^X
+\le 2.854033852233741\times10^{-23},
+$$
+$$
+\mathcal B_{600,\mathrm{in}}^X
+\le 3.3264421486719305\times10^{-20},
+$$
+$$
+\widehat\kappa_{600}^{X\leftrightarrow r}
+\widehat B_{600,610}^{\mathrm{mat,best}}
+\le 1.087247087817943\times10^{-28}.
+$$
+Consequently the outward upper endpoint passed to every contour is
+$$
+\varepsilon_{600,610}^{\sharp}
+:=\widehat\varepsilon_{600,610}^{X,\mathrm{fin,best}}
+\le 3.326443383901743\times10^{-20}.
+$$
+The larger componentwise triangle value is retained only as an independent conservative check.  Equality of two reported upper endpoints for input candidates does not prove equality of the unknown exact norms or absence of cancellation.
+
+#### How the finite Hardy matrix and Schur constants are certified
+
+Cell 101N assembles the mathematical Hardy-gauge matrix
+$$
+A_{600,610}^{X}
+=\mathsf T_{600}(r)\mathsf D_{r,600}
+ \widehat L_{600}^{(610)}
+ \mathsf D_{r,600}^{-1}\mathsf T_{600}(r)^{-1}
+$$
+in $2048$-bit Arb arithmetic from certified Gauss nodes and weights, both inverse branches and transfer weights, Legendre recurrences, the scaled Legendre--Chebyshev connection and its inverse, and all matrix products.  It freezes the midpoint as an exact-dyadic matrix $A_{600,610}^{X,\circ}$.  If
+$$
+e_{ij}\ge
+\left|(A_{600,610}^{X})_{ij}-(A_{600,610}^{X,\circ})_{ij}\right|,
+$$
+then
+$$
+\eta_1=\max_j\sum_i e_{ij},\qquad
+\eta_\infty=\max_i\sum_j e_{ij},\qquad
+\eta_A=\sqrt{\eta_1\eta_\infty}
+$$
+certifies
+$$
+\|A_{600,610}^{X}-A_{600,610}^{X,\circ}\|_2\le\eta_A.
+$$
+The first displayed table reports the outward upper endpoint
+$$
+\eta_A\le3.387622237353990\times10^{-154}.
+$$
+Thus `mathematical_matrix_certified = True` means that the exact mathematical finite block is enclosed and its dyadic replacement error is rigorously budgeted; the binary64 display copy is not used as the mathematical matrix.
+
+The complex Schur routine proposes binary64 factors, but the proof freezes their entries as exact dyadic numbers $Q^\circ$ and $T^\circ$ and validates
+$$
+R_{\mathrm{Schur}}
+=A_{600,610}^{X,\circ}Q^\circ-Q^\circ T^\circ,
+\qquad
+\delta_Q=\|(Q^\circ)^*Q^\circ-I\|_{\mathrm F}<1.
+$$
+It then uses the certified constants
+$$
+\widehat\kappa_Q
+=\sqrt{\frac{1+\delta_Q}{1-\delta_Q}}
+\le1.0000000000000844,
+$$
+$$
+\eta_{\mathrm{Schur}}
+=\frac{\|R_{\mathrm{Schur}}\|_{\mathrm F}}
+       {\sqrt{1-\delta_Q}}
+\le1.894627504721861\times10^{-15}.
+$$
+Exact similarity with $S^\circ=Q^\circ T^\circ(Q^\circ)^{-1}$ preserves the Schur-diagonal algebraic count; $\widehat\kappa_Q$ controls coordinate distortion and $\eta_{\mathrm{Schur}}$ controls the nonzero intertwining defect.  Exact unitarity of $Q^\circ$ and exact equality $A^\circ Q^\circ=Q^\circ T^\circ$ are not assumed.
+
+#### The two complete-circle moat routes and their transport
+
+For every rational circle $\Gamma=\{c+\delta e^{i\theta}:0\le\theta\le2\pi\}$, strict Arb comparisons of the exact-dyadic Schur diagonal determine inside/outside membership.  Since $T^\circ$ is upper triangular, the number of diagonal entries inside, with repetitions, is its algebraic Riesz rank.  This is the count route for all twenty-four contours.
+
+For the first seventeen contours, the moat route uses the exact complete-circle diagonal distances
+$$
+d_i=\bigl||t_{ii}^\circ-c|-\delta\bigr|
+$$
+and certified row and column triangular recurrences.  If their maxima are $R_\infty$ and $R_1$, then
+$$
+\sup_{z\in\Gamma}\|(zI-T^\circ)^{-1}\|_2
+\le\sqrt{R_1R_\infty},
+\qquad
+\underline s_\Gamma^{\mathrm{route}}
+\ge\frac1{\sqrt{R_1R_\infty}}.
+$$
+This covers every point of the circle algebraically; it is not interpolation between sampled singular values.
+
+For the final seven contours, samples of the binary64 Schur resolvent merely propose a finite Laurent inverse
+$$
+C(w)=\sum_{k=k_-}^{k_+}C_kw^k,
+\qquad |w|=1.
+$$
+The proposed coefficient matrices are then frozen as exact dyadic matrices and the residual coefficients in
+$$
+I-C(w)\bigl((c+\delta w)I-T^\circ\bigr)
+=\sum_\ell R_\ell w^\ell
+$$
+are recomputed in Arb.  With outward upper sums
+$$
+C_\Gamma^{\mathrm F}=\sum_k\|C_k\|_{\mathrm F},
+\qquad
+\Delta_\Gamma^{\mathrm F}=\sum_\ell\|R_\ell\|_{\mathrm F}<1,
+$$
+the Neumann argument gives the complete-circle lower moat
+$$
+\underline s_\Gamma^{\mathrm{route}}
+\ge\frac{1-\Delta_\Gamma^{\mathrm F}}{C_\Gamma^{\mathrm F}}.
+$$
+The samples choose a candidate; the exact-dyadic residual sum below one is the theorem gate.  Laurent arithmetic never supplies a count.
+
+Either selected route is transported through the same chain
+$$
+\underline s_\Gamma^{\mathrm{sur}}
+=\frac{\underline s_\Gamma^{\mathrm{route}}}{\widehat\kappa_Q},
+\qquad
+\underline s_\Gamma^\circ
+=\underline s_\Gamma^{\mathrm{sur}}-\eta_{\mathrm{Schur}},
+$$
+$$
+\underline s_{\Gamma,600}^{\mathrm H}
+=\underline s_\Gamma^\circ-\eta_A.
+$$
+The two strict positivity tests certify that the Schur count survives first to $A_{600,610}^{X,\circ}$ and then to the mathematical matrix $A_{600,610}^{X}$.  The finite-rank lift is unitarily equivalent to $A_{600,610}^{X}\oplus0$, so its silent complement contributes the exact distance
+$$
+d_{\Gamma,0}=\inf_{z\in\Gamma}|z|=|c|-\delta>0
+$$
+for these positive real-centred circles.  The certified lifted moat and resolvent factor are
+$$
+\underline s_{\Gamma,600}^{\mathrm{lift}}
+=\min\{\underline s_{\Gamma,600}^{\mathrm H},d_{\Gamma,0}\},
+\qquad
+\overline{\mathfrak m}_{\Gamma,600}^{\mathrm H}
+=\frac1{\underline s_{\Gamma,600}^{\mathrm{lift}}}.
+$$
+Finally, Cell 107N evaluates the outward upper small-gain product
+$$
+g_\Gamma
+=\varepsilon_{600,610}^{\sharp}
+ \overline{\mathfrak m}_{\Gamma,600}^{\mathrm H}
+=\frac{\varepsilon_{600,610}^{\sharp}}
+       {\underline s_{\Gamma,600}^{\mathrm{lift}}}
+<1.
+$$
+The Neumann factorisation then keeps every shifted exact operator invertible along the finite-to-exact homotopy, so the exact operator and the finite lift have the same Riesz rank inside $\Gamma$.
+
+#### Row-by-row meaning of the displayed twenty-four-target table
+
+The `rank` column is only the ordering of target contours; it is not the Riesz rank.  The `schur_diagonal_algebraic_count` column is the certified rank.  Every `finite_count_certified`, `finite_count_matches_expected`, `finite_to_exact_rank_transfer_certified`, and `theorem_certified` entry is `True`.  The following are the outward displays already produced by Cell 107N; lower moats are rounded down and upper products are rounded up.
+
+| order | packet | certified count | count / moat route | lifted moat lower | small-gain upper |
+|---:|:---:|---:|:---|---:|---:|
+| 1 | $\alpha^1$ | 1 | Schur / Schur | $2.8096548\times10^{-2}$ | $1.1839332\times10^{-18}$ |
+| 2 | $\alpha^2$ | 1 | Schur / Schur | $4.2274073\times10^{-3}$ | $7.8687554\times10^{-18}$ |
+| 3 | $\mu^1$ | 2 | Schur / Schur | $9.5080077\times10^{-5}$ | $3.4985704\times10^{-16}$ |
+| 4 | $\alpha^3$ | 1 | Schur / Schur | $7.2961939\times10^{-5}$ | $4.5591488\times10^{-16}$ |
+| 5 | $\alpha^4$ | 1 | Schur / Schur | $1.9239308\times10^{-4}$ | $1.7289829\times10^{-16}$ |
+| 6 | $\alpha^5$ | 1 | Schur / Schur | $1.4351744\times10^{-5}$ | $2.3177973\times10^{-15}$ |
+| 7 | $\mu^2$ | 2 | Schur / Schur | $1.7099341\times10^{-6}$ | $1.9453635\times10^{-14}$ |
+| 8 | $\alpha^6$ | 1 | Schur / Schur | $1.4050419\times10^{-6}$ | $2.3675047\times10^{-14}$ |
+| 9 | $\alpha^7$ | 1 | Schur / Schur | $1.2436620\times10^{-6}$ | $2.6747164\times10^{-14}$ |
+| 10 | $\alpha^8$ | 1 | Schur / Schur | $4.2311480\times10^{-8}$ | $7.8617986\times10^{-13}$ |
+| 11 | $\mu^3$ | 2 | Schur / Schur | $1.5143383\times10^{-8}$ | $2.1966316\times10^{-12}$ |
+| 12 | $\alpha^9$ | 1 | Schur / Schur | $9.8766201\times10^{-9}$ | $3.3679977\times10^{-12}$ |
+| 13 | $\alpha^{10}$ | 1 | Schur / Schur | $1.8764024\times10^{-9}$ | $1.7727772\times10^{-11}$ |
+| 14 | $\alpha^{11}$ | 1 | Schur / Schur | $1.1661969\times10^{-11}$ | $2.8523857\times10^{-9}$ |
+| 15 | $\mu^4$ | 2 | Schur / Schur | $6.8100554\times10^{-12}$ | $4.8846055\times10^{-9}$ |
+| 16 | $\alpha^{12}$ | 1 | Schur / Schur | $1.2016682\times10^{-11}$ | $2.7681877\times10^{-9}$ |
+| 17 | $\alpha^{13}$ | 1 | Schur / Schur | $3.8888748\times10^{-13}$ | $8.5537426\times10^{-8}$ |
+| 18 | $\mu^5$ | 2 | Schur / Laurent | $2.1423514\times10^{-13}$ | $1.5527067\times10^{-7}$ |
+| 19 | $\alpha^{14}$ | 1 | Schur / Laurent | $1.6551087\times10^{-13}$ | $2.0098035\times10^{-7}$ |
+| 20 | $\alpha^{15}$ | 1 | Schur / Laurent | $3.3600004\times10^{-11}$ | $9.9001277\times10^{-10}$ |
+| 21 | $\alpha^{16}$ | 1 | Schur / Laurent | $4.2857358\times10^{-12}$ | $7.7616622\times10^{-9}$ |
+| 22 | $\mu^6$ | 2 | Schur / Laurent | $1.8096240\times10^{-13}$ | $1.8381959\times10^{-7}$ |
+| 23 | $\alpha^{17}$ | 1 | Schur / Laurent | $1.6361202\times10^{-13}$ | $2.0331290\times10^{-7}$ |
+| 24 | $\alpha^{18}$ | 1 | Schur / Laurent | $3.7774649\times10^{-13}$ | $8.8060206\times10^{-8}$ |
+
+There are eighteen simple $\alpha$ rows and six multiplicity-two $\mu$ rows, hence
+$$
+18\cdot1+6\cdot2=30.
+$$
+All twenty-four counts are Schur-derived.  Seventeen rows use a triangular Schur moat and seven use a Laurent moat.  The smallest certified lifted lower bound occurs at $\alpha^{17}$ and its outward-safe sixteen-significant-digit display is
+$$
+\min_j\underline s_{\Gamma_j,600}^{\mathrm{lift}}
+\ge1.636120221822047\times10^{-13}.
+$$
+Because the same perturbation upper bound is used for every row, $\alpha^{17}$ also has the largest small-gain endpoint.  The retained execution line reads
+$$
+\text{stored Cell 107N display}
+=2.033128947087571\times10^{-7}.
+$$
+That number is the historical display requested and shown above, but it must not be silently promoted to the current-source outward endpoint.  The source-controlled reaggregated CSV now stores
+$$
+g_{\Gamma_{\alpha^{17}}}^{\mathrm{CSV}}
+=2.0331289470875723\times10^{-7},
+$$
+whose sixteen-significant-digit ceiling is
+$$
+\max_j g_{\Gamma_j}
+\le2.033128947087573\times10^{-7}<1.
+$$
+Thus the historical display differs by two units in its last shown decimal place from the current-source safe display.  This is a display/provenance drift, not a theorem-gate failure: the full stored upper endpoint remains strictly below one by more than six orders of magnitude.  The moat statement concerns the minimum of certified lower bounds and the gain statement concerns the maximum of certified upper bounds; neither asserts an attained exact singular-value extremum.
+
+#### Why lower displays round down and upper displays round up
+
+A certified lower endpoint remains safe only when its decimal display is no larger than the underlying lower bound; therefore `_directional_endpoint_text(..., bound="lower")` uses decimal floor rounding.  A certified upper endpoint remains safe only when its display is no smaller than the underlying upper bound; therefore the upper route uses decimal ceiling rounding.  Ordinary round-to-nearest could cross the certified endpoint and turn a safe displayed inequality into an unjustified one.  The eight-significant-digit per-row columns and the minimum-moat aggregate obey this rule.  For the maximum-gain aggregate, the retained `2.033128947087571e-7` line is explicitly historical; the current CSV requires the corrected outward display `2.033128947087573e-7`.
+
+#### Laurent source reconstruction and the exact meaning of provenance-only
+
+The seven Laurent proposal sizes are $44,36,48,48,36,40,48$ for $\mu^5,\alpha^{14},\alpha^{15},\alpha^{16},\mu^6,\alpha^{17},\alpha^{18}$.  Their sum is
+$$
+44+36+48+48+36+40+48=300.
+$$
+Each proposal produces that many $600\times600$ coefficient matrices.  They are transient because they are reconstructed during the recorded run, frozen and validated as exact dyadic candidates, used to form the rigorous coefficient and residual sums, and then represented by compact witness records rather than required as pre-existing tensor inputs.
+
+For each witness, `coefficient_sha256` is also compared with a historical reference digest.  `Historical Laurent tensor digest parity: all seven` means that all seven reconstructed byte sequences equal those recorded earlier.  This is a chain-of-custody and reproducibility fact only.  The theorem gate uses
+$$
+\Delta_\Gamma^{\mathrm F}<1,
+\qquad
+\underline s_\Gamma^{\mathrm{route}}
+\ge\frac{1-\Delta_\Gamma^{\mathrm F}}{C_\Gamma^{\mathrm F}},
+$$
+together with the Schur count, the two matrix transports, the zero-block distance and small gain.  It never uses the proposition `new digest = historical digest`.  Consequently:
+
+- a matching digest with a failed exact-dyadic residual or failed small-gain inequality would not certify the theorem;
+- a different newly reconstructed digest could still certify the theorem if its exact-dyadic coefficients passed every mathematical gate, although historical reproducibility would then fail;
+- the code records `digest_used_in_theorem_gate = False` and tests that no digest flag can enter `theorem_certified`.
+
+That is the precise meaning of `provenance-only, not a theorem gate`.
+
+#### What is proved, what is hybrid, and what is not proved
+
+**Proved at theorem level.**  The chapter proves the general implications: exact-dyadic Schur membership gives the finite algebraic count; either complete-circle route gives a resolvent moat; positive Schur and matrix-replacement margins transport the count to the mathematical Hardy block; the silent zero block changes the lifted moat to the minimum with $d_{\Gamma,0}$; and strict small gain transports the finite Riesz rank to the exact operator.
+
+**Certified numerically for this fixed run.**  Arb and exact-dyadic arithmetic verify every premise of that chain for $\mu=0.3$, $N=600$, $M=610$, the displayed $(\rho,r)$, and the twenty-four fixed pairwise-disjoint rational circles.  The numerical certificate therefore supplies computer-assisted proof, within the mathematical model and stated implementation assumptions, that
+$$
+\operatorname{rank}\Pi_{\Gamma_j}(\mathcal L)=1
+\quad\hbox{for }\alpha^j, 1\le j\le18,
+$$
+$$
+\operatorname{rank}\Pi_{\Gamma_j}(\mathcal L)=2
+\quad\hbox{for }\mu^j, 1\le j\le6,
+$$
+and that the twenty-four disjoint nonzero contours contain total algebraic multiplicity $30$.
+
+**Hybrid rather than purely numerical.**  The local contour proof establishes ranks inside the fixed circles.  Identifying the enclosed exact spectral points with the names $\alpha^j$ and $\mu^j$, adding the exact simple eigenvalue $1$, and proving that every remaining nonzero point lies inside the $\alpha^{19}$ tail threshold use the external exact Blaschke spectral formula and compactness theory.  Thus the exterior classification is theorem plus external spectral identification, not an output of the contour arithmetic alone.
+
+**Not proved by this output.**  It does not prove that a sampled minimum is a complete-contour lower bound; sampled profiles and progress messages are diagnostic.  It does not compute the exact singular-value minima or show that the certified bounds are sharp.  It does not prove continuous global optimality of $(\rho,r)$ beyond the fixed certified design.  It does not derive the exact packet centres or the entire infinite spectrum from finite numerics alone.  It does not prove an asymptotic convergence rate from the single $N=600$ row.  It does not prove equality of unknown exact candidate norms merely because two upper endpoints agree.  Finally, digest parity authenticates historical candidate bytes but proves no invertibility, moat, count, or Riesz-rank statement.
+
+The seven adversarial checks in Cell 106N support this separation by forcing count, moat, Schur replacement, Hardy replacement, silent-zero, source-provenance, and small-gain failures independently.  They test that the implementation fails closed; they do not replace the mathematical propositions or the certified arithmetic performed by Cell 107N.  This Markdown explanation likewise interprets the retained certificate and does not itself add a theorem gate.'''
