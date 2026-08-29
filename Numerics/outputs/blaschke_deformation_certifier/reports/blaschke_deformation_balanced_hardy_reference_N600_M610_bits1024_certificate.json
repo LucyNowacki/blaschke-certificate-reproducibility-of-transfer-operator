@@ -29,7 +29,7 @@
   "maximum_gauss_node_radius_upper": 5.562684656629316e-309,
   "maximum_branch_radius_upper": 2.3036693125758855e-308,
   "minimum_gauss_weight_lower": 1.991021315204707e-05,
-  "assembly_seconds": 6.006212472915649,
+  "assembly_seconds": 5.836709022521973,
   "eta_A_upper": 6.164391613063899e+154,
   "eta_A_upper_text": "6.16439161306389707549402837261970073067652332376659161417289285266726004455464181500099211981484841778461209463336877752e+154",
   "norm_one_upper": 4.771377485603652e+154,
@@ -46,11 +46,11 @@
   "source_hashes": {
     "blaschke_deformation_spectral_certification.py": "25734219103111e746f078618d34ea0e3610aca4c55f399eeda737f750ac556d"
   },
-  "payload_sha256": "c4ccbd27959b2cf6e9107c234dba867cf2623939f4754c56050d132be72c23ab",
-  "payload_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024.pkl.gz",
-  "midpoint_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_diagnostic_midpoint.npz",
-  "summary_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.csv",
-  "report_path": "/home/lucy/Documents/E.L.U.K_0/Final Deployment/Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.json",
-  "elapsed_seconds": 7.133288145065308,
+  "payload_sha256": "918915e86147e4261c41eb52038195ed2abd672408f4b67fc6079dda90fb416a",
+  "payload_path": "/tmp/blaschke-final-repro-clean-20260828/Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024.pkl.gz",
+  "midpoint_path": "/tmp/blaschke-final-repro-clean-20260828/Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_diagnostic_midpoint.npz",
+  "summary_path": "/tmp/blaschke-final-repro-clean-20260828/Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.csv",
+  "report_path": "/tmp/blaschke-final-repro-clean-20260828/Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.json",
+  "elapsed_seconds": 6.932912111282349,
   "status": "interval-certified mathematical Hardy block with exact-dyadic midpoint"
 }

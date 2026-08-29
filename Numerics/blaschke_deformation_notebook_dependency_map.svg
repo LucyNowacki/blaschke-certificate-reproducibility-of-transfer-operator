@@ -1,0 +1,244 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1900" width="100%" role="img" aria-labelledby="dependency-map-title dependency-map-description">
+  <title id="dependency-map-title">Dependency graph for the Blaschke deformation thesis certifier</title>
+  <desc id="dependency-map-description">The graph connects the notebook build chain, setup cells, four numerical phases, inline helper modules, persisted datasets, diagnostics, theorem-facing matrix and contour certificates, and reproducibility checks.</desc>
+  <defs>
+    <marker id="arrow-solid" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arrow-theorem" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#6d28d9"/>
+    </marker>
+    <marker id="arrow-diagnostic" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#b45309"/>
+    </marker>
+    <marker id="arrow-provenance" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .dep-frame { fill:#f8fafc; stroke:#64748b; stroke-width:2; }
+      .dep-band { fill:#ffffff; stroke:#94a3b8; stroke-width:2; }
+      .dep-setup { fill:#eff6ff; stroke:#2563eb; stroke-width:2; }
+      .dep-phase1 { fill:#eef6ff; stroke:#1d4ed8; stroke-width:2; }
+      .dep-phase2 { fill:#ecfdf5; stroke:#047857; stroke-width:2; }
+      .dep-phase3 { fill:#fffbeb; stroke:#b45309; stroke-width:2; }
+      .dep-diagnostic { fill:#fff7ed; stroke:#c2410c; stroke-width:2; stroke-dasharray:9 6; }
+      .dep-theorem { fill:#f5f3ff; stroke:#6d28d9; stroke-width:3; }
+      .dep-result { fill:#fdf2f8; stroke:#be185d; stroke-width:3; }
+      .dep-data { fill:#f8fafc; stroke:#64748b; stroke-width:1.7; }
+      .dep-cell { fill:#ffffff; stroke:#64748b; stroke-width:1.4; }
+      .dep-title { font-family:system-ui,sans-serif; font-size:24px; font-weight:700; fill:#0f172a; }
+      .dep-section { font-family:system-ui,sans-serif; font-size:21px; font-weight:700; fill:#0f172a; }
+      .dep-label { font-family:system-ui,sans-serif; font-size:17px; font-weight:700; fill:#0f172a; }
+      .dep-text { font-family:system-ui,sans-serif; font-size:15px; fill:#1e293b; }
+      .dep-small { font-family:system-ui,sans-serif; font-size:15px; fill:#334155; }
+      .dep-micro { font-family:system-ui,sans-serif; font-size:13px; fill:#475569; }
+      .dep-blue { fill:#1d4ed8; }
+      .dep-green { fill:#047857; }
+      .dep-amber { fill:#b45309; }
+      .dep-purple { fill:#6d28d9; }
+      .dep-magenta { fill:#be185d; }
+      .dep-solid { fill:none; stroke:#1d4ed8; stroke-width:3; marker-end:url(#arrow-solid); }
+      .dep-theorem-arrow { fill:none; stroke:#6d28d9; stroke-width:3.2; marker-end:url(#arrow-theorem); }
+      .dep-diagnostic-arrow { fill:none; stroke:#b45309; stroke-width:2.7; stroke-dasharray:9 6; marker-end:url(#arrow-diagnostic); }
+      .dep-provenance-arrow { fill:none; stroke:#64748b; stroke-width:2.4; stroke-dasharray:3 6; marker-end:url(#arrow-provenance); }
+    </style>
+  </defs>
+
+  <rect class="dep-frame" x="15" y="15" width="1570" height="1870" rx="10"/>
+  <text class="dep-title" x="45" y="53">Effective cell, helper and dataset dependency graph</text>
+  <line class="dep-solid" x1="760" y1="47" x2="820" y2="47"/>
+  <text class="dep-small" x="830" y="52">theorem or data</text>
+  <line class="dep-diagnostic-arrow" x1="1030" y1="47" x2="1090" y2="47"/>
+  <text class="dep-small" x="1100" y="52">diagnostic only</text>
+  <line class="dep-provenance-arrow" x1="1300" y1="47" x2="1360" y2="47"/>
+  <text class="dep-small" x="1370" y="52">build or provenance</text>
+
+  <rect class="dep-band" x="40" y="78" width="1515" height="165" rx="8"/>
+  <text class="dep-section" x="60" y="108">Reproducibility envelope</text>
+  <rect class="dep-data" x="60" y="125" width="310" height="92" rx="6"/>
+  <text class="dep-label" x="78" y="151">Locked notebook sources</text>
+  <text class="dep-small" x="78" y="176">certifier_template.ipynb</text>
+  <text class="dep-small" x="78" y="198">certifier.ipynb</text>
+  <rect class="dep-data" x="420" y="125" width="420" height="92" rx="6"/>
+  <text class="dep-label" x="438" y="151">Builder and curation contracts</text>
+  <text class="dep-small" x="438" y="176">build_*_thesis_math_notebook.py</text>
+  <text class="dep-small" x="438" y="198">dependency-map source, provenance and plotting maps</text>
+  <rect class="dep-data" x="890" y="125" width="300" height="92" rx="6"/>
+  <text class="dep-label" x="908" y="151">Executed final notebook</text>
+  <text class="dep-small" x="908" y="176">Cell 0M plus inherited Cells 1M--109N</text>
+  <text class="dep-small" x="908" y="198">140 cells; 68 code cells; 18 inline helpers</text>
+  <rect class="dep-data" x="1240" y="125" width="295" height="92" rx="6"/>
+  <text class="dep-label" x="1258" y="151">Locks and verification</text>
+  <text class="dep-small" x="1258" y="176">conda and pip locks; focused tests</text>
+  <text class="dep-small" x="1258" y="198">MANIFEST.sha256; archive verifier</text>
+  <path class="dep-provenance-arrow" d="M370 171 H415"/>
+  <path class="dep-provenance-arrow" d="M840 171 H885"/>
+  <path class="dep-provenance-arrow" d="M1240 171 H1195"/>
+
+  <rect class="dep-setup" x="40" y="270" width="1515" height="145" rx="7"/>
+  <text class="dep-section dep-blue" x="60" y="301">Setup and benchmark lock: Cells 1M--12N</text>
+  <rect class="dep-cell" x="60" y="318" width="430" height="72" rx="5"/>
+  <text class="dep-label" x="78" y="344">Scope, Perron--Frobenius convention and phases</text>
+  <text class="dep-small" x="78" y="368">Cells 1M--4M; map label blaschke_mu_0p3</text>
+  <rect class="dep-cell" x="535" y="318" width="420" height="72" rx="5"/>
+  <text class="dep-label" x="553" y="344">Imports, paths and fixed configuration</text>
+  <text class="dep-small" x="553" y="368">Cells 5N--10M; plotting.py is presentation only</text>
+  <rect class="dep-cell" x="1000" y="318" width="535" height="72" rx="5"/>
+  <text class="dep-label" x="1018" y="344">Executable inline-module bootstrap</text>
+  <text class="dep-small" x="1018" y="368">Cells 11M--12N install visible helper source by SHA-256</text>
+  <path class="dep-provenance-arrow" d="M1040 217 V265"/>
+
+  <rect class="dep-phase1" x="40" y="445" width="1515" height="220" rx="7"/>
+  <text class="dep-section dep-blue" x="60" y="478">Phase 1: raw Legendre--Gauss transfer spectra, Cells 13M--35N</text>
+  <rect class="dep-cell" x="60" y="498" width="355" height="130" rx="5"/>
+  <text class="dep-label" x="78" y="524">Inline mathematical helper</text>
+  <text class="dep-small" x="78" y="550">Cells 13M--14N</text>
+  <text class="dep-small" x="78" y="574">mpmath_pf_raw.py</text>
+  <text class="dep-micro" x="78" y="600">inverse branches, transfer weights and</text>
+  <text class="dep-micro" x="78" y="620">Legendre--Gauss block assembly</text>
+  <rect class="dep-cell" x="455" y="498" width="555" height="130" rx="5"/>
+  <text class="dep-label" x="473" y="524">Computational chain</text>
+  <text class="dep-small" x="473" y="550">15N--21N: map, exact targets and branch geometry</text>
+  <text class="dep-small" x="473" y="574">24N--30N: N and M sweeps, matching and heatmaps</text>
+  <text class="dep-small" x="473" y="598">30AN helper; 30BN recreates retained Phase 1 data</text>
+  <text class="dep-micro" x="473" y="620">31N--35N present diagnostics, selected row and gauges.</text>
+  <rect class="dep-data" x="1050" y="498" width="485" height="130" rx="6"/>
+  <text class="dep-label" x="1068" y="524">Persisted Phase 1 datasets</text>
+  <text class="dep-small" x="1068" y="550">raw_spectrum_square_N_sweep*.csv and parquet</text>
+  <text class="dep-small" x="1068" y="574">phase1_eigencloud_*.csv and parquet</text>
+  <text class="dep-small" x="1068" y="598">phase1_raw_NM_heatmap_data_near_square.*</text>
+  <text class="dep-micro" x="1068" y="620">plus Phase 1 figures under outputs/.../figures</text>
+  <path class="dep-solid" d="M415 563 H450"/>
+  <path class="dep-solid" d="M1010 563 H1045"/>
+  <path class="dep-solid" d="M760 415 V440"/>
+
+  <rect class="dep-phase2" x="40" y="695" width="1515" height="470" rx="7"/>
+  <text class="dep-section dep-green" x="60" y="728">Phase 2: clean-room single-space deterministic certificate, Cells 35AM--64M</text>
+  <rect class="dep-cell" x="60" y="750" width="365" height="330" rx="5"/>
+  <text class="dep-label" x="78" y="778">Inline helper stack</text>
+  <text class="dep-small" x="78" y="802">35AN  phase2_geometry.py</text>
+  <text class="dep-small" x="78" y="826">35BN  phase2_transport.py</text>
+  <text class="dep-small" x="78" y="850">35CN  phase2_matrix.py</text>
+  <text class="dep-small" x="78" y="874">35DN  phase2_pipeline.py</text>
+  <text class="dep-small" x="78" y="898">48AN  phase2_finite_m.py</text>
+  <text class="dep-small" x="78" y="922">52AN  phase2_resolved_response.py</text>
+  <text class="dep-small" x="78" y="946">54AN  phase2_final_aggregation.py</text>
+  <text class="dep-small" x="78" y="970">52N   deformation_certification.py</text>
+  <text class="dep-micro dep-amber" x="78" y="998">35EN historical comparisons are diagnostic.</text>
+  <text class="dep-micro" x="78" y="1022">All theorem-facing helper source is visible,</text>
+  <text class="dep-micro" x="78" y="1046">standalone, output-root explicit and digest checked.</text>
+
+  <rect class="dep-cell" x="455" y="750" width="620" height="330" rx="5"/>
+  <text class="dep-label" x="473" y="778">Theorem-facing cell dependency</text>
+  <rect class="dep-phase2" x="475" y="798" width="175" height="54" rx="5"/>
+  <text class="dep-small" x="493" y="821">37N producer</text>
+  <text class="dep-micro" x="493" y="841">clean-room inputs</text>
+  <rect class="dep-phase2" x="685" y="798" width="175" height="54" rx="5"/>
+  <text class="dep-small" x="703" y="821">39N--43N</text>
+  <text class="dep-micro" x="703" y="841">geometry and kernel</text>
+  <rect class="dep-phase2" x="895" y="798" width="160" height="54" rx="5"/>
+  <text class="dep-small" x="913" y="821">49N Cell 24A</text>
+  <text class="dep-micro" x="913" y="841">finite-M helper wrapper</text>
+  <path class="dep-solid" d="M650 825 H680"/>
+  <path class="dep-solid" d="M860 825 H890"/>
+  <rect class="dep-phase2" x="475" y="888" width="175" height="62" rx="5"/>
+  <text class="dep-small" x="493" y="912">54N Cell 24B</text>
+  <text class="dep-micro" x="493" y="934">resolved-response helper</text>
+  <rect class="dep-phase2" x="685" y="888" width="175" height="62" rx="5"/>
+  <text class="dep-small" x="703" y="912">55N Cell 24C</text>
+  <text class="dep-micro" x="703" y="934">input plus final aggregation</text>
+  <rect class="dep-phase2" x="895" y="888" width="160" height="62" rx="5"/>
+  <text class="dep-small" x="913" y="912">59N output</text>
+  <text class="dep-micro" x="913" y="934">analytic leakage</text>
+  <path class="dep-solid" d="M975 852 V883"/>
+  <path class="dep-solid" d="M772 852 V883"/>
+  <path class="dep-solid" d="M562 852 V883"/>
+  <text class="dep-micro dep-green" x="650" y="874">persisted CSV and JSON stage boundaries</text>
+  <rect class="dep-theorem" x="550" y="990" width="390" height="68" rx="6"/>
+  <text class="dep-label dep-purple" x="568" y="1017">61N components to 63N promoted row</text>
+  <text class="dep-small" x="568" y="1041">root-sum-square leakages plus matrix term</text>
+  <path class="dep-theorem-arrow" d="M562 950 V985"/>
+  <path class="dep-theorem-arrow" d="M772 950 V985"/>
+  <path class="dep-theorem-arrow" d="M975 950 C975 973 940 981 930 990"/>
+
+  <rect class="dep-data" x="1110" y="750" width="425" height="330" rx="6"/>
+  <text class="dep-label" x="1128" y="778">Principal Phase 2 artefacts</text>
+  <text class="dep-micro" x="1128" y="805">radius_reoptimisation_balanced_highcell_scan.csv</text>
+  <text class="dep-micro" x="1128" y="829">balanced_candidate_transport_cert_N600.csv</text>
+  <text class="dep-micro" x="1128" y="853">transport_inverse_witness_N600.npz</text>
+  <text class="dep-micro" x="1128" y="877">candidate_single_space_row_N600_M610_safe_GL.csv</text>
+  <text class="dep-micro" x="1128" y="901">output_response_*_balanced_N600.csv</text>
+  <text class="dep-micro" x="1128" y="925">input_tail_certificate_N600.csv</text>
+  <text class="dep-micro" x="1128" y="949">balanced_response_prefactor_candidate_row_*.csv</text>
+  <text class="dep-micro" x="1128" y="973">phase2_certified_single_space_row_N600_M610.csv</text>
+  <text class="dep-micro" x="1128" y="1010">Cells 24A--24C share this explicit output root;</text>
+  <text class="dep-micro" x="1128" y="1032">no private notebook state crosses a stage boundary.</text>
+  <text class="dep-micro dep-amber" x="1128" y="1060">Figures are presentation outputs, never theorem inputs.</text>
+  <path class="dep-solid" d="M425 915 H450"/>
+  <path class="dep-theorem-arrow" d="M1075 1023 H1105"/>
+  <path class="dep-solid" d="M760 665 V690"/>
+
+  <rect class="dep-phase3" x="40" y="1195" width="1515" height="190" rx="7"/>
+  <text class="dep-section dep-amber" x="60" y="1228">Phase 3: empirical rates versus deterministic components, Cells 65M--75N</text>
+  <rect class="dep-cell" x="60" y="1248" width="450" height="100" rx="5"/>
+  <text class="dep-label" x="78" y="1274">Inputs</text>
+  <text class="dep-small" x="78" y="1299">Phase 1 raw spectral error tables</text>
+  <text class="dep-small" x="78" y="1324">Phase 2 certified row and geometric bases</text>
+  <rect class="dep-cell" x="555" y="1248" width="430" height="100" rx="5"/>
+  <text class="dep-label" x="573" y="1274">Cells 67N--75N</text>
+  <text class="dep-small" x="573" y="1299">fitted bases, component comparisons and bridge plots</text>
+  <text class="dep-micro dep-amber" x="573" y="1324">diagnostic extrapolations are not operator certificates</text>
+  <rect class="dep-data" x="1030" y="1248" width="505" height="100" rx="6"/>
+  <text class="dep-label" x="1048" y="1274">Phase 3 products</text>
+  <text class="dep-small" x="1048" y="1299">branch_image_phase3_*.csv</text>
+  <text class="dep-small" x="1048" y="1324">rate and empirical--deterministic figures</text>
+  <path class="dep-diagnostic-arrow" d="M510 1298 H550"/>
+  <path class="dep-diagnostic-arrow" d="M985 1298 H1025"/>
+  <path class="dep-diagnostic-arrow" d="M765 1165 V1190"/>
+
+  <rect class="dep-band" x="40" y="1415" width="1515" height="360" rx="8"/>
+  <text class="dep-section" x="60" y="1448">Phase 4: sampled diagnostics and theorem-facing contour certification</text>
+  <rect class="dep-diagnostic" x="60" y="1470" width="505" height="270" rx="7"/>
+  <text class="dep-label dep-amber" x="78" y="1498">Diagnostic-only branch, Cells 78AM--97N</text>
+  <text class="dep-small" x="78" y="1525">78AN  hardy_moat_surface_worker.py</text>
+  <text class="dep-small" x="78" y="1550">78BN  historical_phase4.py</text>
+  <text class="dep-small" x="78" y="1575">78N--92N sampled first-fifteen moat surfaces</text>
+  <text class="dep-small" x="78" y="1600">94AN helper; 94BN recreates sampled Schur rows</text>
+  <text class="dep-micro" x="78" y="1635">95AN diagnostic_audits.py; 95N and 97N audit views</text>
+  <text class="dep-micro" x="78" y="1658">Consumes source-generated rows and sampled profiles.</text>
+  <text class="dep-micro" x="78" y="1681">Writes diagnostic datasets, figures and rebuild reports.</text>
+  <text class="dep-micro dep-amber" x="78" y="1713">No sampled value enters a theorem gate.</text>
+
+  <rect class="dep-theorem" x="610" y="1470" width="925" height="270" rx="7"/>
+  <text class="dep-label dep-purple" x="628" y="1498">Certified branch, Cells 98M--107N</text>
+  <rect class="dep-cell" x="630" y="1520" width="245" height="86" rx="5"/>
+  <text class="dep-small" x="648" y="1545">100N spectral helper</text>
+  <text class="dep-micro" x="648" y="1568">spectral_certification.py</text>
+  <text class="dep-micro" x="648" y="1590">exact-dyadic matrix balls</text>
+  <rect class="dep-theorem" x="905" y="1520" width="260" height="86" rx="6"/>
+  <text class="dep-small" x="923" y="1545">101N Hardy matrix gate</text>
+  <text class="dep-micro" x="923" y="1568">1024 and 2048 bit enclosures</text>
+  <text class="dep-micro" x="923" y="1590">consumes Phase 2 epsilon row</text>
+  <rect class="dep-cell" x="1195" y="1520" width="320" height="86" rx="5"/>
+  <text class="dep-small" x="1213" y="1545">104N contour helper</text>
+  <text class="dep-micro" x="1213" y="1568">contour_certification.py</text>
+  <text class="dep-micro" x="1213" y="1590">Schur counts and Laurent moats</text>
+  <path class="dep-theorem-arrow" d="M875 1563 H900"/>
+  <path class="dep-theorem-arrow" d="M1165 1563 H1190"/>
+  <rect class="dep-cell" x="630" y="1640" width="245" height="72" rx="5"/>
+  <text class="dep-small" x="648" y="1666">106N structural tests</text>
+  <text class="dep-micro" x="648" y="1689">count, moat and provenance failures</text>
+  <rect class="dep-result" x="905" y="1632" width="610" height="86" rx="6"/>
+  <text class="dep-label dep-magenta" x="923" y="1658">107N final 24-contour certificate</text>
+  <text class="dep-small" x="923" y="1683">24 Schur counts; 17 Schur moats; 7 Laurent moats</text>
+  <text class="dep-small" x="923" y="1706">total certified algebraic multiplicity 30</text>
+  <path class="dep-theorem-arrow" d="M875 1676 H900"/>
+  <path class="dep-theorem-arrow" d="M1355 1606 V1627"/>
+  <path class="dep-diagnostic-arrow" d="M760 1385 C520 1400 320 1420 300 1465"/>
+  <path class="dep-theorem-arrow" d="M1320 1080 C1500 1190 1510 1370 1390 1465"/>
+  <path class="dep-theorem-arrow" d="M1290 628 C1540 750 1545 1310 1280 1465"/>
+
+  <rect class="dep-result" x="180" y="1802" width="1240" height="56" rx="7"/>
+  <text class="dep-label dep-magenta" x="210" y="1836">Certified conclusion: N=600, M=610; 24 nontrivial Riesz packets; algebraic multiplicity 30</text>
+  <path class="dep-theorem-arrow" d="M1210 1740 C1210 1770 1110 1787 1090 1798"/>
+</svg>

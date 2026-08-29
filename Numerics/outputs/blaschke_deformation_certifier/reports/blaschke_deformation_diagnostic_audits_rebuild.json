@@ -1,0 +1,226 @@
+{
+  "checks": {
+    "map_lock": true,
+    "sampled_claims_remain_diagnostic": true,
+    "sampled_schur_N": [
+      30,
+      40,
+      50,
+      60,
+      80,
+      100
+    ],
+    "schema_alignment": true,
+    "target_alignment": true,
+    "target_count": 14,
+    "target_names": [
+      "alpha^1",
+      "alpha^2",
+      "mu^1",
+      "alpha^3",
+      "alpha^4",
+      "alpha^5",
+      "mu^2",
+      "alpha^6",
+      "alpha^7",
+      "alpha^8",
+      "mu^3",
+      "alpha^9",
+      "alpha^10",
+      "alpha^11"
+    ]
+  },
+  "diagnostic_only": true,
+  "diagnostic_status": "retained sampled comparison audits; not inputs to theorem gates",
+  "inputs": {
+    "geometry": {
+      "columns": [
+        "map_label",
+        "rho",
+        "r_tau_sampled",
+        "r_target",
+        "Phi_sampled",
+        "Phi_star_sampled",
+        "q_out",
+        "q_gap",
+        "q_star",
+        "admissible_sampled",
+        "geometry_status",
+        "method"
+      ],
+      "kind": "explicit_generated_path",
+      "path": "Numerics/outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_active_geometry.csv",
+      "rows": 1,
+      "sha256": "67b59a437d3d7403a538be45acc6b29e2ca17e6cc4f11d857afedc6fff7934e4"
+    },
+    "moat_rows": {
+      "columns": [
+        "rank",
+        "target",
+        "centre",
+        "expected_multiplicity",
+        "radius",
+        "finite_eigenvalue_count",
+        "cluster_radius",
+        "nearest_outside_distance",
+        "radius_status",
+        "s_min_gamma",
+        "theta_min",
+        "d_Gamma0",
+        "m_gamma_X",
+        "epsilon_X",
+        "epsilon_m_gamma",
+        "pass_sampled_small_gain",
+        "selected_count",
+        "selected_eigenvalues",
+        "max_numeric_error",
+        "pass_sampled_packet",
+        "family",
+        "count_ok",
+        "sampled_validation_pass",
+        "contour_interval_certified",
+        "validation_status",
+        "diagnostic_status",
+        "configuration_digest",
+        "source_digest",
+        "cache_key"
+      ],
+      "kind": "explicit_generated_path",
+      "path": "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv",
+      "rows": 15,
+      "sha256": "1185ac9a89f111fda27a568ec8acdade3abcaaa3e2085fd1e5da0b785ce3b7d2"
+    },
+    "schur_rows": {
+      "columns": [
+        "map_label",
+        "N",
+        "M",
+        "rho",
+        "r_tau_sampled",
+        "r",
+        "q_out",
+        "q_gap",
+        "q_star",
+        "Phi_sampled",
+        "B_out_diagnostic",
+        "B_in_diagnostic",
+        "Bmat_D_M_set_to_1",
+        "kappa_T_diagnostic",
+        "transported_Bmat_diagnostic",
+        "epsilon_schur_diagnostic",
+        "status",
+        "geometry_status"
+      ],
+      "kind": "explicit_generated_path",
+      "path": "Numerics/outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_generic_sampled_schur_envelope.csv",
+      "rows": 6,
+      "sha256": "91acd7bc1def5de61c10774cb196633a82fe05b595c9ee769c6d1d87c361f5ed"
+    },
+    "targets": {
+      "columns": [
+        "target_rank",
+        "map_label",
+        "target_mode",
+        "name",
+        "family",
+        "power",
+        "multiplicity",
+        "target",
+        "target_float",
+        "target_real_float",
+        "target_imag_float",
+        "target_abs_float"
+      ],
+      "kind": "explicit_generated_path",
+      "path": "Numerics/outputs/blaschke_deformation_certifier/data/raw_spectrum_square_N_sweep_extended_targets.csv",
+      "rows": 24,
+      "sha256": "ab12ff94fb800ae68e9457b8851314afb2a1b1a466335a3f621383c2dfa31dd1"
+    }
+  },
+  "legacy_seed_dependency": false,
+  "map_label": "blaschke_mu_0p3",
+  "outputs": {
+    "transfer_lab_blaschke_mu_0p3_first14_packet_audit.csv": {
+      "columns": [
+        "name",
+        "family_packet",
+        "power",
+        "multiplicity_packet",
+        "packet_centre",
+        "target_mode",
+        "rank",
+        "target",
+        "centre",
+        "multiplicity_moat",
+        "radius",
+        "finite_eigenvalue_count",
+        "cluster_radius",
+        "nearest_outside_distance",
+        "radius_status",
+        "s_gamma_H",
+        "theta_min",
+        "d_Gamma0",
+        "m_gamma_X",
+        "epsilon_X",
+        "epsilon_m_gamma",
+        "pass_sampled_small_gain",
+        "selected_count",
+        "selected_eigenvalues",
+        "max_numeric_error",
+        "pass_sampled_packet",
+        "family_moat",
+        "count_ok",
+        "sampled_validation_pass",
+        "contour_interval_certified",
+        "validation_status",
+        "small_gain_diagnostic",
+        "target_identity_status",
+        "finite_section_status",
+        "contour_role",
+        "finite_count_certified",
+        "finite_count_matches",
+        "sampled_small_gain_pass",
+        "small_gain_pass",
+        "certified_small_gain_pass",
+        "riesz_rank_status"
+      ],
+      "diagnostic_only": true,
+      "path": "Numerics/outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_first14_packet_audit.csv",
+      "rows": 14,
+      "sha256": "474de6ac978badad87cdd1ca975d04ba51cc94d60eba4b846d7ba36405a9002b"
+    },
+    "transfer_lab_blaschke_mu_0p3_universal_certification_audit.csv": {
+      "columns": [
+        "map_label",
+        "audit_item",
+        "status",
+        "evidence"
+      ],
+      "diagnostic_only": true,
+      "path": "Numerics/outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_universal_certification_audit.csv",
+      "rows": 7,
+      "sha256": "37a5da4c04ac911bddeb98bd7484e412da556da7ccb9e2888283af98c2737088"
+    }
+  },
+  "producer_schema": "blaschke-deformation-diagnostic-audits-v1",
+  "source_extraction": {
+    "notebook": {
+      "cells": {
+        "Cell 100": {
+          "cell_id": "a2b9f84258b4",
+          "source_sha256": "0fcc3e4bf7fb6d046eb1f5001fe3acdf5b8dba31df08ce5eef783b33e5db61ff"
+        },
+        "Cell 102": {
+          "cell_id": "fd3908b317fe",
+          "source_sha256": "bdb603bcd97a79e0c4148d5465e697e4131ae2ab595c8e33019f0dc89127adda"
+        }
+      },
+      "path": "Numerics/blaschke_deformation_certifier.ipynb",
+      "sha256": "1cb3b9f45f135501d89f434d27982faac571617453e08383e82e428ca6440a08"
+    },
+    "producer": {
+      "path": "Numerics/blaschke_deformation_diagnostic_audits.py",
+      "sha256": "74c8b80e787e7021e2ea09ae0b5b7fb0e12bf15adff65697676c4e4a6762fca4"
+    }
+  }
+}

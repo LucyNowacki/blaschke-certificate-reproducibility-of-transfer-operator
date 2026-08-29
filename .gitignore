@@ -1,4 +1,6 @@
 # The referee archive is generated only after the deployment commit is clean.
 Numerics/outputs/blaschke_deformation_certifier/reproducibility/
+# Resumable source-generation state; final diagnostic outputs are stored outside it.
+Numerics/outputs/blaschke_deformation_certifier/data/.historical_phase4_cache/
 __pycache__/
 *.pyc

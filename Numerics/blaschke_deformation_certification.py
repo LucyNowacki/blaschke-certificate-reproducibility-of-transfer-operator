@@ -70,7 +70,8 @@ def interval_text(value: arb, digits: int = 60) -> str:
 
 
 def tau_phi(branch: int, omega: acb, mu: arb, pi: arb):
-    """Certified inverse branch and Perron--Frobenius weight."""
+    '''Explanation: The transfer operator is a weighted pullback: it reads a function at an inverse image and multiplies by the Perron--Frobenius weight. Enclosing both pieces makes each branch contribution rigorous before truncation.
+Functionality: Certified inverse branch and Perron--Frobenius weight.'''
 
     sign = -1 if int(branch) == 1 else 1
     cosine = (pi * omega / 2).cos()
@@ -83,7 +84,8 @@ def tau_phi(branch: int, omega: acb, mu: arb, pi: arb):
 
 
 def bernstein_radius_upper(point: acb) -> arb:
-    """Branch-free upper bound for the outer Bernstein radius."""
+    '''Explanation: A branch image's Bernstein radius controls how quickly its polynomial coordinates can grow relative to the Hardy gauge. An outward upper bound supplies the safe worst-case ratio used in the infinite tail estimate.
+Functionality: Branch-free upper bound for the outer Bernstein radius.'''
 
     semimajor = (abs(point - 1).upper() + abs(point + 1).upper()) / 2
     if semimajor < 1:
@@ -92,11 +94,8 @@ def bernstein_radius_upper(point: acb) -> arb:
 
 
 def selected_joukowski_preimage(point: acb) -> acb:
-    """Select one reciprocal preimage, favouring the outer enclosure.
-
-    The packet expression is invariant under reciprocal replacement, so this
-    pointwise choice does not assert or require a global inverse branch.
-    """
+    '''Explanation: Chebyshev packets are simplest in the Joukowski coordinate, where reciprocal preimages give the same symmetric Laurent packet. The thesis can therefore choose an outer pointwise preimage without pretending that a global inverse branch exists.
+Functionality: Select one reciprocal preimage, favouring the outer enclosure. The packet expression is invariant under reciprocal replacement, so this pointwise choice does not assert or require a global inverse branch.'''
 
     root = (point * point - 1).sqrt()
     first = point + root
@@ -107,7 +106,8 @@ def selected_joukowski_preimage(point: acb) -> acb:
 
 
 def packet_value(m: int, point: acb, hardy_radius: arb) -> acb:
-    """Exact Arb enclosure of the normalised Chebyshev packet at a point."""
+    '''Explanation: A normalised Chebyshev packet pairs positive and negative Laurent modes into the real-line basis used for the Hardy-space comparison. Its exact enclosure is the atomic mode value from which response norms are assembled.
+Functionality: Exact Arb enclosure of the normalised Chebyshev packet at a point.'''
 
     if int(m) < 1:
         raise ValueError("The unresolved-tail packet formula requires m at least one")
@@ -123,7 +123,8 @@ def packet_value(m: int, point: acb, hardy_radius: arb) -> acb:
 def packet_value_from_preimage(
     m: int, preimage: acb, hardy_radius: arb
 ) -> acb:
-    """Evaluate a packet through a certified pointwise Joukowski preimage."""
+    '''Explanation: Passing through a Joukowski preimage converts evaluation on the ellipse into evaluation of a symmetric Laurent mode. This is the geometric bridge between the interval transfer operator and the packet Hardy gauge.
+Functionality: Evaluate a packet through a certified pointwise Joukowski preimage.'''
 
     denominator = (
         hardy_radius ** (2 * int(m)) + hardy_radius ** (-2 * int(m))
@@ -132,7 +133,8 @@ def packet_value_from_preimage(
 
 
 def local_tail_l2_upper(start: int, radius_upper: arb, hardy_radius: arb) -> arb:
-    """Certified local geometric envelope for packets from ``start`` onward."""
+    '''Explanation: Past a cutoff, packet magnitudes are dominated by a geometric sequence determined by the local branch image. Summing its squared tail replaces infinitely many unresolved modes by one certified finite number.
+Functionality: Certified local geometric envelope for packets from ``start`` onward.'''
 
     start = int(start)
     q = (radius_upper / hardy_radius).upper()
@@ -151,13 +153,8 @@ def certify_input_tail_rows(
     config: InputTailCertificateConfig,
     progress: Callable[[int, int], None] | None = None,
 ):
-    """Certify branchwise and combined unresolved-input rows on the boundary.
-
-    For every boundary cell, modes ``N`` through ``J`` are evaluated with Arb.
-    The remaining modes are bounded by ``local_tail_l2_upper``.  Orthogonality
-    of the finite prefix and the remainder gives a square-sum assembly.  The
-    combined row retains inter-branch cancellation throughout the exact prefix.
-    """
+    '''Explanation: The complement of the first N input modes is the unresolved part of the operator. The finite prefix keeps the two inverse branches coherent, while a geometric remainder controls all later modes, producing the thesis input-tail bound.
+Functionality: Certify branchwise and combined unresolved-input rows on the boundary. For every boundary cell, modes ``N`` through ``J`` are evaluated with Arb. The remaining modes are bounded by ``local_tail_l2_upper``. Orthogonality of the finite prefix and the remainder gives a square-sum assembly. The combined row retains inter-branch cancellation throughout the exact prefix.'''
 
     if config.N < 1:
         raise ValueError("N must be at least one")
@@ -354,7 +351,8 @@ class ResolvedResponseCertificateConfig:
 def resolved_restriction_l2_upper(
     N: int, inner_radius: arb, hardy_radius: arb
 ) -> arb:
-    """Exact finite Chebyshev restriction norm, enclosed from above."""
+    '''Explanation: Because the retained packets form an orthonormal coordinate system, the squared Euclidean norm of their coefficients is the finite restriction's L2 norm. An outward enclosure makes that identity usable in a rigorous bound.
+Functionality: Exact finite Chebyshev restriction norm, enclosed from above.'''
 
     N = int(N)
     if N < 1:
@@ -374,14 +372,8 @@ def certify_resolved_response_rows(
     config: ResolvedResponseCertificateConfig,
     progress: Callable[[int, int], None] | None = None,
 ):
-    """Certify the coherent resolved Chebyshev-packet row on the boundary.
-
-    Modes zero through K minus one are combined branchwise before their
-    squared moduli are accumulated.  The remaining resolved coordinates are
-    bounded by the infinite local packet tail beginning at K.  This is a safe
-    majorant because the finite range K through N minus one is contained in
-    that infinite tail.
-    """
+    '''Explanation: The resolved response must add the two branch contributions before taking a norm, since cancellation belongs to the transfer operator itself. A finite coherent prefix plus an infinite packet tail bounds this response on the whole certified boundary.
+Functionality: Certify the coherent resolved Chebyshev-packet row on the boundary. Modes zero through K minus one are combined branchwise before their squared moduli are accumulated. The remaining resolved coordinates are bounded by the infinite local packet tail beginning at K. This is a safe majorant because the finite range K through N minus one is contained in that infinite tail.'''
 
     if config.N < 1:
         raise ValueError("N must be at least one")

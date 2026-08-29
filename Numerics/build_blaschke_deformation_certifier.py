@@ -26,7 +26,7 @@ TARGET = HERE / "blaschke_deformation_certifier.ipynb"
 # Updated after the deployment template is refreshed deliberately with
 # ``--refresh-template``. Ordinary builds refuse unreviewed template drift.
 LOCKED_TEMPLATE_SHA256 = (
-    "1094acf61e4e3c6eccd426e140c55866185175edbb08cc2a14ed9cc7462c38d0"
+    "85efb8203a6d3f0477c7cee2df99e8d684428b814f1bd142366de46bf0f615c9"
 )
 
 
@@ -195,61 +195,343 @@ if mp.mpf(
 '''.strip()
 
 
+HISTORICAL_PHASE4_REBUILD = r'''
+from Numerics.blaschke_deformation_historical_phase4 import (
+    HistoricalPhase4Config,
+    rebuild_historical_phase4,
+)
+
+_historical_phase4_force = os.environ.get(
+    "BLASCHKE_FORCE_HISTORICAL_PHASE4", "0"
+) in {"1", "true", "True"}
+historical_phase4_result = rebuild_historical_phase4(
+    HistoricalPhase4Config.production_n600_m610(),
+    data_dir=DATA_DIR,
+    report_dir=REPORT_DIR,
+    cache_dir=DATA_DIR / ".historical_phase4_cache",
+    assembly_workers=min(24, os.cpu_count() or 1),
+    surface_workers=min(6, os.cpu_count() or 1),
+    force=_historical_phase4_force,
+)
+'''.strip()
+
+
+DIAGNOSTIC_AUDIT_REBUILD = r'''
+from Numerics.blaschke_deformation_diagnostic_audits import (
+    REPORT_FILENAME as DIAGNOSTIC_AUDIT_REPORT_FILENAME,
+    rebuild_diagnostic_audits,
+)
+
+diagnostic_audit_result = rebuild_diagnostic_audits(
+    map_label=SELECTED_MAP_LABEL,
+    targets=DATA_DIR / "raw_spectrum_square_N_sweep_extended_targets.csv",
+    geometry=DATA_DIR / "transfer_lab_blaschke_mu_0p3_active_geometry.csv",
+    schur_rows=(
+        DATA_DIR
+        / "transfer_lab_blaschke_mu_0p3_generic_sampled_schur_envelope.csv"
+    ),
+    moat_rows=(
+        DATA_DIR
+        / "branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv"
+    ),
+    data_dir=DATA_DIR,
+    report_path=REPORT_DIR / DIAGNOSTIC_AUDIT_REPORT_FILENAME,
+)
+selected_map_certification_audit_df = (
+    diagnostic_audit_result.universal_audit.copy()
+)
+'''.strip()
+
+
+CELL_24A_WRAPPER = r'''# Cell 24A
+# ============================================================
+# Phase 2G -- unconditional finite-M Gauss--Legendre prefactor
+# ============================================================
+
+from pathlib import Path
+import os
+
+import pandas as pd
+from flint import arb
+
+if Path.cwd().name == "Numerics":
+    from blaschke_deformation_phase2_finite_m import (
+        Phase2FiniteMConfig,
+        certify_finite_m_completion,
+    )
+else:
+    from Numerics.blaschke_deformation_phase2_finite_m import (
+        Phase2FiniteMConfig,
+        certify_finite_m_completion,
+    )
+
+FINITE_M_SAFE_BITS = int(os.environ.get("TRANSFER_LAB_FINITE_M_BITS", "192"))
+phase2_finite_m_result = certify_finite_m_completion(
+    Phase2FiniteMConfig(
+        N=600,
+        M=610,
+        rho="2.725",
+        map_label=SELECTED_MAP_LABEL,
+        precision_bits=FINITE_M_SAFE_BITS,
+    ),
+    output_dir=OUTPUT_DIR,
+)
+
+finite_M_prefactor_df = pd.DataFrame([phase2_finite_m_result.certificate])
+balanced_safe_df = pd.DataFrame([phase2_finite_m_result.safe_row])
+balanced_df = balanced_safe_df.copy()
+balanced_path = phase2_finite_m_result.safe_row_csv_path
+FINITE_M_PREFACTOR_CERTIFIED = bool(
+    phase2_finite_m_result.certificate["finite_M_prefactor_certified"]
+)
+FINITE_M_SAFE_D = arb(
+    str(phase2_finite_m_result.certificate["D_safe_u"])
+).upper()
+
+display(finite_M_prefactor_df)
+print("Stored:", phase2_finite_m_result.certificate_csv_path)
+print("Stored:", phase2_finite_m_result.safe_row_csv_path)
+print("Stored:", phase2_finite_m_result.report_json_path)
+print("Stored:", phase2_finite_m_result.report_markdown_path)
+'''
+
+
+CELL_24B_WRAPPER = r'''# Cell 24B
+# ============================================================
+# Phase 2H -- certified resolved-response prefactor
+# ============================================================
+
+from pathlib import Path
+import json
+import os
+
+import pandas as pd
+from flint import arb
+
+if Path.cwd().name == "Numerics":
+    from blaschke_deformation_phase2_resolved_response import (
+        Phase2ResolvedResponseConfig,
+        certify_resolved_response_completion,
+    )
+else:
+    from Numerics.blaschke_deformation_phase2_resolved_response import (
+        Phase2ResolvedResponseConfig,
+        certify_resolved_response_completion,
+    )
+
+RESPONSE_PREF_CELLS = int(os.environ.get("BLASCHKE_RESPONSE_CERT_CELLS", "65536"))
+RESPONSE_PREF_BITS = int(os.environ.get("BLASCHKE_RESPONSE_CERT_BITS", "192"))
+RESPONSE_PREF_PREFIX_TERMS = int(
+    os.environ.get("BLASCHKE_RESPONSE_PREFIX_TERMS", "24")
+)
+_response_progress_step = max(1, RESPONSE_PREF_CELLS // 10)
+
+
+def _phase2_response_progress(stage, done, total):
+    if done % _response_progress_step == 0 or done == total:
+        print(f"{stage}: {done}/{total}")
+
+
+phase2_resolved_response_result = certify_resolved_response_completion(
+    Phase2ResolvedResponseConfig(
+        N=600,
+        M=610,
+        rho="2.725",
+        r="2.473669807791324",
+        mu="0.3",
+        cells=RESPONSE_PREF_CELLS,
+        precision_bits=RESPONSE_PREF_BITS,
+        prefix_terms=RESPONSE_PREF_PREFIX_TERMS,
+        map_label=SELECTED_MAP_LABEL,
+    ),
+    output_dir=OUTPUT_DIR,
+    progress=_phase2_response_progress,
+)
+
+resolved_response_certificate = phase2_resolved_response_result.certificate
+response_branch_df = pd.DataFrame(
+    [phase2_resolved_response_result.response_summary]
+)
+response_profile_df = pd.DataFrame(
+    phase2_resolved_response_result.response_profile
+)
+response_df = pd.DataFrame([phase2_resolved_response_result.candidate_row])
+
+# Public compatibility names used by the retained Phase 2 audit and figures.
+_rp_summary = phase2_resolved_response_result.response_summary
+_rp_coherent_summary = phase2_resolved_response_result.coherent_summary
+_rp_candidate = phase2_resolved_response_result.candidate_row
+_rp_candidate_path = phase2_resolved_response_result.candidate_csv_path
+_rp_json_path = phase2_resolved_response_result.report_json_path
+_rp_report_path = phase2_resolved_response_result.report_markdown_path
+_rp_provenance = json.loads(_rp_json_path.read_text(encoding="utf-8"))
+_rp_map_label = SELECTED_MAP_LABEL
+_rp_N = int(_rp_summary["N"])
+_rp_M = 610
+_rp_coherent_global = arb(str(_rp_summary["C_resp_coherent_packet_cert_u"])).upper()
+_rp_scaled_response_upper = arb(
+    str(_rp_summary["C_resp_scaled_legendre_cert_u"])
+).upper()
+_rp_whole_fallback = arb(
+    str(_rp_summary["C_resp_whole_ellipse_fallback_u"])
+).upper()
+_rp_selected_response_upper = arb(
+    str(_rp_summary["C_resp_selected_cert_u"])
+).upper()
+_rp_Z_tail_upper = arb(str(_rp_summary["Z_tail_N_inferred"])).upper()
+_rp_B_out = (_rp_selected_response_upper * _rp_Z_tail_upper).upper()
+
+PHASE2_FINAL_CERT = phase2_promoted_certificate()
+display(response_branch_df)
+display(response_df)
+print("Stored:", phase2_resolved_response_result.principal_csv_path)
+print("Stored:", phase2_resolved_response_result.candidate_csv_path)
+print("Stored:", phase2_resolved_response_result.report_json_path)
+'''
+
+
+CELL_24C_WRAPPER = r'''# Cell 24C
+# Complete Arb certificate for the unresolved Chebyshev input tail
+
+from pathlib import Path
+import os
+
+import pandas as pd
+
+if Path.cwd().name == "Numerics":
+    from blaschke_deformation_phase2_final_aggregation import (
+        Phase2FinalAggregationConfig,
+        certify_final_phase2_aggregation,
+    )
+else:
+    from Numerics.blaschke_deformation_phase2_final_aggregation import (
+        Phase2FinalAggregationConfig,
+        certify_final_phase2_aggregation,
+    )
+
+INPUT_TAIL_CERT_CELLS = int(os.environ.get("BLASCHKE_INPUT_CERT_CELLS", "65536"))
+INPUT_TAIL_CERT_BITS = int(os.environ.get("BLASCHKE_INPUT_CERT_BITS", "192"))
+INPUT_TAIL_PREFIX_TERMS = int(os.environ.get("BLASCHKE_INPUT_PREFIX_TERMS", "24"))
+_input_progress_step = max(1, INPUT_TAIL_CERT_CELLS // 10)
+
+
+def _phase2_input_progress(done, total):
+    if done % _input_progress_step == 0 or done == total:
+        print(f"unresolved-input rows: {done}/{total}")
+
+
+phase2_final_aggregation_result = certify_final_phase2_aggregation(
+    Phase2FinalAggregationConfig(
+        N=600,
+        M=610,
+        rho="2.725",
+        r="2.473669807791324",
+        mu="0.3",
+        cells=INPUT_TAIL_CERT_CELLS,
+        precision_bits=INPUT_TAIL_CERT_BITS,
+        prefix_terms=INPUT_TAIL_PREFIX_TERMS,
+        map_label=SELECTED_MAP_LABEL,
+    ),
+    output_dir=OUTPUT_DIR,
+    progress=_phase2_input_progress,
+)
+
+input_tail_certificate = phase2_final_aggregation_result.input_certificate
+_input_summary = input_tail_certificate["summary"]
+input_tail_certificate_df = pd.DataFrame([_input_summary])
+input_tail_profile_df = pd.DataFrame(input_tail_certificate["profile"])
+PHASE2_FINAL_CERT = phase2_final_aggregation_result.final_certificate
+response_df = pd.DataFrame(
+    [phase2_final_aggregation_result.refreshed_candidate]
+)
+cert_summary_df = pd.DataFrame(phase2_final_aggregation_result.summary_rows)
+
+QSTAR_X = PHASE2_FINAL_CERT["q_star"]
+N_CERT_X = int(PHASE2_FINAL_CERT["N"])
+M_CERT_X = int(PHASE2_FINAL_CERT["M"])
+EPS_CERT_X = PHASE2_FINAL_CERT["epsilon"]
+BOUT_CERT_X = PHASE2_FINAL_CERT["B_out"]
+BIN_CERT_X = PHASE2_FINAL_CERT["B_in"]
+COLL_CERT_X = PHASE2_FINAL_CERT["collocation"]
+NONCOLLOCATION_RSS_CERT_X = PHASE2_FINAL_CERT["noncollocation_rss"]
+NONCOLLOCATION_SUM_CERT_X = PHASE2_FINAL_CERT["noncollocation_sum"]
+TAIL_FLOOR_CERT_X = NONCOLLOCATION_RSS_CERT_X
+C_CERT_QSTAR = EPS_CERT_X / (QSTAR_X ** N_CERT_X)
+
+display(input_tail_certificate_df)
+display(cert_summary_df)
+print("Stored:", phase2_final_aggregation_result.input_certificate_csv_path)
+print("Stored:", phase2_final_aggregation_result.input_profile_csv_path)
+print("Stored:", phase2_final_aggregation_result.phase2_summary_csv_path)
+'''
+
+
 def _normalise_notebook(notebook: dict[str, Any]) -> dict[str, Any]:
     notebook = deepcopy(notebook)
     cells = notebook["cells"]
 
+    cell24a = _unique_cell(cells, "# Cell 24A\n")
+    _set_source(cell24a, CELL_24A_WRAPPER)
+
     cell24b = _unique_cell(cells, "# Cell 24B\n")
-    source = _source(cell24b)
-    inline_path = (
-        '_rp_cert_module_path = '
-        'INLINE_MODULE_PATHS["blaschke_deformation_certification"]'
-    )
-    ordinary_path = (
-        "_rp_cert_module_path = (\n"
-        "    Path(\"blaschke_deformation_certification.py\")\n"
-        "    if Path.cwd().name == \"Numerics\"\n"
-        "    else Path(\"Numerics/blaschke_deformation_certification.py\")\n"
-        ")"
-    )
-    if inline_path in source:
-        source = source.replace(inline_path, ordinary_path, 1)
-    source = source.replace(
-        "str(_rp_cert_module_path): _rp_sha256(_rp_cert_module_path),",
-        "_rp_cert_module_path.name: _rp_sha256(_rp_cert_module_path),",
-        1,
-    )
-    if "phase2_aggregation_status" not in source:
-        source = source.replace(
-            '"total_certified": True,\n    "status": (',
-            '"total_certified": True,\n'
-            '    "phase2_aggregation_status": "provisional before Cell 24C input refresh",\n'
-            '    "status": (',
-            1,
-        )
-    source = source.replace(
-        'f"Current deterministic epsilon: {_rp_upper_float(_rp_new_epsilon_current):.17e}.",',
-        'f"Provisional deterministic epsilon before Cell 24C: {_rp_upper_float(_rp_new_epsilon_current):.17e}.",',
-        1,
-    )
-    source = source.replace(
-        '"  current deterministic epsilon = "',
-        '"  provisional epsilon before Cell 24C = "',
-        1,
-    )
-    _set_source(cell24b, source)
+    _set_source(cell24b, CELL_24B_WRAPPER)
 
     cell24c = _unique_cell(cells, "# Cell 24C\n")
-    source = _source(cell24c)
-    if "# Cell 24C is the authoritative Phase 2 aggregation point." not in source:
-        anchor = 'EPS_CERT_X = PHASE2_FINAL_CERT["epsilon"]\n'
+    _set_source(cell24c, CELL_24C_WRAPPER)
+
+    cell35 = _unique_cell(cells, "# Cell 35\n")
+    source = _source(cell35)
+    if "historical_phase4_result = rebuild_historical_phase4(" not in source:
+        anchor = "    for _d in (DATA_DIR, FIG_DIR, REPORT_DIR):\n        _d.mkdir(parents=True, exist_ok=True)\n"
         source = _checked_replace(
             source,
             anchor,
-            anchor + "\n" + FINAL_PHASE2_REFRESH + "\n",
-            label="Cell 24C final aggregate anchor",
+            anchor
+            + "\n"
+            + "\n".join(
+                "    " + line if line else ""
+                for line in HISTORICAL_PHASE4_REBUILD.splitlines()
+            )
+            + "\n",
+            label="Cell 35 historical Phase 4 source rebuild anchor",
         )
-    _set_source(cell24c, source)
+    _set_source(cell35, source)
+
+    cell100 = _unique_cell(cells, "# Cell 100\n")
+    source = _source(cell100)
+    if "diagnostic_audit_result = rebuild_diagnostic_audits(" not in source:
+        old = '''selected_map_certification_audit_df = build_certification_audit(
+    map_label=SELECTED_MAP_LABEL,
+    capability=capability,
+    target_count=len(targets_14),
+    geometry=geometry_for_audit,
+    schur_rows=schur_for_audit,
+    moat_rows=moat_for_audit.head(14),
+)
+
+audit_path = DATA_DIR / f'transfer_lab_{SELECTED_MAP_LABEL}_universal_certification_audit.csv'
+selected_map_certification_audit_df.to_csv(audit_path, index=False)
+'''
+        source = _checked_replace(
+            source,
+            old,
+            DIAGNOSTIC_AUDIT_REBUILD + "\n\naudit_path = diagnostic_audit_result.universal_csv_path\n",
+            label="Cell 100 legacy diagnostic audit writer",
+        )
+    _set_source(cell100, source)
+
+    cell102 = _unique_cell(cells, "# Cell 102\n")
+    source = _source(cell102)
+    if "packet_table = diagnostic_audit_result.first14_audit.copy()" not in source:
+        start = source.index("packet_table = targets_14.copy()")
+        stop = source.index("fig, ax = plt.subplots", start)
+        source = (
+            source[:start]
+            + "packet_table = diagnostic_audit_result.first14_audit.copy()\n"
+            + "packet_path = diagnostic_audit_result.first14_csv_path\n\n"
+            + source[stop:]
+        )
+    _set_source(cell102, source)
 
     for update_number in (89, 98):
         current_marker = f"## Notebook update {update_number}"
@@ -419,7 +701,7 @@ else:
         "trivial_targets": 0,
         "nontrivial_targets": 24,
         "phase2_final_epsilon": (
-            "3.3264433839017426342178575983234893950031511766904e-20"
+            "3.3264433839017426342179265983234893950031511766904056153485116e-20"
         ),
         "count_route": "24 Schur-derived finite algebraic counts",
         "moat_routes": "17 Schur-triangular and 7 Laurent complete-circle moats",
@@ -439,36 +721,49 @@ def _clear_runtime_state(notebook: dict[str, Any]) -> dict[str, Any]:
 
 def _validate(notebook: dict[str, Any]) -> None:
     cells = notebook["cells"]
+    cell24a = _source(_unique_cell(cells, "# Cell 24A\n"))
     cell24b = _source(_unique_cell(cells, "# Cell 24B\n"))
     cell24c = _source(_unique_cell(cells, "# Cell 24C\n"))
     hardy = _source(_unique_cell(cells, "# Cell 102A\n"))
     contour = _source(_unique_cell(cells, "# Cell 103\n"))
     cell104 = _source(_unique_cell(cells, "# Cell 104\n"))
+    required_24a = (
+        "Phase2FiniteMConfig",
+        "certify_finite_m_completion",
+        "output_dir=OUTPUT_DIR",
+    )
+    if not all(marker in cell24a for marker in required_24a):
+        raise AssertionError("Cell 24A is not the standalone finite-M wrapper.")
     required_24b = (
-        "ResolvedResponseCertificateConfig",
-        "certify_resolved_response_rows",
-        "C_resp_coherent_packet_cert_u",
-        "provisional epsilon before Cell 24C",
+        "Phase2ResolvedResponseConfig",
+        "certify_resolved_response_completion",
+        "output_dir=OUTPUT_DIR",
+        "response_branch_df",
     )
     if not all(marker in cell24b for marker in required_24b):
-        raise AssertionError("Cell 24B is not the coherent resolved-response producer.")
+        raise AssertionError("Cell 24B is not the standalone resolved-response wrapper.")
     if "INLINE_MODULE_PATHS" in cell24b:
         raise AssertionError("The source Cell 24B depends on inline-only state.")
-    if "_rp_cert_module_path.name: _rp_sha256(_rp_cert_module_path)" not in cell24b:
-        raise AssertionError("Cell 24B does not use a stable helper provenance key.")
-    if "authoritative Phase 2 aggregation point" not in cell24c:
-        raise AssertionError("Cell 24C does not refresh the provisional artefacts.")
-    if not all(
-        marker in cell24c
-        for marker in (
-            "coherent_branchwise_intersection",
-            "epsilon_upper_text",
-            "epsilon_triangle_upper_text",
-        )
+    required_24c = (
+        "Phase2FinalAggregationConfig",
+        "certify_final_phase2_aggregation",
+        "output_dir=OUTPUT_DIR",
+        "PHASE2_FINAL_CERT",
+        "cert_summary_df",
+    )
+    if not all(marker in cell24c for marker in required_24c):
+        raise AssertionError("Cell 24C is not the standalone final-aggregation wrapper.")
+    for embedded_marker in (
+        "def _fm_",
+        "def _rp_",
+        "def _input_",
+        "certify_resolved_response_rows",
+        "certify_input_tail_rows",
     ):
-        raise AssertionError(
-            "Cell 24C does not preserve neutral input provenance and exact upper texts."
-        )
+        if embedded_marker in cell24a + cell24b + cell24c:
+            raise AssertionError(
+                "A Phase 2 completion implementation remains embedded in the notebook."
+            )
     if "_hardy_source_files = (_spectral_cert_module_path,)" not in hardy:
         raise AssertionError("The Hardy checkpoint has extraneous source dependencies.")
     if "_contour_deterministic_module_path" in contour:
@@ -518,7 +813,7 @@ def _validate(notebook: dict[str, Any]) -> None:
         "blaschke_deformation_certifier", {}
     )
     if metadata.get("phase2_final_epsilon") != (
-        "3.3264433839017426342178575983234893950031511766904e-20"
+        "3.3264433839017426342179265983234893950031511766904056153485116e-20"
     ):
         raise AssertionError("The exact Phase 2 epsilon metadata is stale.")
     for update_number in (89, 98):

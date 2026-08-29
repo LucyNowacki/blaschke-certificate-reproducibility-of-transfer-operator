@@ -1,0 +1,128 @@
+{
+  "aggregation": "historical triangle comparison only: two_B_out plus B_in plus collocation",
+  "baseline_geometry_configuration_digest": "d74cad2865514b372115237075e136781a02136bf7470e2d572a30a3dccb0f85",
+  "baseline_record": {
+    "2B_out_X": "5.64600429633140632360638210700000000000000000000000000000000000000000000000000000E-9",
+    "B_in_X": "7.33785151692553311230445605500000000000000000000000000000000000000000000000000000E-9",
+    "Bmat": "1.35697664565812942017928549400000000000000000000000000000000000000000000000000000E-16",
+    "M": 610,
+    "N": 600,
+    "Phi": "1.32629786990582942962646484400000000000000000000000000000000000000000000000000000E+0",
+    "Phi_star": "1.03715489059686660766601562500000000000000000000000000000000000000000000000000000E+0",
+    "branch_data_certified": true,
+    "epsilon_X": "1.29839414480767038281938601500000000000000000000000000000000000000000000000000000E-8",
+    "input_tail_certified": true,
+    "kappa_Bmat": "8.56348197643922830219900396900000000000000000000000000000000000000000000000000000E-14",
+    "kappa_hat": "6.31070697041065609706294060500000000000000000000000000000000000000000000000000000E+2",
+    "output_tail_certified": true,
+    "q_gap": "0.967",
+    "q_out": "9.45085600287712708138107096000000000000000000000000000000000000000000000000000000E-1",
+    "q_star": "9.67000000000000000000000000000000000000000000000000000000000000000000000000000000E-1",
+    "r": "1.51204245190031156175015754300000000000000000000000000000000000000000000000000000E+0",
+    "r_tau": "1.46214505098760128021240234400000000000000000000000000000000000000000000000000000E+0",
+    "rho": "1.5999",
+    "schur_matrix_certified": true,
+    "total_certified": true,
+    "transport_certified": true
+  },
+  "branch_geometry_configuration_digest": "145ba7de276daa442beaab6d18d7858eebec2ee05cee12c3fb4f851e0d3fe424",
+  "complete_boundary_cover": {
+    "baseline_cells": 32768,
+    "branch_image_cells": 65536,
+    "branch_image_maximum_cell": 32446,
+    "covers_zero_to_two_pi": true,
+    "uses_arb_pi": true
+  },
+  "configuration": {
+    "M": 610,
+    "N": 600,
+    "baseline_cells": 32768,
+    "branch_image_cells": 65536,
+    "geometry_precision_bits": 192,
+    "mu": "0.3",
+    "q_gap": "0.967",
+    "rho": "1.5999",
+    "transport_precision_bits": 384,
+    "workers": 24,
+    "zwx13_maximum_extra": 800
+  },
+  "current_theorem_aggregation": "root-sum-square of B_out and B_in plus collocation; produced elsewhere",
+  "diagnostic_status": "retained source-rebuilt historical-design comparison; not a theorem gate",
+  "effect_record": {
+    "M": 610,
+    "N": 600,
+    "cells": 65536,
+    "epsilon_reduction_factor": "7.83793349652661448201030892600000000000000000000000000000000000000000000000000000E-1",
+    "input_reduction_factor": "6.17433729434358488060987441600000000000000000000000000000000000000000000000000000E-1",
+    "new_branch_image_B_in_u": "4.53063702813089661535091384700000000000000000000000000000000000000000000000000000E-9",
+    "new_epsilon_candidate": "1.01767269592820673312403179400000000000000000000000000000000000000000000000000000E-8",
+    "old_B_in": "7.33785151692553311230445605500000000000000000000000000000000000000000000000000000E-9",
+    "old_collocation": "8.56348197643922830219900396900000000000000000000000000000000000000000000000000000E-14",
+    "old_epsilon": "1.29839414480767038281938601500000000000000000000000000000000000000000000000000000E-8",
+    "old_two_B_out": "5.64600429633140632360638210700000000000000000000000000000000000000000000000000000E-9",
+    "output_to_new_input_ratio": "1.24618332064015549400745840000000000000000000000000000000000000000000000000000000E+0"
+  },
+  "historical_design_inputs": {
+    "baseline_cells": 32768,
+    "branch_image_cells": 65536,
+    "q_gap": "0.967",
+    "rho": "1.5999"
+  },
+  "legacy_seed_dependency": false,
+  "map_label": "blaschke_mu_0p3",
+  "outputs": {
+    "branch_image_input_tail_interval_effect_N600.csv": "2f1cb5b27a48abc8fb25c76e87dd890d079c771bf15fc00e430319d615eb8cd9",
+    "final_blaschke_N600_schur_certificate.csv": "a259e68b1bcc64e3e4d01e00a885e04363f3756fc88f7034fec38506fe9ea85e"
+  },
+  "process_workers": 24,
+  "producer_schema": "phase2-historical-comparisons-v1",
+  "producer_sources": {
+    "geometry": {
+      "path": "Numerics/blaschke_deformation_phase2_geometry.py",
+      "sha256": "d72256c46cd89d6b65f19a9ce7f913a7b087271550c9d755b67e85d108b45813"
+    },
+    "historical_comparisons": {
+      "path": "Numerics/blaschke_deformation_historical_comparisons.py",
+      "sha256": "cd12e23162aa037f4b35741d92b1a8cff4df1ebc3324f67d8992c55b898cd495"
+    },
+    "matrix": {
+      "path": "Numerics/blaschke_deformation_phase2_matrix.py",
+      "sha256": "23d87bcdfb12dc13fc47160b1231b324fc2a7b82ba21a66b429a655df9b57bce"
+    },
+    "transport": {
+      "path": "Numerics/blaschke_deformation_phase2_transport.py",
+      "sha256": "4f38bcdbcc78ffeceacc895227c13c5e59449f8339dc4dca13387d9c594bc89a"
+    }
+  },
+  "transport": {
+    "csv_sha256": "273169de790b40c49a9d8d27d86ff4e92594c10e1a25ee6ba7f5f849c872f4ee",
+    "inverse_witness_sha256": "668d98df9a3fedf5b3ce7268deb7e3ec3b41bf505ed9d5565c99b4428ae225e6",
+    "record": {
+      "N": 600,
+      "arb_dps": 116,
+      "configuration_digest": "caa2de57666857e1fda2275d93e35dad082bae65182c1b33095a1963eae98b11",
+      "coordinate_orientation": "c to y=D_r,N c to d=T_N(r)y",
+      "geometry_configuration_digest": "d74cad2865514b372115237075e136781a02136bf7470e2d572a30a3dccb0f85",
+      "inverse_backend": "numpy binary64 witness with Arb residual",
+      "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/historical_comparison_internal/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+      "inverse_witness_sha256": "668d98df9a3fedf5b3ce7268deb7e3ec3b41bf505ed9d5565c99b4428ae225e6",
+      "kappa_diag": "1.2530528397052667",
+      "kappa_hat": "6.31070697041065609706294060500000000000000000000000000000000000000000000000000000E+2",
+      "lambda_max_cert": "2.02159020796451496972234280300000000000000000000000000000000000000000000000000000E+2",
+      "lambda_min_cert": "5.07618096052710978195682701300000000000000000000000000000000000000000000000000000E-4",
+      "norm_B0_frob_cert": "4.43845122891337764905431494000000000000000000000000000000000000000000000000000000E+1",
+      "norm_T_frob_cert": "1.42182636350734296325076155600000000000000000000000000000000000000000000000000000E+1",
+      "producer_schema": "phase2-transport-v2",
+      "r": "1.51204245190031156175015754300000000000000000000000000000000000000000000000000000E+0",
+      "r_tau": "1.46214505098760128021240234400000000000000000000000000000000000000000000000000000E+0",
+      "residual_delta_cert": "8.06780316295815939798986341000000000000000000000000000000000000000000000000000000E-15",
+      "rho": "1.5999",
+      "transport_certified": true,
+      "transport_method": "process-block upper-triangular Arb inverse-residual Frobenius certificate",
+      "transport_process_workers": 24,
+      "transport_row_blocks": 24
+    },
+    "report_sha256": "3d6942737a5d10a06ff982502b007c996e6b36d15e60b246e3974cf74090316b"
+  },
+  "zwx13_terms_used": 801
+}

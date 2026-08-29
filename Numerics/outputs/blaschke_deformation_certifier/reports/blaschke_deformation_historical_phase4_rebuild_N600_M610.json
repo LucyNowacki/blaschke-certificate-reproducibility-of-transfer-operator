@@ -1,0 +1,422 @@
+{
+  "authoritative_for_current_thesis": false,
+  "cache_key": "169421e73b25e00e379d0a24e476d5f26da19186f48a179e3a8bf83ce889b3b8",
+  "cache_validation": {
+    "cache_hits": {
+      "contours": true,
+      "eigenvalues": true,
+      "hardy_matrix": true,
+      "scaled_block": true,
+      "surface_deep_zoom": true,
+      "surface_global": true,
+      "surface_local": true,
+      "surface_zoom": true
+    },
+    "contour_cache_path": "outputs/blaschke_deformation_certifier/data/.historical_phase4_cache/169421e73b25e00e379d0a24e476d5f26da19186f48a179e3a8bf83ce889b3b8/contour_samples.npz",
+    "keyed_by_configuration_digest": true,
+    "keyed_by_runtime_versions": true,
+    "keyed_by_source_digest": true,
+    "surface_keyed_by_hardy_matrix_hash": true
+  },
+  "configuration": {
+    "M": 610,
+    "N": 600,
+    "assembly_row_block_size": 32,
+    "contour_samples": 128,
+    "deep_zoom_surface_grid": 201,
+    "dps": 200,
+    "epsilon_x": "1.1641169413997097e-17",
+    "fragile_samples": [
+      128,
+      256
+    ],
+    "global_surface_grid": 45,
+    "local_surface_grid": 25,
+    "maximum_target_power": 28,
+    "mode": "production",
+    "mu": "0.3",
+    "r": "2.225974769705636",
+    "rho": "2.45",
+    "surface_log_floor": "1e-18",
+    "surface_row_block_size": 2,
+    "target_count": 15,
+    "zoom_surface_grid": 161
+  },
+  "configuration_digest": "4a09b46da042bd99120c3c23c0cc81b0e6b3f33dd2de64fa567151fb2cf15c72",
+  "contour_interval_certified": false,
+  "diagnostic_description": "retained historical wide-radius sampled finite-section diagnostic; not interval-certified and not eligible for a theorem gate",
+  "diagnostic_status": "diagnostic_only_not_theorem_gate",
+  "historical_regression": {
+    "contour_radius_rule": "finite-eigenvalue cluster-to-nearest-outside mid-gap",
+    "contract": "source-rederived historical sampled comparison",
+    "hardy_matrix_maximum_modulus": 1775027945.6323938,
+    "hardy_similarity": "binary64 T B_scaled T_inverse historical path",
+    "pure_scaled_binary64_boundary_after_mpmath_dps": 200,
+    "sampled_validation_passes": 15,
+    "scaled_matrix_maximum_modulus": 1965053320.823695,
+    "theorem_gate_eligible": false,
+    "worst_finite_epsilon_m_gamma": 0.5061886679491904
+  },
+  "legacy_seed_dependency": false,
+  "map_label": "blaschke_mu_0p3",
+  "matrix_hashes": {
+    "A_X_sha256": "a706bf9d37897dd17f80265564d24fba090495605599287d1aa077a226e8fb15",
+    "B_scaled_sha256": "eb70dad14b6948a6ed65a0147c13e515eaba15362cfc00a6873b6509f36c67ac",
+    "T_sha256": "20fd22aa7ea0f6ff2210319d157e0ac20066ef4d9f25d55f4dcde35a45c13cac",
+    "eigenvalues_sha256": "146d1aa06c0e84321991312b7e246b420e7e194f726ac0b3adf3bb0e9d439fb9"
+  },
+  "outputs": {
+    "compatibility_summary": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "final_blaschke_branch-image_first15_phase4_summary.json",
+      "sha256": "d36367ab69793ac81521fc784e67a7ce442ae3ac7b27ad2ab2f733d222e36a01"
+    },
+    "deep_zoom_surface": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201.npz",
+      "sha256": "c5e8af3da4edd5e2b90ca6e4eded30f057f2f9f81d603e391237eb4f33db91e0"
+    },
+    "eigenvalues": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv",
+      "sha256": "b05446101223678091bb04d2aecd2d96bca085b026dd435ad7fc05adcd407ed6"
+    },
+    "final_fragile": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "final_blaschke_branch-image_first15_fragile_robustness_N600_M610.csv",
+      "sha256": "0c6e9e2f397c012cad5aa468e729a2134ee959f791504e2dbcbdbe3ba7fa3171"
+    },
+    "final_moats": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "final_blaschke_branch-image_first15_contour_moats_N600_M610.csv",
+      "sha256": "1185ac9a89f111fda27a568ec8acdade3abcaaa3e2085fd1e5da0b785ce3b7d2"
+    },
+    "final_packets": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "final_blaschke_branch-image_first15_sampled_spectral_packets_N600_M610.csv",
+      "sha256": "c6686156e163dd9b419d63147bd13ae1a6f80e50ab1f438f73fe3bf291fdc714"
+    },
+    "fragile": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_fragile_robustness_N600_M610.csv",
+      "sha256": "0c6e9e2f397c012cad5aa468e729a2134ee959f791504e2dbcbdbe3ba7fa3171"
+    },
+    "global_surface": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45.npz",
+      "sha256": "47252250c9ff5e0a8ce8d66dc4f2e2b610f8de113950e9e5300cf4010bc5cffa"
+    },
+    "global_surface_csv": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610.csv",
+      "sha256": "2d92756539bfcbf1bec6ea7ac2b14bab3b36b5469f147ce88436420f2c6970f6"
+    },
+    "hardy_matrix": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_A_X_from_mp_scaled_N600_M610_r2p225974769705636.npz",
+      "sha256": "2686527012159978aed84e7447a8f8ffa8a97d124445563b230d5fe46e85258a"
+    },
+    "local_surface": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_mu2_hardy_moat_surface_N600_M610_grid25.npz",
+      "sha256": "3297b583f5dba9cf7f5253b52204184f7bfd106e5311e2c04e0192f585ac327b"
+    },
+    "local_surface_csv": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_mu2_hardy_moat_surface_N600_M610.csv",
+      "sha256": "a65193a0f5d6a0d062318a99f67d3d26f2ca3694a95e64f072388810329e4a59"
+    },
+    "minima": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_contour_profile_minima_table_N600_M610_J128.csv",
+      "sha256": "055061dcd0158e7149435da30938ba94343b0f510976b8fe9a1bafb6d082b16b"
+    },
+    "moats": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv",
+      "sha256": "1185ac9a89f111fda27a568ec8acdade3abcaaa3e2085fd1e5da0b785ce3b7d2"
+    },
+    "packets": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_sampled_spectral_packets_N600_M610.csv",
+      "sha256": "c6686156e163dd9b419d63147bd13ae1a6f80e50ab1f438f73fe3bf291fdc714"
+    },
+    "plot_table": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_contour_moat_plot_table_N600_M610_J128.csv",
+      "sha256": "3a3d439a84f9babb0b0b24f14e6101427735f672d912ad17bce3b99384f933b5"
+    },
+    "profile_summary": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_contour_profile_summary_N600_M610_J128.csv",
+      "sha256": "c666098f31497a58da5e5bb415ffdcd683cdbad742bb8cfa80eb1dd98544c6c1"
+    },
+    "profiles": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_contour_profiles_N600_M610_J128.csv",
+      "sha256": "cd0ad0508c23a30cd8bf31d7e7cbba4d0fb3eb129c00292371d1642c029eed0f"
+    },
+    "scaled_block": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_B_scaled_mp_N600_M610_r2p225974769705636.npz",
+      "sha256": "de6ec4e04f7e049588ba7b8e73f096c3c0e755a8690b071623e68ed18634dbf4"
+    },
+    "zoom_surface": {
+      "diagnostic_status": "diagnostic_only_not_theorem_gate",
+      "path": "branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161.npz",
+      "sha256": "06e43e55dffe97e6eb2dd59709592760ad9c94564deb468d4ed3dbd0ad40013a"
+    }
+  },
+  "process_execution": {
+    "assembly_row_block_size": 32,
+    "assembly_workers": 24,
+    "row_block_assembly": true,
+    "surface_row_block_size": 2,
+    "surface_row_blocks": true,
+    "surface_workers": 6
+  },
+  "producer_schema": "historical-wide-phase4-source-rebuild-v2",
+  "producer_sources": {
+    "hardy_surface_worker": {
+      "path": "Numerics/hardy_moat_surface_worker.py",
+      "sha256": "40e82bc898f01dde300eba6409c5a60184cea7283d341c0894270eeb368b7ade"
+    },
+    "historical_phase4_producer": {
+      "path": "Numerics/blaschke_deformation_historical_phase4.py",
+      "sha256": "f7f01a4db874a96c00e992989871e49eebfa7daf0d9957a5dc0e615e378d3e44"
+    },
+    "mpmath_row_worker": {
+      "path": "Numerics/mpmath_pf_raw.py",
+      "sha256": "ab0f82c9928888d243660af3ae472a1b839b014a74c54ae1450c02e4f356461b"
+    }
+  },
+  "record_role": "historical_exploratory_diagnostic",
+  "retained_csv_inputs": [],
+  "retained_npz_inputs": [],
+  "runtime_versions": {
+    "byteorder": "little",
+    "mpmath": "1.3.0",
+    "numpy": "2.3.2",
+    "python": "3.13.2",
+    "python_implementation": "CPython",
+    "scipy": "1.16.0"
+  },
+  "sampled_diagnostics": {
+    "algebraic_multiplicity": 19,
+    "contour_samples": 128,
+    "fragile_rows": 4,
+    "profile_rows": 1920,
+    "sampled_validation_passes": 15,
+    "target_count": 15,
+    "worst_finite_epsilon_m_gamma": 0.5061886679491904
+  },
+  "source_digest": "2f4b8aa5a0edfdafeadf5c67ac561b97ec266443615d65a715c735eac6203ef6",
+  "surfaces": {
+    "deep_zoom": {
+      "cache_hit": true,
+      "grid": 201,
+      "minimum_singular_value": 7.742231932261698e-21,
+      "xlim": [
+        0.0007988887105155797,
+        0.06457689741700734
+      ],
+      "ylim": [
+        -0.015442017855272643,
+        0.015442017855272643
+      ]
+    },
+    "global": {
+      "cache_hit": true,
+      "grid": 45,
+      "minimum_singular_value": 4.108624114827253e-17,
+      "xlim": [
+        -0.05270342291418883,
+        0.8242280313269769
+      ],
+      "ylim": [
+        -0.15356249999999988,
+        0.15356249999999988
+      ]
+    },
+    "local": {
+      "cache_hit": true,
+      "grid": 25,
+      "minimum_singular_value": 1.0040781468469404e-18,
+      "xlim": [
+        0.06448305859366174,
+        0.11551694140633825
+      ],
+      "ylim": [
+        -0.025516941406338253,
+        0.025516941406338253
+      ]
+    },
+    "zoom": {
+      "cache_hit": true,
+      "grid": 161,
+      "minimum_singular_value": 5.830790741134866e-20,
+      "xlim": [
+        -0.006,
+        0.18
+      ],
+      "ylim": [
+        -0.06,
+        0.06
+      ]
+    }
+  },
+  "target_plan": [
+    {
+      "centre": 0.65,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^1",
+      "nearest_target_separation": 0.2275,
+      "power": 1,
+      "radius": 0.1137499999999999,
+      "rank": 1
+    },
+    {
+      "centre": 0.4225,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^2",
+      "nearest_target_separation": 0.1225,
+      "power": 2,
+      "radius": 0.06124999999999908,
+      "rank": 2
+    },
+    {
+      "centre": 0.3,
+      "expected_multiplicity": 2,
+      "family": "mu packet",
+      "name": "mu^1",
+      "nearest_target_separation": 0.025375,
+      "power": 1,
+      "radius": 0.012687500000001295,
+      "rank": 3
+    },
+    {
+      "centre": 0.274625,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^3",
+      "nearest_target_separation": 0.025375,
+      "power": 3,
+      "radius": 0.012687500000000379,
+      "rank": 4
+    },
+    {
+      "centre": 0.17850625,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^4",
+      "nearest_target_separation": 0.0624771875,
+      "power": 4,
+      "radius": 0.031238593750000133,
+      "rank": 5
+    },
+    {
+      "centre": 0.1160290625,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^5",
+      "nearest_target_separation": 0.0260290625,
+      "power": 5,
+      "radius": 0.013014531249990906,
+      "rank": 6
+    },
+    {
+      "centre": 0.09,
+      "expected_multiplicity": 2,
+      "family": "mu packet",
+      "name": "mu^2",
+      "nearest_target_separation": 0.014581109375,
+      "power": 2,
+      "radius": 0.007290554687525215,
+      "rank": 7
+    },
+    {
+      "centre": 0.075418890625,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^6",
+      "nearest_target_separation": 0.014581109375,
+      "power": 6,
+      "radius": 0.007290554687516278,
+      "rank": 8
+    },
+    {
+      "centre": 0.04902227890625,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^7",
+      "nearest_target_separation": 0.0171577976171875,
+      "power": 7,
+      "radius": 0.008578898808484801,
+      "rank": 9
+    },
+    {
+      "centre": 0.0318644812890625,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^8",
+      "nearest_target_separation": 0.0048644812890625,
+      "power": 8,
+      "radius": 0.0024322406446364037,
+      "rank": 10
+    },
+    {
+      "centre": 0.027,
+      "expected_multiplicity": 2,
+      "family": "mu packet",
+      "name": "mu^3",
+      "nearest_target_separation": 0.0048644812890625,
+      "power": 3,
+      "radius": 0.00243224064477344,
+      "rank": 11
+    },
+    {
+      "centre": 0.020711912837890624,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^9",
+      "nearest_target_separation": 0.006288087162109375,
+      "power": 9,
+      "radius": 0.0031440435809279178,
+      "rank": 12
+    },
+    {
+      "centre": 0.013462743344628906,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^10",
+      "nearest_target_separation": 0.004711960170620117,
+      "power": 10,
+      "radius": 0.0023559800852685194,
+      "rank": 13
+    },
+    {
+      "centre": 0.00875078317400879,
+      "expected_multiplicity": 1,
+      "family": "alpha packet",
+      "name": "alpha^11",
+      "nearest_target_separation": 0.0006507831740087891,
+      "power": 11,
+      "radius": 0.0003253915869311083,
+      "rank": 14
+    },
+    {
+      "centre": 0.0081,
+      "expected_multiplicity": 2,
+      "family": "mu packet",
+      "name": "mu^4",
+      "nearest_target_separation": 0.0006507831740087891,
+      "power": 4,
+      "radius": 0.0003253915872118837,
+      "rank": 15
+    }
+  ],
+  "target_plan_digest": "857474f742a5c3bf7765f30b692a4ee3d2ce51eb34b7d6506992799382682ac8",
+  "theorem_gate_eligible": false
+}

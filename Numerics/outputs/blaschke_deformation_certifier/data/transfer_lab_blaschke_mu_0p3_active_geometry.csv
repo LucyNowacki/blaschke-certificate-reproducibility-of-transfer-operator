@@ -1,2 +1,2 @@
 map_label,rho,r_tau_sampled,r_target,Phi_sampled,Phi_star_sampled,q_out,q_gap,q_star,admissible_sampled,geometry_status,method
-blaschke_mu_0p3,2.725,2.2926584027370747,2.47367,4.763076532415687,4.7255168399801315,0.9077688073394495,0.9268246786099499,0.9268246786099499,True,theorem_certified_constants_used_by_original_blaschke_pipeline,direct sampled branch formula
+blaschke_mu_0p3,2.725,2.2926584027370747,2.47367,4.763076532415687,4.7255168399801315,0.9077688073394495,0.9268246786099499,0.9268246786099499,True,diagnostic sampling; certified constants are loaded in Phase 2,sampled symmetric branch formula; diagnostic only

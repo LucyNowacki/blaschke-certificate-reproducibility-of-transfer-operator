@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from fractions import Fraction
 from pathlib import Path
 import tempfile
@@ -15,6 +16,13 @@ import blaschke_deformation_contour_certification as certificate
 
 
 class CountAndMoatProvenanceTests(unittest.TestCase):
+    @staticmethod
+    def _write_epsilon_row(path: Path, row: dict[str, object]) -> None:
+        with path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=tuple(row))
+            writer.writeheader()
+            writer.writerow(row)
+
     def _contour(
         self,
         *,
@@ -84,6 +92,43 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
             float(nonnormal_moat["triangular_inverse_bound"]),
             float(diagonal_moat["triangular_inverse_bound"]),
         )
+
+    def test_epsilon_loading_requires_every_fresh_phase2_gate(self) -> None:
+        config = certificate.ContourCertificateConfig()
+        row: dict[str, object] = {
+            "N": config.N,
+            "M": config.M,
+            "rho": config.rho,
+            "r": config.r,
+            "phase2_aggregation_status": (
+                "authoritative standalone final-aggregation refresh"
+            ),
+            "new_epsilon_response_prefactor_candidate_text": "0.01",
+            **{
+                gate: True
+                for gate in certificate.REQUIRED_EPSILON_CERTIFICATION_GATES
+            },
+        }
+        with tempfile.TemporaryDirectory(prefix="epsilon-gate-test-") as root:
+            path = Path(root) / "epsilon.csv"
+            self._write_epsilon_row(path, row)
+            epsilon, text = certificate._load_epsilon(path, config)
+            self.assertEqual(text, "0.01")
+            self.assertGreater(float(epsilon), 0.0)
+
+            failed = dict(row)
+            failed["input_geometric_remainder_certified"] = False
+            self._write_epsilon_row(path, failed)
+            with self.assertRaisesRegex(
+                ArithmeticError, "input_geometric_remainder_certified"
+            ):
+                certificate._load_epsilon(path, config)
+
+            missing = dict(row)
+            del missing["input_exact_prefix_certified"]
+            self._write_epsilon_row(path, missing)
+            with self.assertRaisesRegex(ArithmeticError, "input_exact_prefix_certified"):
+                certificate._load_epsilon(path, config)
 
     def test_wrong_expected_multiplicity_does_not_invalidate_count(self) -> None:
         triangular = self._diagonal_matrix()
@@ -161,6 +206,84 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
         self.assertTrue(row["schur_diagonal_membership_certified"])
         self.assertFalse(row["finite_count_certified"])
         self.assertFalse(row["theorem_certified"])
+
+    def test_laurent_proposal_table_has_recorded_reference_digests(self) -> None:
+        self.assertEqual(
+            set(certificate._LAURENT_PROPOSALS),
+            set(certificate._LAURENT_REFERENCE_DIGESTS),
+        )
+        self.assertTrue(
+            all(
+                len(digest) == 64
+                for digest in certificate._LAURENT_REFERENCE_DIGESTS.values()
+            )
+        )
+
+    def test_laurent_candidate_generation_is_repeatable(self) -> None:
+        contour = self._contour(
+            expected_multiplicity=1,
+            centre=Fraction(2, 1),
+            radius=Fraction(1, 4),
+            laurent_sample_count=4,
+        )
+        triangular = np.diag(
+            np.asarray([0.5, 0.75], dtype=np.complex128)
+        )
+
+        first = certificate._laurent_coefficients(triangular, contour)
+        second = certificate._laurent_coefficients(triangular, contour)
+
+        np.testing.assert_array_equal(first[0], second[0])
+        np.testing.assert_array_equal(first[1], second[1])
+        self.assertEqual(first[3], second[3])
+        self.assertEqual(first[1].shape, (4, 2, 2))
+        self.assertTrue(first[1].flags.c_contiguous)
+
+    def test_checkpoint_requires_all_seven_reconstruction_records(self) -> None:
+        witnesses = []
+        certificate_rows = []
+        for rank, name in enumerate(certificate._LAURENT_PROPOSALS, 18):
+            sample_count = certificate._LAURENT_PROPOSALS[name][1]
+            digest = certificate._LAURENT_REFERENCE_DIGESTS[name]
+            certificate_rows.append(
+                {
+                    "name": name,
+                    "moat_method": certificate.MOAT_METHOD_LAURENT,
+                    "coefficient_sha256": digest,
+                }
+            )
+            witnesses.append(
+                {
+                    "rank": str(rank),
+                    "name": name,
+                    "laurent_sample_count": str(sample_count),
+                    "coefficient_matrix_count": str(sample_count),
+                    "coefficient_matrix_rows": "600",
+                    "coefficient_matrix_columns": "600",
+                    "coefficient_sha256": digest,
+                    "reference_coefficient_sha256": digest,
+                    "digest_matches_recorded_reference": "True",
+                    "digest_used_in_theorem_gate": "False",
+                    "generated_in_recorded_run": "True",
+                    "candidate_coefficients_validated_exact_dyadic": "True",
+                    "exact_dyadic_residual_sum_upper": "0.5",
+                    "theorem_certified": "True",
+                }
+            )
+
+        self.assertTrue(
+            certificate._laurent_witness_records_are_reusable(
+                witnesses,
+                certificate_rows,
+            )
+        )
+        witnesses[0]["coefficient_sha256"] = "0" * 64
+        self.assertFalse(
+            certificate._laurent_witness_records_are_reusable(
+                witnesses,
+                certificate_rows,
+            )
+        )
 
     def test_zero_complement_requires_strict_exclusion(self) -> None:
         touching = self._contour(

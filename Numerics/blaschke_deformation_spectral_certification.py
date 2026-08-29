@@ -127,7 +127,8 @@ def _write_json(path: Path, value: object) -> None:
 
 
 def _orthonormal_legendre_values(count: int, x: arb) -> list[arb]:
-    """Evaluate the first ``count`` orthonormal Legendre modes by recurrence."""
+    '''Explanation: The first N orthonormal Legendre polynomials are the trial and test coordinates of the finite transfer section. Their recurrence evaluates the whole basis while preserving the L2 normalisation used in the thesis.
+Functionality: Evaluate the first ``count`` orthonormal Legendre modes by recurrence.'''
 
     count = int(count)
     if count <= 0:
@@ -148,7 +149,8 @@ def _orthonormal_legendre_values(count: int, x: arb) -> list[arb]:
 
 
 def _gauss_legendre_rule(order: int) -> tuple[list[arb], list[arb]]:
-    """Certify the complete Gauss--Legendre rule by Arb root isolation."""
+    '''Explanation: Gauss--Legendre nodes are the roots of a Legendre polynomial and integrate low-degree polynomials exactly. Isolating every root and weight in Arb makes the finite assembly a certified quadrature object.
+Functionality: Certify the complete Gauss--Legendre rule by Arb root isolation.'''
 
     order = int(order)
     nodes: list[arb] = []
@@ -171,7 +173,8 @@ def _gauss_legendre_rule(order: int) -> tuple[list[arb], list[arb]]:
 
 
 def _real_branch_values(x: arb, mu: arb, pi: arb) -> tuple[tuple[arb, arb], ...]:
-    """Certify both real inverse branches and transfer weights at one node."""
+    '''Explanation: At each real quadrature node, both inverse images and transfer weights determine the two weighted pullbacks. Rigorous real enclosures ensure the assembled Galerkin entries contain their exact mathematical values.
+Functionality: Certify both real inverse branches and transfer weights at one node.'''
 
     cosine = (pi * x / 2).cos()
     sine = (pi * x / 2).sin()
@@ -196,7 +199,8 @@ def _real_branch_values(x: arb, mu: arb, pi: arb) -> tuple[tuple[arb, arb], ...]
 
 
 def _connection_matrix(count: int, hardy_radius: arb) -> arb_mat:
-    """Construct the scaled Legendre--Chebyshev connection in Arb."""
+    '''Explanation: The finite Legendre matrix and the Hardy-gauge matrix represent the same operator section in two bases. A rigorous connection matrix links them without changing the enclosed eigenvalue problem.
+Functionality: Construct the scaled Legendre--Chebyshev connection in Arb.'''
 
     count = int(count)
     coefficients: list[list[arb]] = []
@@ -249,7 +253,8 @@ def assemble_interval_hardy_matrix(
     config: HardyMatrixCertificateConfig,
     progress: Callable[[int, int], None] | None = None,
 ) -> tuple[arb_mat, dict[str, object]]:
-    """Assemble the complete mathematical Hardy-gauge block in Arb."""
+    '''Explanation: Integrating weighted branch pullbacks against Legendre test modes gives the finite Galerkin operator. Conjugating by the certified basis connection places that entire interval matrix in the packet Hardy gauge used by the contour proof.
+Functionality: Assemble the complete mathematical Hardy-gauge block in Arb.'''
 
     N, M = int(config.N), int(config.M)
     if N < 1 or M < N:
@@ -328,7 +333,8 @@ def _dyadic_midpoint_payload(
     config: HardyMatrixCertificateConfig,
     source_hashes: dict[str, str],
 ) -> tuple[dict[str, object], dict[str, object], np.ndarray]:
-    """Extract an exact-dyadic midpoint and certify its replacement error."""
+    '''Explanation: The deployed finite matrix is stored as exact dyadic midpoints for deterministic replay. The discarded interval radii are not forgotten: their norm becomes an explicit replacement error in the total perturbation budget.
+Functionality: Extract an exact-dyadic midpoint and certify its replacement error.'''
 
     N = interval_matrix.nrows()
     if interval_matrix.ncols() != N:
@@ -394,6 +400,8 @@ def _dyadic_midpoint_payload(
 
 
 def _precision_audit(config: HardyMatrixCertificateConfig) -> dict[str, object]:
+    '''Explanation: Large gauge scalings can consume many binary digits before the desired matrix accuracy is reached. The precision audit checks that Arb has enough resolution and guard digits for those losses, preventing a vacuous enclosure.
+Functionality: Compare the available Arb precision with twice the transport scaling span, requested resolution, and guard-digit budget.'''
     available_digits = float(config.precision_bits) * math.log10(2)
     scale_span = (int(config.N) - 1) * math.log10(float(config.r))
     resolution_digits = -math.log10(float(config.diagnostic_resolution))
@@ -502,7 +510,8 @@ def build_or_load_hardy_matrix_certificate(
     require_precision_budget: bool = True,
     progress: Callable[[int, int], None] | None = None,
 ) -> dict[str, object]:
-    """Transactionally build or validate the fixed Hardy-matrix certificate."""
+    '''Explanation: The contour theorem needs one authoritative finite Hardy matrix together with a proof of how accurately it represents the interval assembly. Transactional construction or hash-checked loading keeps that mathematical object reproducible.
+Functionality: Transactionally build or validate the fixed Hardy-matrix certificate.'''
 
     output_dir = Path(output_dir).resolve()
     data_dir, report_dir = output_dir / "data", output_dir / "reports"
@@ -611,7 +620,8 @@ def build_or_load_hardy_matrix_certificate(
 
 
 def load_exact_dyadic_midpoint(payload_path: Path) -> tuple[arb_mat, dict[str, object]]:
-    """Reconstruct the authoritative exact-dyadic matrix in Arb arithmetic."""
+    '''Explanation: Reconstructing the stored dyadic entries exactly gives every auditor the identical finite matrix, independent of decimal parsing or platform rounding. That exact matrix is the anchor for the finite Schur and Laurent certificates.
+Functionality: Reconstruct the authoritative exact-dyadic matrix in Arb arithmetic.'''
 
     with gzip.open(Path(payload_path), "rb") as handle:
         payload = pickle.load(handle)

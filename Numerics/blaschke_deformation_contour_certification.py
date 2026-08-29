@@ -23,12 +23,15 @@ import json
 import math
 from pathlib import Path
 import pickle
+import platform
+import sys
 import time
 from typing import Iterable
 
 import numpy as np
+import scipy
 from scipy import linalg
-from threadpoolctl import threadpool_limits
+from threadpoolctl import threadpool_info, threadpool_limits
 
 try:
     import flint
@@ -47,7 +50,7 @@ from blaschke_deformation_spectral_certification import (
 
 
 MAP_LABEL = "blaschke_mu_0p3"
-SCHEMA = "blaschke-deformation-24-contour-hybrid-v2"
+SCHEMA = "blaschke-deformation-24-contour-hybrid-v3"
 SCHUR_SCHEMA = "blaschke-deformation-exact-dyadic-schur-v1"
 
 COUNT_METHOD_SCHUR_DIAGONAL = "certified Schur-diagonal algebraic count"
@@ -60,6 +63,28 @@ MOAT_METHOD_LAURENT = (
 CERTIFICATE_ROUTE_SCHUR = "Schur-count/Schur-moat"
 CERTIFICATE_ROUTE_LAURENT = "Schur-count/Laurent-moat"
 COUNT_REFERENCE_MATRIX = "exact-binary upper-triangular Schur matrix T"
+
+# A deterministic epsilon is theorem-eligible only when every fresh Phase 2
+# component gate is present and true. Missing columns fail closed, preventing
+# an inherited aggregate flag from authorising contour reuse.
+REQUIRED_EPSILON_CERTIFICATION_GATES = (
+    "transport_certified",
+    "matrix_certified",
+    "tail_components_interval",
+    "input_boundary_cover_certified",
+    "input_exact_prefix_certified",
+    "input_geometric_remainder_certified",
+    "input_branchwise_profile_certified",
+    "input_combined_row_certified",
+    "input_tail_certified",
+    "response_prefactor_certified",
+    "response_boundary_cover_certified",
+    "response_coherent_prefix_certified",
+    "response_remainder_certified",
+    "finite_M_prefactor_certified",
+    "final_phase2_certified",
+    "total_certified",
+)
 
 
 @dataclass(frozen=True)
@@ -110,6 +135,18 @@ _LAURENT_PROPOSALS: dict[str, tuple[Fraction, int]] = {
     "alpha^18": (Fraction(1, 5), 48),
 }
 
+# Historical full-tensor digests are provenance checks only.  They do not enter
+# any Schur count, Laurent residual, moat, homotopy or small-gain theorem gate.
+_LAURENT_REFERENCE_DIGESTS: dict[str, str] = {
+    "mu^5": "5ff9d98a62ed213189da64d7ace168a555816a6b32b8d750fbce0d196a9cd982",
+    "alpha^14": "00a85f99c6369d6a2364b9e9626b4216d64da9646fda9599e56dd21c9f32f3ab",
+    "alpha^15": "4da5d5813112f4e74550c35bd8e72bd00fee1d5d6978098a93a1dbeb313fe02a",
+    "alpha^16": "9ada35489c32a58968c11f5bba84929caed6470247568e865d350701bb3f7d23",
+    "mu^6": "9a6809ba73c82b5b64cfba6a22a35465dade23f5327f47189e8fc83e2a1c7324",
+    "alpha^17": "cf57966aca93efcc91ecc727e82199f08a3098a404b9c616cdaaac78f12ec42c",
+    "alpha^18": "e774344bd462abfca87b819e3de75acbe3e10c3e7cea2015814a44a95c6c6a17",
+}
+
 
 def _fraction_text(value: Fraction) -> str:
     return f"{value.numerator}/{value.denominator}"
@@ -134,6 +171,8 @@ def _exact_complex128(value: complex) -> acb:
 
 
 def _numpy_to_acb_exact(matrix: np.ndarray) -> acb_mat:
+    '''Explanation: Every binary64 number is an exact dyadic rational. Embedding those dyadics exactly in ACB prevents an unrecorded conversion error from entering the finite matrix used in the Riesz-projector proof.
+Functionality: Convert every binary64 complex matrix entry exactly to an Arb/ACB ball and return the resulting matrix.'''
     matrix = np.asarray(matrix, dtype=np.complex128)
     rows, columns = matrix.shape
     return acb_mat(
@@ -148,6 +187,8 @@ def _numpy_to_acb_exact(matrix: np.ndarray) -> acb_mat:
 
 
 def _frobenius_upper(matrix: acb_mat) -> arb:
+    '''Explanation: The Frobenius norm dominates the operator norm. It therefore turns entrywise ball enclosures into a single safe perturbation size for the matrix homotopies in the contour argument.
+Functionality: Sum outward-rounded squared entry magnitudes and return a certified upper bound for the Frobenius norm.'''
     total = arb(0)
     for row in range(matrix.nrows()):
         for column in range(matrix.ncols()):
@@ -207,7 +248,38 @@ def _csv_bool(value: object) -> bool:
     return str(value).strip().lower() in {"true", "1", "yes", "y"}
 
 
+def _runtime_fingerprint() -> dict[str, object]:
+    """Record the binary64 toolchain that determines proposal tensor bytes."""
+
+    blas_records = []
+    for record in threadpool_info():
+        blas_records.append(
+            {
+                key: record.get(key)
+                for key in (
+                    "user_api",
+                    "internal_api",
+                    "version",
+                    "threading_layer",
+                    "architecture",
+                    "num_threads",
+                )
+            }
+        )
+    return {
+        "python": sys.version.replace("\n", " "),
+        "platform": platform.platform(),
+        "byteorder": sys.byteorder,
+        "numpy": np.__version__,
+        "scipy": scipy.__version__,
+        "python_flint": getattr(flint, "__version__", "unknown"),
+        "blas": blas_records,
+    }
+
+
 def _target_contours(config: ContourCertificateConfig) -> list[TargetContour]:
+    '''Explanation: A Riesz projector has constant rank while its contour stays in the resolvent set. The 24 separated circles isolate the alpha and mu spectral packets whose algebraic multiplicities the thesis certifies, while deliberately excluding zero.
+Functionality: Construct and order the 24 exact rational alpha- and mu-family contours with separated radii, multiplicities, and Laurent fallback settings.'''
     alpha = Fraction(config.alpha_numerator, config.alpha_denominator)
     mu = Fraction(config.mu_numerator, config.mu_denominator)
     raw: list[tuple[Fraction, str, str, int, int]] = []
@@ -305,13 +377,23 @@ def _load_epsilon(
         "M": str(config.M),
         "rho": str(config.rho),
         "r": str(config.r),
-        "phase2_aggregation_status": "authoritative Cell 24C refresh",
+        "phase2_aggregation_status": (
+            "authoritative standalone final-aggregation refresh"
+        ),
     }
     for key, value in expected.items():
         if str(row.get(key, "")) != value:
             raise ValueError(f"Deterministic epsilon geometry mismatch for {key}.")
-    if str(row.get("total_certified", "")).lower() != "true":
-        raise ArithmeticError("The deterministic epsilon row is not certified.")
+    failed_gates = tuple(
+        gate
+        for gate in REQUIRED_EPSILON_CERTIFICATION_GATES
+        if not _csv_bool(row.get(gate, False))
+    )
+    if failed_gates:
+        raise ArithmeticError(
+            "The deterministic epsilon row is not certified; missing or false gates: "
+            + ", ".join(failed_gates)
+        )
     value = str(row.get("new_epsilon_response_prefactor_candidate_text", ""))
     if not value:
         raise ValueError("The deterministic epsilon certificate has no exact text value.")
@@ -360,7 +442,8 @@ def _validate_schur_similarity(
     A_exact: acb_mat,
     config: ContourCertificateConfig,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, object]]:
-    """Validate an exact-binary Schur intertwining against exact A_N^circ."""
+    '''Explanation: A Schur similarity preserves eigenvalues and algebraic multiplicity. Certifying the intertwining relation makes the triangular diagonal a legitimate source of exact finite-dimensional contour counts rather than a floating-point heuristic.
+Functionality: Validate an exact-binary Schur intertwining against exact A_N^circ.'''
 
     started = time.time()
     with threadpool_limits(limits=int(config.flint_threads), user_api="blas"):
@@ -427,12 +510,8 @@ def _certified_schur_diagonal_geometry(
     triangular: np.ndarray,
     contour: TargetContour,
 ) -> dict[str, object]:
-    """Certify Schur-diagonal membership and distance from one contour.
-
-    This is not a numerical argument-principle contour integral.  It is the
-    certified algebraic count obtained from the diagonal of the exact-binary
-    upper-triangular Schur matrix.
-    """
+    '''Explanation: The eigenvalues of an upper-triangular matrix are its diagonal entries with multiplicity. Certified inside/outside distance tests therefore count the finite eigenvalues enclosed by a circle without relying on a sampled winding number.
+Functionality: Certify Schur-diagonal membership and distance from one contour. This is not a numerical argument-principle contour integral. It is the certified algebraic count obtained from the diagonal of the exact-binary upper-triangular Schur matrix.'''
 
     triangular = np.asarray(triangular, dtype=np.complex128)
     if triangular.ndim != 2 or triangular.shape[0] != triangular.shape[1]:
@@ -478,7 +557,8 @@ def _uniform_triangular_inverse_bound(
     contour: TargetContour,
     diagonal_geometry: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    """Bound the triangular resolvent over the complete rational circle."""
+    '''Explanation: On a circle separated from the Schur diagonal, the strictly upper-triangular part is nilpotent. A finite Neumann expansion then bounds the inverse uniformly around the complete circle and supplies a resolvent moat.
+Functionality: Bound the triangular resolvent over the complete rational circle.'''
 
     N = triangular.shape[0]
     geometry = (
@@ -523,6 +603,8 @@ def _schur_contour_attempt(
     eta_A: arb,
     epsilon: arb,
 ) -> dict[str, object]:
+    '''Explanation: This is the finite-to-infinite bridge: the Schur diagonal gives the finite count, the triangular inverse gives the moat, and a strict small-gain inequality prevents the exact operator homotopy from crossing the contour.
+Functionality: Derive one Schur-diagonal count, triangular complete-circle moat, perturbation transports, and finite-to-exact small-gain verdict.'''
     diagonal_geometry = _certified_schur_diagonal_geometry(
         triangular, contour
     )
@@ -633,6 +715,8 @@ def _laurent_coefficients(
     reference_float: np.ndarray,
     contour: TargetContour,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, str, float]:
+    '''Explanation: A matrix resolvent on a circle has a Fourier--Laurent description. Discrete samples propose coefficients for an approximate inverse, but at this stage they are only a candidate for the later whole-circle interval proof.
+Functionality: Sample the resolvent on an equispaced circle and Fourier-transform the samples into proposed Laurent inverse coefficients and residual diagnostics.'''
     sample_count = int(contour.laurent_sample_count or 0)
     if sample_count < 4:
         raise ValueError(f"No Laurent proposal is configured for {contour.name}.")
@@ -674,12 +758,8 @@ def _laurent_contour_certificate(
     eta_A: arb,
     epsilon: arb,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
-    """Validate a complete-circle Laurent approximate inverse in Arb.
-
-    The Laurent approximate inverse certifies the complete-circle resolvent
-    moat only.  The finite algebraic count is obtained from the validated
-    Schur diagonal and transported through the matrix homotopies.
-    """
+    '''Explanation: If a Laurent matrix polynomial has residual norm below one everywhere on the circle, a Neumann argument proves the true resolvent exists there. This supplies the rigorous moat when the triangular Schur bound is too pessimistic.
+Functionality: Validate a complete-circle Laurent approximate inverse in Arb. The Laurent approximate inverse certifies the complete-circle resolvent moat only. The finite algebraic count is obtained from the validated Schur diagonal and transported through the matrix homotopies.'''
 
     started = time.time()
     diagonal_geometry = _certified_schur_diagonal_geometry(
@@ -778,6 +858,7 @@ def _laurent_contour_certificate(
         status = "benchmark_multiplicity_mismatch"
     else:
         status = "certificate_failed"
+    reference_digest = _LAURENT_REFERENCE_DIGESTS.get(contour.name, "")
     row = {
         **_base_result_row(contour),
         "count_method": COUNT_METHOD_SCHUR_DIAGONAL,
@@ -795,6 +876,20 @@ def _laurent_contour_certificate(
         "minimum_laurent_mode": int(modes.min()),
         "maximum_laurent_mode": int(modes.max()),
         "coefficient_sha256": digest,
+        "reference_coefficient_sha256": reference_digest,
+        "coefficient_digest_matches_recorded_reference": bool(
+            reference_digest and digest == reference_digest
+        ),
+        "coefficient_digest_used_in_theorem_gate": False,
+        "candidate_coefficient_matrix_count": int(len(modes)),
+        "candidate_coefficient_matrix_rows": int(N),
+        "candidate_coefficient_matrix_columns": int(N),
+        "candidate_coefficient_dtype": "complex128",
+        "candidate_coefficient_layout": "C-contiguous signed-mode order",
+        "candidate_generation_method": (
+            "FFT of complete-circle binary64 Schur-resolvent samples"
+        ),
+        "candidate_generated_in_recorded_run": True,
         "maximum_sample_inverse_residual_diagnostic": float(
             np.max(sample_residuals)
         ),
@@ -855,9 +950,108 @@ def _certificate_paths(output_dir: Path, config: ContourCertificateConfig) -> di
         "schur_report": reports / f"{stem}_validated_schur.json",
         "schur_attempts": data / f"{stem}_schur_attempts.csv",
         "laurent_modes": data / f"{stem}_laurent_mode_bounds.csv",
+        "laurent_witnesses": data / f"{stem}_laurent_witness_reconstruction.csv",
         "certificate": data / f"{stem}_spectral_certificate.csv",
         "report": reports / f"{stem}_spectral_certificate.json",
     }
+
+
+def _laurent_witness_rows(
+    final_rows: Iterable[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Extract one provenance record for each generated Laurent tensor."""
+
+    rows = []
+    for result in final_rows:
+        if result.get("moat_method") != MOAT_METHOD_LAURENT:
+            continue
+        rows.append(
+            {
+                "rank": result["rank"],
+                "name": result["name"],
+                "laurent_sample_count": result["laurent_sample_count"],
+                "minimum_laurent_mode": result["minimum_laurent_mode"],
+                "maximum_laurent_mode": result["maximum_laurent_mode"],
+                "coefficient_matrix_count": result[
+                    "candidate_coefficient_matrix_count"
+                ],
+                "coefficient_matrix_rows": result[
+                    "candidate_coefficient_matrix_rows"
+                ],
+                "coefficient_matrix_columns": result[
+                    "candidate_coefficient_matrix_columns"
+                ],
+                "coefficient_dtype": result["candidate_coefficient_dtype"],
+                "coefficient_layout": result["candidate_coefficient_layout"],
+                "generation_method": result["candidate_generation_method"],
+                "coefficient_sha256": result["coefficient_sha256"],
+                "reference_coefficient_sha256": result[
+                    "reference_coefficient_sha256"
+                ],
+                "digest_matches_recorded_reference": result[
+                    "coefficient_digest_matches_recorded_reference"
+                ],
+                "digest_used_in_theorem_gate": result[
+                    "coefficient_digest_used_in_theorem_gate"
+                ],
+                "generated_in_recorded_run": result[
+                    "candidate_generated_in_recorded_run"
+                ],
+                "candidate_coefficients_validated_exact_dyadic": result[
+                    "candidate_coefficients_validated_exact_dyadic"
+                ],
+                "exact_dyadic_residual_sum_upper": result[
+                    "exact_dyadic_residual_sum_upper"
+                ],
+                "theorem_certified": result["theorem_certified"],
+            }
+        )
+    rows.sort(key=lambda row: int(row["rank"]))
+    return rows
+
+
+def _laurent_witness_records_are_reusable(
+    witness_rows: list[dict[str, str]],
+    certificate_rows: list[dict[str, str]],
+) -> bool:
+    """Check the persisted evidence for all seven reconstructed tensors."""
+
+    if len(witness_rows) != len(_LAURENT_PROPOSALS):
+        return False
+    certificate_by_name = {
+        row.get("name", ""): row
+        for row in certificate_rows
+        if row.get("moat_method") == MOAT_METHOD_LAURENT
+    }
+    if set(certificate_by_name) != set(_LAURENT_PROPOSALS):
+        return False
+    for witness in witness_rows:
+        name = witness.get("name", "")
+        certificate = certificate_by_name.get(name)
+        if certificate is None:
+            return False
+        expected_digest = _LAURENT_REFERENCE_DIGESTS.get(name)
+        observed_digest = witness.get("coefficient_sha256")
+        if not (
+            expected_digest
+            and observed_digest == expected_digest
+            and observed_digest == certificate.get("coefficient_sha256")
+            and witness.get("reference_coefficient_sha256") == expected_digest
+            and _csv_bool(witness.get("digest_matches_recorded_reference"))
+            and not _csv_bool(witness.get("digest_used_in_theorem_gate"))
+            and _csv_bool(witness.get("generated_in_recorded_run"))
+            and _csv_bool(
+                witness.get("candidate_coefficients_validated_exact_dyadic")
+            )
+            and _csv_bool(witness.get("theorem_certified"))
+            and int(witness.get("coefficient_matrix_count", 0))
+            == int(witness.get("laurent_sample_count", -1))
+            and int(witness.get("coefficient_matrix_rows", 0)) == 600
+            and int(witness.get("coefficient_matrix_columns", 0)) == 600
+            and float(witness.get("exact_dyadic_residual_sum_upper", 1.0)) < 1.0
+        ):
+            return False
+    return True
 
 
 def _validate_target_contour_plan(
@@ -866,7 +1060,8 @@ def _validate_target_contour_plan(
     expected_target_count: int | None = None,
     expected_total_multiplicity: int | None = None,
 ) -> list[TargetContour]:
-    """Validate disjoint target circles and strict silent-zero exclusion."""
+    '''Explanation: Disjoint contours prevent one spectral packet from being counted twice, and strict separation from zero prevents the silent zero cluster from contaminating the nonzero multiplicity total. These are structural hypotheses of the thesis count.
+Functionality: Validate disjoint target circles and strict silent-zero exclusion.'''
 
     contours = list(contours)
     if expected_target_count is not None and len(contours) != int(
@@ -896,10 +1091,12 @@ def _existing_geometry_is_reusable(
     *,
     existing: dict[str, object],
     rows: list[dict[str, str]],
+    witness_rows: list[dict[str, str]],
     source_hashes: dict[str, str],
     geometry_input_hashes: dict[str, str],
 ) -> bool:
-    """Validate cached counts and moats independently of the current epsilon."""
+    '''Explanation: Finite Schur counts and finite-matrix moats do not depend on a later refinement of the exact-operator perturbation radius. Hash and geometry checks justify retaining those proved facts while recomputing only the changed small-gain step.
+Functionality: Validate cached counts and moats independently of the current epsilon.'''
 
     if existing.get("certificate_schema") != SCHEMA or len(rows) != 24:
         return False
@@ -937,6 +1134,16 @@ def _existing_geometry_is_reusable(
         for row in rows
     ):
         return False
+    if not _laurent_witness_records_are_reusable(witness_rows, rows):
+        return False
+    if not (
+        int(existing.get("laurent_witness_count", 0)) == 7
+        and int(existing.get("laurent_coefficient_matrix_count", 0)) == 300
+        and bool(existing.get("all_laurent_witnesses_reconstructed_in_recorded_run"))
+        and bool(existing.get("all_laurent_digests_match_recorded_reference"))
+        and not bool(existing.get("laurent_digests_used_in_any_theorem_gate"))
+    ):
+        return False
     schur_rows = sum(
         row.get("moat_method") == MOAT_METHOD_SCHUR_TRIANGULAR for row in rows
     )
@@ -950,7 +1157,8 @@ def _reaggregate_small_gain_rows(
     rows: list[dict[str, str]],
     epsilon: arb,
 ) -> list[dict[str, object]]:
-    """Reuse certified finite moats and recompute only epsilon-dependent gates."""
+    '''Explanation: The final rank transfer depends on the product of the updated perturbation radius and each already-certified resolvent bound. Re-evaluating that inequality is enough to decide whether every finite count still transfers to the exact operator.
+Functionality: Reuse certified finite moats and recompute only epsilon-dependent gates.'''
 
     refreshed: list[dict[str, object]] = []
     epsilon_upper = _upper_float(epsilon)
@@ -1014,7 +1222,8 @@ def _reaggregate_existing_certificate(
     source_hashes: dict[str, str],
     input_hashes: dict[str, str],
 ) -> dict[str, object]:
-    """Refresh a final package after an epsilon-only provenance change."""
+    '''Explanation: A certificate is a chain of claims, not just a table of numbers. Reaggregation preserves the independently validated finite geometry and rebuilds all epsilon-dependent conclusions so stale truth flags cannot survive a changed perturbation bound.
+Functionality: Refresh a final package after an epsilon-only provenance change.'''
 
     started = time.time()
     refreshed = _reaggregate_small_gain_rows(rows, epsilon)
@@ -1065,7 +1274,8 @@ def certify_all_target_contours(
     force: bool = False,
     progress: bool = True,
 ) -> dict[str, object]:
-    """Build and transactionally promote all twenty-four contour certificates."""
+    '''Explanation: The thesis conclusion is obtained only after every target circle has both a certified finite count and a certified moat satisfying small gain. Their 24 transferred ranks then give the complete nonzero algebraic multiplicity total.
+Functionality: Build and transactionally promote all twenty-four contour certificates.'''
 
     output_dir = Path(output_dir).resolve()
     paths = _certificate_paths(output_dir, config)
@@ -1079,12 +1289,19 @@ def certify_all_target_contours(
         **geometry_input_hashes,
         "epsilon_certificate": sha256_file(epsilon_certificate_path),
     }
-    if not force and paths["report"].exists() and paths["certificate"].exists():
+    if (
+        not force
+        and paths["report"].exists()
+        and paths["certificate"].exists()
+        and paths["laurent_witnesses"].exists()
+    ):
         existing = json.loads(paths["report"].read_text(encoding="utf-8"))
         existing_rows = _read_csv(paths["certificate"])
+        existing_witness_rows = _read_csv(paths["laurent_witnesses"])
         if _existing_geometry_is_reusable(
             existing=existing,
             rows=existing_rows,
+            witness_rows=existing_witness_rows,
             source_hashes=source_hashes,
             geometry_input_hashes=geometry_input_hashes,
         ):
@@ -1328,6 +1545,28 @@ def certify_all_target_contours(
         ):
             raise AssertionError("The terminal twenty-four-target audit failed.")
         _write_csv(paths["certificate"], final_rows)
+        witness_rows = _laurent_witness_rows(final_rows)
+        _write_csv(paths["laurent_witnesses"], witness_rows)
+        persisted_witness_rows = _read_csv(paths["laurent_witnesses"])
+        persisted_certificate_rows = _read_csv(paths["certificate"])
+        if not _laurent_witness_records_are_reusable(
+            persisted_witness_rows,
+            persisted_certificate_rows,
+        ):
+            raise AssertionError(
+                "The persisted Laurent reconstruction manifest failed validation."
+            )
+        coefficient_matrix_count = sum(
+            int(row["coefficient_matrix_count"]) for row in witness_rows
+        )
+        all_digest_matches = all(
+            bool(row["digest_matches_recorded_reference"])
+            for row in witness_rows
+        )
+        if coefficient_matrix_count != 300 or not all_digest_matches:
+            raise AssertionError(
+                "The clean-room Laurent tensors did not reproduce the recorded bytes."
+            )
         report = {
             "certificate_schema": SCHEMA,
             "map_label": MAP_LABEL,
@@ -1345,6 +1584,21 @@ def certify_all_target_contours(
             "schur_count_target_count": 24,
             "schur_triangular_moat_target_count": schur_moat_count,
             "laurent_moat_target_count": laurent_moat_count,
+            "laurent_witness_count": len(witness_rows),
+            "laurent_coefficient_matrix_count": coefficient_matrix_count,
+            "all_laurent_witnesses_reconstructed_in_recorded_run": True,
+            "all_laurent_digests_match_recorded_reference": all_digest_matches,
+            "laurent_digests_used_in_any_theorem_gate": False,
+            "laurent_candidate_storage_policy": (
+                "transient coefficient tensors; persisted full-tensor digests "
+                "and exact-dyadic modewise validation bounds"
+            ),
+            "finite_geometry_generation_status": (
+                "forced_source_reconstruction"
+                if force
+                else "source_reconstruction_after_cache_miss"
+            ),
+            "binary64_candidate_runtime": _runtime_fingerprint(),
             "all_finite_counts_schur_derived": True,
             "all_24_targets_theorem_certified": all_theorem,
             "all_schur_diagonal_memberships_certified": all_memberships,
@@ -1366,6 +1620,9 @@ def certify_all_target_contours(
             "geometry_input_hashes": geometry_input_hashes,
             "input_hashes": input_hashes,
             "artifacts": {key: str(value) for key, value in paths.items()},
+            "laurent_witness_reconstruction_sha256": sha256_file(
+                paths["laurent_witnesses"]
+            ),
             "elapsed_seconds": time.time() - started,
             "status": "theorem-certified twenty-four-target Riesz-rank package",
         }

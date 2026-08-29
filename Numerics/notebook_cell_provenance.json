@@ -1,0 +1,2774 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
+  "notebook": {
+    "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
+    "sha256_at_manifest_creation": "8951e32d004283135d674e18a445792812a265472b97b1f5154537c4e8d2424f",
+    "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
+    "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
+    "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 140-cell, 68-code-cell notebook, including Cell 0M and the two source-only diagnostic producers.",
+    "expected_retained_cell_count": 140,
+    "expected_retained_code_cell_count": 68,
+    "expected_visual_cell_count": 20,
+    "expected_stored_png_output_count": 33,
+    "map_label": "blaschke_mu_0p3",
+    "execution_order": "top-to-bottom stateful Jupyter execution"
+  },
+  "prepared_cell_indices": {
+    "Cell 3": 4,
+    "Cell 4A": 5,
+    "Cell 4": 7,
+    "inline-module support": 11,
+    "mpmath_pf_raw": 13,
+    "Cell 6": 14,
+    "Cell 7": 18,
+    "Cell 8": 20,
+    "Cell 9": 22,
+    "Cell 11": 25,
+    "Cell 12": 27,
+    "Cell 14": 30,
+    "Cell 15": 32,
+    "Cell 17": 34,
+    "Cell 18": 36,
+    "blaschke_deformation_phase2_geometry": 38,
+    "blaschke_deformation_phase2_transport": 40,
+    "blaschke_deformation_phase2_matrix": 42,
+    "blaschke_deformation_phase2_pipeline": 44,
+    "Cell 19": 48,
+    "Cell 20": 50,
+    "Cell 21": 52,
+    "Cell 22": 54,
+    "Cell 23": 56,
+    "Cell 24": 58,
+    "Cell 24A": 62,
+    "blaschke_deformation_certification": 65,
+    "Cell 24B": 69,
+    "Cell 24C": 72,
+    "Cell 24D": 73,
+    "Cell 24E": 74,
+    "Cell 25": 76,
+    "Cell 26": 78,
+    "Cell 27": 80,
+    "Cell 30": 84,
+    "Cell 31": 86,
+    "Cell 32": 88,
+    "Cell 33": 90,
+    "Cell 34": 92,
+    "Cell 38": 104,
+    "Cell 38B": 106,
+    "Cell 40": 110,
+    "Cell 81": 118,
+    "Cell 82": 120,
+    "Cell 82B": 122,
+    "Cell 82G": 127,
+    "Cell 82F": 129,
+    "Cell 100": 151,
+    "Cell 102": 153,
+    "blaschke_deformation_spectral_certification": 157,
+    "Cell 102A": 158,
+    "blaschke_deformation_contour_certification": 161,
+    "structural Phase 4 provenance tests": 163,
+    "Cell 103": 164,
+    "blaschke_deformation_historical_comparisons": 46,
+    "blaschke_deformation_phase2_finite_m": 61,
+    "blaschke_deformation_phase2_resolved_response": 68,
+    "blaschke_deformation_phase2_final_aggregation": 71
+  },
+  "path_roots": {
+    "HELPER_DIR": "Final Deployment/Numerics",
+    "LEGACY_OUTPUT_DIR": "the OUTPUT_DIR selected by Cell 3 before Cell 4A",
+    "OUTPUT_DIR": "LEGACY_OUTPUT_DIR/blaschke_deformation_certifier",
+    "DATA_DIR": "OUTPUT_DIR/data",
+    "FIG_DIR": "OUTPUT_DIR/figures",
+    "REPORT_DIR": "OUTPUT_DIR/reports"
+  },
+  "retention": {
+    "index_space": "zero-based transformation-source notebook cell indices",
+    "source_notebook_included_code_cell_indices": [
+      4,
+      5,
+      7,
+      11,
+      13,
+      14,
+      18,
+      20,
+      22,
+      25,
+      27,
+      30,
+      32,
+      34,
+      36,
+      38,
+      40,
+      42,
+      44,
+      46,
+      48,
+      50,
+      53,
+      55,
+      56,
+      57,
+      58,
+      60,
+      62,
+      64,
+      68,
+      70,
+      72,
+      74,
+      76,
+      84,
+      86,
+      90,
+      98,
+      100,
+      102,
+      107,
+      109,
+      129,
+      131,
+      135,
+      136,
+      139,
+      141,
+      142
+    ],
+    "excluded_code_cells": {
+      "superseded_sampled_first_fifteen_phase4": [
+        80,
+        82,
+        88,
+        92,
+        94,
+        96
+      ],
+      "duplicate_archive_static_and_interactive": [
+        104
+      ],
+      "asymmetric_map_material": [
+        111,
+        113,
+        115,
+        117,
+        119,
+        121,
+        123,
+        125
+      ],
+      "unused_generic_certification_helper": [
+        17
+      ],
+      "archive_packaging": [
+        157
+      ],
+      "blank": [
+        158
+      ]
+    },
+    "excluded_non_code_cells": {
+      "notebook_update_markdown": [
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155
+      ],
+      "unused_generic_helper_heading": [
+        16
+      ],
+      "archive_packaging_heading": [
+        156
+      ],
+      "note": "These markdown cells are outside the retained symmetric code-cell manifest."
+    },
+    "partial_cell_filters": {
+      "Cell 4": "The transformed cell contains only the locked blaschke_mu_0p3 configuration.",
+      "Cell 7": "Only helper definitions used by the retained dependency graph are recorded; dashboard and obsolete sampled-Phase-4 helpers are excluded.",
+      "Cell 8": "The transformed cell contains only the blaschke_mu_0p3 map construction and exact target families.",
+      "Cell 24A": "Only the balanced N=600, M=610 finite-M certificate is retained; the wide-row and first-fifteen compatibility branch is excluded.",
+      "Cells 38, 38B and 40": "Only independent file-backed sampled diagnostics and plotting.py calls are retained; the superseded sampled certification workflow remains excluded.",
+      "Cells 82G and 82F": "Only the static display and helper-owned dashboard presentation are retained; archive and update-history material remains excluded.",
+      "Cells 100 and 102": "Only symmetric-benchmark presentation diagnostics are retained; generic unknown-spectrum claims are excluded."
+    }
+  },
+  "proof_status_vocabulary": {
+    "infrastructure_only": "Execution, import, path or provenance support; no mathematical claim is certified by this entry alone.",
+    "empirical_diagnostic": "Numerical or sampled evidence only; excluded from theorem gates.",
+    "presentation_only": "Transforms retained results into tables, reports or figures without strengthening proof status.",
+    "certified_input_producer": "Reconstructs theorem-facing certificate inputs from displayed source and validated arithmetic before downstream aggregation.",
+    "certified_component": "Validated arithmetic establishes a theorem-facing component bound, subject to listed upstream sources.",
+    "certified_finite_matrix": "Validated arithmetic encloses the finite Hardy-gauge matrix and its exact-dyadic reference.",
+    "certified_spectral_transfer": "Complete-contour finite-to-exact Riesz-rank certification.",
+    "validation_test": "Tests proof-routing and failure behaviour; supports but does not replace the certificate."
+  },
+  "entries": {
+    "Phase 1 diagnostic producer": {
+      "cell_id": "producer-phase1-diagnostics",
+      "helper_functions": {
+        "Final Deployment/Numerics/blaschke_deformation_phase1_diagnostics.py": [
+          "Phase1DiagnosticsConfig",
+          "rebuild_phase1_diagnostics"
+        ],
+        "Final Deployment/Numerics/mpmath_pf_raw.py": [
+          "run_pair_sweep_mpmath_raw"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 4::cfg",
+        "Cell 8::SELECTED_MAP_SPEC",
+        "Cell 11::run_pair_sweep_mpmath_raw",
+        "Cell 11::SELECTED_REFERENCE_CLUSTERS",
+        "Cell 11::RAW_SWEEP_TARGET_CLUSTER_COUNT"
+      ],
+      "execution_mode": {
+        "kind": "source_regenerated_phase1_diagnostic_producer",
+        "parallelism": "one pair at a time with up to 24 process-based row-block assembly workers",
+        "arithmetic": "180-digit mpmath transfer assembly and eigensolution",
+        "cache_policy": "no destination dataset is accepted as an input; all retained Phase 1 diagnostics are staged from the map and worker source"
+      },
+      "products": {
+        "prior_results": [
+          "PHASE1_DIAGNOSTICS_RESULT"
+        ],
+        "files": [
+          "DATA_DIR/phase1_eigencloud_match_N{N}_M{M}.csv for four locked cloud pairs",
+          "DATA_DIR/phase1_eigencloud_eigenvalues_N{N}_M{M}.csv for four locked cloud pairs",
+          "DATA_DIR/phase1_raw_error_vs_M_N25.csv",
+          "DATA_DIR/phase1_raw_NM_heatmap_data_near_square.csv",
+          "REPORT_DIR/blaschke_deformation_phase1_diagnostics_rebuild.json"
+        ]
+      },
+      "proof_status": {
+        "class": "source_regenerated_empirical_diagnostic",
+        "claim": "Rebuilds retained Phase 1 empirical inputs from the locked symmetric map and raw Legendre--Gauss transfer worker; these outputs are not theorem gates."
+      },
+      "unresolved_provenance": []
+    },
+    "Sampled Schur diagnostic producer": {
+      "cell_id": "producer-sampled-schur-diagnostics",
+      "helper_functions": {
+        "Final Deployment/Numerics/blaschke_deformation_sampled_schur_diagnostics.py": [
+          "SampledSchurDiagnosticsConfig",
+          "rebuild_sampled_schur_diagnostics"
+        ],
+        "Final Deployment/Numerics/transfer_spectrum_certification.py": [
+          "sampled_schur_envelope"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 9::geometry_record",
+        "Cell 18::kappa_T_numeric"
+      ],
+      "execution_mode": {
+        "kind": "source_regenerated_sampled_schur_diagnostic_producer",
+        "parallelism": "single process",
+        "arithmetic": "binary64 diagnostic evaluation of the sampled closed envelope",
+        "cache_policy": "the destination CSV is never accepted as an input"
+      },
+      "products": {
+        "prior_results": [
+          "SAMPLED_SCHUR_DIAGNOSTICS_RESULT"
+        ],
+        "files": [
+          "DATA_DIR/transfer_lab_blaschke_mu_0p3_generic_sampled_schur_envelope.csv",
+          "REPORT_DIR/blaschke_deformation_sampled_schur_diagnostics_rebuild.json"
+        ]
+      },
+      "proof_status": {
+        "class": "source_regenerated_empirical_diagnostic",
+        "claim": "Rebuilds the six sampled Schur comparison rows used by the diagnostic ladder; the rows are not theorem-facing certificates."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 3": {
+      "cell_index": 4,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [],
+      "execution_mode": {
+        "kind": "kernel_setup",
+        "parallelism": "single process",
+        "arithmetic": "mpmath configured to 160 decimal digits",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "OUTPUT_DIR",
+          "FIG_DIR",
+          "DATA_DIR",
+          "REPORT_DIR",
+          "PALETTE",
+          "PALETTE_EXTRA",
+          "THESIS_LINE_COLOURS",
+          "THESIS_ERROR_CMAP",
+          "THESIS_EXCESS_CMAP",
+          "phase1_gradient_palette"
+        ],
+        "files": [
+          "OUTPUT_DIR",
+          "FIG_DIR",
+          "DATA_DIR",
+          "REPORT_DIR"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Defines numerical precision, plotting conventions and output roots only."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 4A": {
+      "cell_index": 5,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [
+        "LEGACY_OUTPUT_DIR/data/branch_image_phase1_raw_eigs_N600_M610.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 3::OUTPUT_DIR"
+      ],
+      "execution_mode": {
+        "kind": "output_tree_bootstrap",
+        "parallelism": "configures exactly 24 process workers",
+        "arithmetic": "none",
+        "cache_policy": "copy retained non-Phase-2 diagnostic artifacts only when the dedicated target is absent"
+      },
+      "products": {
+        "prior_results": [
+          "CERTIFIER_PROCESS_WORKERS",
+          "CERTIFIER_BATCH_EXECUTION",
+          "OUTPUT_DIR",
+          "FIG_DIR",
+          "DATA_DIR",
+          "REPORT_DIR"
+        ],
+        "files": [
+          "DATA_DIR copies of the retained non-Phase-2 diagnostic files listed above"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Creates the dedicated output tree without staging any Phase 2 comparison or theorem-facing producer output."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 4": {
+      "cell_index": 7,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 3::os",
+        "Cell 3::mp"
+      ],
+      "execution_mode": {
+        "kind": "deterministic_configuration",
+        "parallelism": "24 configured workers",
+        "arithmetic": "mpmath precision reset to cfg.dps, default 180 decimal digits",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "Config",
+          "cfg",
+          "CERTIFIER_MAP_LABEL",
+          "CERTIFIER_TRIVIAL_TARGETS",
+          "CERTIFIER_NONTRIVIAL_TARGETS",
+          "CERTIFIER_TOTAL_TARGETS"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Locks the numerical appendix to the symmetric blaschke_mu_0p3 benchmark and at most twenty-four process workers."
+      },
+      "unresolved_provenance": []
+    },
+    "inline-module support": {
+      "cell_index": 11,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [],
+      "execution_mode": {
+        "kind": "inline_module_loader",
+        "parallelism": "single process installation; generated modules are importable by later process workers",
+        "arithmetic": "none",
+        "cache_policy": "fresh temporary directory per kernel execution with SHA-256 verification"
+      },
+      "products": {
+        "prior_results": [
+          "INLINE_MODULE_PATHS",
+          "INLINE_MODULE_SHA256",
+          "_install_inline_module"
+        ],
+        "files": [
+          "temporary helper-directory copies named by inline module"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Binds displayed helper source to executable imports through an exact source digest."
+      },
+      "unresolved_provenance": []
+    },
+    "mpmath_pf_raw": {
+      "cell_index": 13,
+      "source_file": "Final Deployment/Numerics/mpmath_pf_raw.py",
+      "source_sha256": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
+      "helper_functions": {},
+      "helper_symbols": {},
+      "defined_functions": [
+        "frobenius_norm_mp",
+        "gauss_legendre_mp",
+        "ortho_legendre_values",
+        "serialisable_map_spec",
+        "make_transfer_map",
+        "exact_clusters_for_map",
+        "assemble_transfer_block",
+        "assemble_pure_scaled_transfer_block",
+        "greedy_cluster_errors",
+        "run_N_sweep_mpmath_raw",
+        "run_pair_sweep_mpmath_raw",
+        "build_reference_clusters_mpmath_raw"
+      ],
+      "file_sources": [
+        "Final Deployment/Numerics/mpmath_pf_raw.py, byte-identical standalone source"
+      ],
+      "prior_result_sources": [
+        "inline-module support::_install_inline_module"
+      ],
+      "execution_mode": {
+        "kind": "inline_helper_install",
+        "parallelism": "ProcessPoolExecutor row-block assembly when requested",
+        "arithmetic": "mpmath high precision",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "importable modules mpmath_pf_raw and Numerics.mpmath_pf_raw"
+        ],
+        "files": [
+          "temporary mpmath_pf_raw.py"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Implements raw Perron--Frobenius Legendre--Gauss assembly and empirical spectrum helpers; callers determine proof status."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 6": {
+      "cell_index": 14,
+      "helper_functions": {
+        "mpmath_pf_raw": [
+          "serialisable_map_spec",
+          "run_N_sweep_mpmath_raw",
+          "run_pair_sweep_mpmath_raw",
+          "assemble_transfer_block",
+          "assemble_pure_scaled_transfer_block",
+          "exact_clusters_for_map",
+          "make_transfer_map",
+          "build_reference_clusters_mpmath_raw"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "INLINE_MODULE_PATHS/mpmath_pf_raw, preferred inline-module source",
+        "HELPER_DIR/mpmath_pf_raw.py, standalone fallback source"
+      ],
+      "prior_result_sources": [
+        "inline-module support::INLINE_MODULE_PATHS",
+        "mpmath_pf_raw::installed module"
+      ],
+      "execution_mode": {
+        "kind": "helper_import_and_identity_check",
+        "parallelism": "single process",
+        "arithmetic": "none",
+        "cache_policy": "prefer installed inline helper"
+      },
+      "products": {
+        "prior_results": [
+          "mpmath_pf_raw",
+          "serialisable_map_spec",
+          "run_N_sweep_mpmath_raw",
+          "run_pair_sweep_mpmath_raw",
+          "assemble_transfer_block_worker",
+          "assemble_pure_scaled_transfer_block_worker",
+          "exact_clusters_for_map",
+          "make_transfer_map",
+          "build_reference_clusters_mpmath_raw"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Imports the exact displayed worker source for downstream assembly."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 7": {
+      "cell_index": 18,
+      "helper_functions": {
+        "plotting": [
+          "display_table",
+          "parse_complex_for_plot",
+          "plot_eigenvalue_cloud",
+          "plot_phase3_rate_diagnostics",
+          "plot_status_panel"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/raw_spectrum_square_N_sweep_extended_targets.csv, optional fallback"
+      ],
+      "prior_result_sources": [
+        "Cell 3::plotting libraries and palette",
+        "Cell 6::assemble_pure_scaled_transfer_block_worker",
+        "Cell 6::exact_clusters_for_map"
+      ],
+      "execution_mode": {
+        "kind": "notebook_helper_definition",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting and SciPy diagnostics",
+        "cache_policy": "selected-map helper caches in kernel memory"
+      },
+      "products": {
+        "prior_results": [
+          "mp_to_numpy_matrix",
+          "frobenius_mp",
+          "save_dataframe",
+          "phase_status_table",
+          "transfer_lab_clean_label",
+          "transfer_lab_slug",
+          "transfer_lab_plot_status_summary",
+          "transfer_lab_plot_phase3_diagnostic",
+          "transfer_lab_plot_phase4_diagnostic",
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Defines shared notebook utilities. Dashboard and obsolete sampled-Phase-4 definitions in this cell are outside the retained graph."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 8": {
+      "cell_index": 20,
+      "helper_functions": {
+        "mpmath_pf_raw": [
+          "serialisable_map_spec",
+          "make_transfer_map",
+          "exact_clusters_for_map"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 4::cfg",
+        "Cell 6::mpmath_pf_raw imports"
+      ],
+      "execution_mode": {
+        "kind": "active_map_construction",
+        "parallelism": "single process",
+        "arithmetic": "mpmath",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "BLASCHKE_SPEC",
+          "SELECTED_MAP_LABEL",
+          "SELECTED_MAP_SPEC",
+          "SELECTED_MAP_STATUS",
+          "SELECTED_MAP_OBJECT",
+          "SELECTED_MAP_HAS_EXACT_TARGETS",
+          "SELECTED_MAP_HAS_BLASCHKE_CERTIFICATION",
+          "blaschke",
+          "selected_clusters",
+          "SELECTED_TARGET_NAMES_WITH_TRIVIAL",
+          "SELECTED_TARGET_NAMES_NONTRIVIAL",
+          "SELECTED_SHORT_TARGET_NAMES_WITH_TRIVIAL",
+          "SELECTED_SHORT_TARGET_NAMES_NONTRIVIAL"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Constructs only the symmetric inverse-branch model and its exact target families for this appendix."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 9": {
+      "cell_index": 22,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 8::SELECTED_MAP_OBJECT",
+        "Cell 8::SELECTED_MAP_LABEL",
+        "Cell 4::cfg"
+      ],
+      "execution_mode": {
+        "kind": "sampled_geometry_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "mpmath evaluations on a finite boundary grid",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "SELECTED_MAP_GEOMETRY_SCAN",
+          "SELECTED_MAP_GEOMETRY_STATUS",
+          "geo",
+          "rho",
+          "r_target"
+        ],
+        "files": [
+          "DATA_DIR/blaschke_mu_0p3_active_geometry.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Samples branch geometry for reconnaissance; certified geometry used later comes from validated Phase 2 sources."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 11": {
+      "cell_index": 25,
+      "helper_functions": {
+        "mpmath_pf_raw": [
+          "run_N_sweep_mpmath_raw",
+          "run_pair_sweep_mpmath_raw",
+          "assemble_transfer_block",
+          "assemble_pure_scaled_transfer_block",
+          "exact_clusters_for_map",
+          "make_transfer_map",
+          "build_reference_clusters_mpmath_raw",
+          "serialisable_map_spec"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "INLINE_MODULE_PATHS/mpmath_pf_raw"
+      ],
+      "prior_result_sources": [
+        "Cell 4::cfg",
+        "Cell 8::SELECTED_MAP_SPEC",
+        "Cell 8::selected_clusters",
+        "Cell 7::save_dataframe"
+      ],
+      "execution_mode": {
+        "kind": "high_precision_raw_spectrum_sweep",
+        "parallelism": "24-process row-block assembly through ProcessPoolExecutor",
+        "arithmetic": "mpmath at cfg.dps",
+        "cache_policy": "computed in the active kernel and exported to CSV"
+      },
+      "products": {
+        "prior_results": [
+          "SELECTED_REFERENCE_CLUSTERS",
+          "raw_rows_list",
+          "raw_results",
+          "raw_df",
+          "raw_eig_df",
+          "raw_extended_targets_df",
+          "raw_24_spectral_points_display_df"
+        ],
+        "files": [
+          "DATA_DIR/raw_spectrum_square_N_sweep.csv",
+          "DATA_DIR/raw_spectrum_square_N_sweep_eigenvalues.csv",
+          "DATA_DIR/raw_spectrum_square_N_sweep_extended_targets.csv",
+          "DATA_DIR/raw_spectrum_square_N600_24_nontrivial_spectral_points.csv",
+          "DATA_DIR/blaschke_mu_0p3_reference_clusters_N{REFERENCE_N}_M{REFERENCE_M}.csv, only if a reference build is requested",
+          "DATA_DIR/blaschke_mu_0p3_reference_build_metadata.csv, only if a reference build is requested"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Computes raw finite-section eigenvalue diagnostics; these values do not enter theorem-level contour gates."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 12": {
+      "cell_index": 27,
+      "helper_functions": {
+        "notebook:Cell 3": [
+          "phase1_gradient_palette"
+        ],
+        "notebook:Cell 7": [
+          "save_dataframe"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 11::raw_df",
+        "Cell 9::geo",
+        "Cell 9::rho",
+        "Cell 9::r_target",
+        "Cell 8::SELECTED_MAP_LABEL"
+      ],
+      "execution_mode": {
+        "kind": "empirical_summary_and_plot",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting of high-precision results",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "PHASE1_QSTAR_REFERENCE",
+          "phase1_summary_table",
+          "phase1_latex_target_label",
+          "phase1_raw_errors_fig"
+        ],
+        "files": [
+          "FIG_DIR/phase1_raw_cluster_errors_vs_N_latex.pdf",
+          "FIG_DIR/phase1_raw_cluster_errors_vs_N_latex.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Plots empirical finite-section errors and an empirical fitted guide; no deterministic rate is certified here."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 14": {
+      "cell_index": 30,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 3::mp",
+        "Cell 3::np",
+        "Cell 3::pd",
+        "Cell 3::plt",
+        "Cell 12::phase1_latex_target_label"
+      ],
+      "execution_mode": {
+        "kind": "plotting_helper_definition",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "phase1_make_heatmap_pairs",
+          "phase1_make_oversampling_pairs",
+          "add_phase1_oversampling_columns",
+          "add_phase1_reference_error_ratios",
+          "plot_heatmap_array_absolute_M",
+          "plot_heatmap_array_oversampling"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Defines Phase 1 plotting and finite-M diagnostic helpers only."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 15": {
+      "cell_index": 32,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "parse_complex_for_plot",
+          "parse_selected_complex_values",
+          "plot_phase1_absolute_m_heatmaps",
+          "plot_phase1_eigencloud_comparison",
+          "plot_phase1_fixed_n_m_sweep",
+          "plot_phase1_oversampling_displacement"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 11::raw_df",
+        "Cell 11::raw_results",
+        "Cell 30B::PHASE1_DIAGNOSTICS_RESULT"
+      ],
+      "execution_mode": {
+        "kind": "phase1_source_regenerated_rendering",
+        "parallelism": "single-process rendering after source generation",
+        "arithmetic": "binary64 plotting of prior high-precision results",
+        "cache_policy": "render only the in-memory outputs of Cell 11 and Cell 30B; no destination file is accepted as a seed"
+      },
+      "products": {
+        "prior_results": [
+          "phase1_M_df",
+          "phase1_heat_df",
+          "phase1 eigencloud and displacement tables"
+        ],
+        "files": [
+          "FIG_DIR/phase1_eigencloud_leading_interval_comparison.png",
+          "DATA_DIR/phase1_eigencloud_leading_interval_comparison_points.csv",
+          "DATA_DIR/phase1_N20_M20_to_M30_cloud_displacements.csv",
+          "DATA_DIR/phase1_N12_M12_to_M24_visible_cloud_displacements.csv",
+          "FIG_DIR/phase1_N20_M20_to_M30_eigencloud_displacement.png",
+          "FIG_DIR/phase1_N12_M12_to_M24_visible_eigencloud_displacement.png",
+          "DATA_DIR/phase1_raw_error_vs_M_N25.csv",
+          "FIG_DIR/phase1_raw_cluster_errors_vs_M_N25_latex.png",
+          "DATA_DIR/phase1_raw_NM_heatmap_data_near_square.csv",
+          "Phase 1 heatmap figures generated by Cell 14 helpers"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "All eigenclouds, fitted slopes and heatmaps are empirical finite-section diagnostics."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 17": {
+      "cell_index": 34,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 4::cfg.dps"
+      ],
+      "execution_mode": {
+        "kind": "kernel_value_display",
+        "parallelism": "single process",
+        "arithmetic": "none",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [],
+        "files": []
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Displays the active precision only."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 18": {
+      "cell_index": 36,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "mp_to_numpy_matrix"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 4::cfg.r_target",
+        "Cell 3::mp",
+        "Cell 3::np"
+      ],
+      "execution_mode": {
+        "kind": "finite_connection_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "mpmath connection construction and binary64 singular values",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "D_scaled_block",
+          "legendre_to_cheb_coeffs_orthonormal",
+          "C_X_matrix",
+          "T_connection",
+          "kappa_T_numeric",
+          "KAPPA_N_VALUES"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Checks finite scaled-Legendre to Chebyshev-packet transport numerically; it is not the validated N=600 transport certificate."
+      },
+      "unresolved_provenance": []
+    },
+    "blaschke_deformation_phase2_geometry": {
+      "cell_index": 38,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_geometry.py",
+      "source_sha256": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
+      "defined_functions": [
+        "certify_geometry_scan"
+      ],
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 4::cfg",
+        "Cell 4A::CERTIFIER_PROCESS_WORKERS"
+      ],
+      "execution_mode": {
+        "kind": "complete_boundary_phase2_geometry_producer",
+        "parallelism": "24 spawn-process boundary blocks",
+        "arithmetic": "python-flint Arb on all 65536 boundary cells for each rho candidate",
+        "cache_policy": "always recompute all 36 fixed radius configurations"
+      },
+      "products": {
+        "prior_results": [
+          "Phase2GeometryResult"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_radius_reoptimisation_balanced_highcell_scan.csv",
+          "REPORT_DIR/branch_image_radius_reoptimisation_balanced_highcell_scan.json"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_input_producer",
+        "claim": "Certifies the complete-boundary branch geometry for all 36 fixed candidates and selects the deployed rho and q-gap row solely by the recorded historical tail-floor criterion."
+      },
+      "unresolved_provenance": []
+    },
+    "blaschke_deformation_phase2_transport": {
+      "cell_index": 40,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py",
+      "source_sha256": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5",
+      "defined_functions": [
+        "connection_matrix_float",
+        "connection_matrix_arb",
+        "certify_transport"
+      ],
+      "file_sources": [
+        "DATA_DIR/branch_image_radius_reoptimisation_balanced_highcell_scan.csv"
+      ],
+      "prior_result_sources": [
+        "blaschke_deformation_phase2_geometry::Phase2GeometryResult"
+      ],
+      "execution_mode": {
+        "kind": "finite_Chebyshev_gauge_transport_producer",
+        "parallelism": "24 spawn-process parity-aware upper-triangular row blocks",
+        "arithmetic": "binary64 inverse witness with python-flint Arb inverse-residual and spectral enclosure",
+        "cache_policy": "always recompute the finite N=600 transport certificate"
+      },
+      "products": {
+        "prior_results": [
+          "Phase2TransportResult"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_balanced_candidate_transport_cert_N600.csv",
+          "DATA_DIR/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+          "REPORT_DIR/branch_image_balanced_candidate_transport_cert_N600.json"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_input_producer",
+        "claim": "Certifies the finite scaled-Legendre to Chebyshev-packet transport factor by an Arb inverse-residual argument."
+      },
+      "unresolved_provenance": []
+    },
+    "blaschke_deformation_phase2_matrix": {
+      "cell_index": 42,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_matrix.py",
+      "source_sha256": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
+      "defined_functions": [
+        "certify_matrix_row"
+      ],
+      "file_sources": [
+        "DATA_DIR/branch_image_radius_reoptimisation_balanced_highcell_scan.csv",
+        "DATA_DIR/branch_image_balanced_candidate_transport_cert_N600.csv"
+      ],
+      "prior_result_sources": [
+        "blaschke_deformation_phase2_geometry::Phase2GeometryResult",
+        "blaschke_deformation_phase2_transport::Phase2TransportResult"
+      ],
+      "execution_mode": {
+        "kind": "pure_r_scaled_matrix_certificate_producer",
+        "parallelism": "single process",
+        "arithmetic": "python-flint Arb separable-Frobenius row-column majorants",
+        "cache_policy": "always recompute the raw D_M=1 matrix row"
+      },
+      "products": {
+        "prior_results": [
+          "Phase2MatrixResult"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_balanced_candidate_single_space_row_N600_M610.csv",
+          "REPORT_DIR/branch_image_balanced_candidate_single_space_row_N600_M610.json"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_input_producer",
+        "claim": "Reconstructs the theorem-facing raw pure-r-scaled starred and ordinary matrix-defect bounds before the safe finite-M prefactor is applied."
+      },
+      "unresolved_provenance": []
+    },
+    "blaschke_deformation_phase2_pipeline": {
+      "cell_index": 44,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_pipeline.py",
+      "source_sha256": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
+      "defined_functions": [
+        "rebuild_phase2_inputs"
+      ],
+      "file_sources": [],
+      "prior_result_sources": [
+        "blaschke_deformation_phase2_geometry",
+        "blaschke_deformation_phase2_transport",
+        "blaschke_deformation_phase2_matrix"
+      ],
+      "execution_mode": {
+        "kind": "phase2_clean_room_orchestration",
+        "parallelism": "passes exactly 24 process workers to CPU-heavy producer stages",
+        "arithmetic": "inherits each producer's validated arithmetic",
+        "cache_policy": "always regenerate theorem-facing Phase 2 inputs"
+      },
+      "products": {
+        "prior_results": [
+          "Phase2RebuildResult"
+        ],
+        "files": [
+          "REPORT_DIR/phase2_clean_room_rebuild_manifest.json"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_input_producer",
+        "claim": "Orchestrates the geometry, transport and raw matrix producers and records hashes of every generated Phase 2 input."
+      },
+      "unresolved_provenance": []
+    },
+    "blaschke_deformation_historical_comparisons": {
+      "cell_index": 46,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_historical_comparisons.py",
+      "source_sha256": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
+      "defined_functions": [
+        "rebuild_historical_comparisons"
+      ],
+      "file_sources": [],
+      "prior_result_sources": [
+        "blaschke_deformation_phase2_geometry",
+        "blaschke_deformation_phase2_transport",
+        "blaschke_deformation_phase2_matrix"
+      ],
+      "execution_mode": {
+        "kind": "phase2_historical_design_comparison_producer",
+        "parallelism": "passes exactly 24 process workers to complete-boundary and transport stages",
+        "arithmetic": "exact-Arb-pi complete-boundary geometry, Arb ZWX13 tail, Arb inverse-residual transport and Arb separable-Frobenius matrix bound",
+        "cache_policy": "always regenerate both diagnostic comparison rows from source"
+      },
+      "products": {
+        "prior_results": [
+          "HistoricalComparisonResult"
+        ],
+        "files": [
+          "DATA_DIR/final_blaschke_N600_schur_certificate.csv",
+          "DATA_DIR/branch_image_input_tail_interval_effect_N600.csv",
+          "REPORT_DIR/historical_phase2_comparison_rebuild.json"
+        ]
+      },
+      "proof_status": {
+        "class": "diagnostic_input_producer",
+        "claim": "Rebuilds the retained fixed historical-design comparison rows without reading either legacy CSV; these rows are not theorem gates."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 19": {
+      "cell_index": 48,
+      "helper_functions": {
+        "blaschke_deformation_phase2_pipeline": [
+          "rebuild_phase2_inputs"
+        ],
+        "blaschke_deformation_historical_comparisons": [
+          "rebuild_historical_comparisons"
+        ],
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell",
+          "save_dataframe"
+        ],
+        "notebook:Cell 3": [
+          "phase1_gradient_palette"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 8::SELECTED_MAP_HAS_BLASCHKE_CERTIFICATION",
+        "Cell 8::blaschke",
+        "Cell 4::cfg",
+        "Cell 4A::DATA_DIR",
+        "blaschke_deformation_phase2_pipeline",
+        "blaschke_deformation_historical_comparisons"
+      ],
+      "execution_mode": {
+        "kind": "phase2_clean_room_rebuild_and_state_initialisation",
+        "parallelism": "24 process workers in the promoted and diagnostic geometry and transport producers",
+        "arithmetic": "process-block Arb geometry, Arb inverse-residual transport and Arb raw matrix assembly",
+        "cache_policy": "always regenerate theorem-facing Phase 2 inputs and retained diagnostic comparison rows"
+      },
+      "products": {
+        "prior_results": [
+          "phase2_mpf",
+          "phase2_save_dataframe",
+          "jouk",
+          "outer_joukowski_inverse",
+          "bernstein_radius",
+          "ellipse_points_np",
+          "gradient_colours",
+          "HISTORICAL_COMPARISON_REBUILD",
+          "PHASE2_REBUILD",
+          "PHASE2_BRANCH_IMAGE_RADIUS_ROW",
+          "cert_summary_df",
+          "PHASE2_FINAL_CERT",
+          "QSTAR_X",
+          "N_CERT_X",
+          "M_CERT_X",
+          "EPS_CERT_X",
+          "BOUT_CERT_X",
+          "BIN_CERT_X",
+          "COLL_CERT_X"
+        ],
+        "files": [
+          "DATA_DIR/final_blaschke_N600_schur_certificate.csv",
+          "DATA_DIR/branch_image_input_tail_interval_effect_N600.csv",
+          "REPORT_DIR/historical_phase2_comparison_rebuild.json",
+          "DATA_DIR/branch_image_radius_reoptimisation_balanced_highcell_scan.csv",
+          "DATA_DIR/branch_image_balanced_candidate_transport_cert_N600.csv",
+          "DATA_DIR/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+          "DATA_DIR/branch_image_balanced_candidate_single_space_row_N600_M610.csv",
+          "REPORT_DIR/phase2_clean_room_rebuild_manifest.json",
+          "DATA_DIR/branch_image_phase2_certificate_summary.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_input_producer",
+        "claim": "Reconstructs the promoted Phase 2 inputs and the retained historical-design comparison rows from displayed source, then initialises the downstream safe finite-M and complete-boundary stages."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 20": {
+      "cell_index": 50,
+      "helper_functions": {
+        "notebook:Cell 19": [
+          "jouk",
+          "bernstein_radius",
+          "phase2_save_dataframe"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 8::blaschke",
+        "Cell 19::PHASE2_FINAL_CERT",
+        "Cell 19::PHASE2_GEOMETRY_SAMPLES"
+      ],
+      "execution_mode": {
+        "kind": "sampled_branch_boundary_profile",
+        "parallelism": "single process",
+        "arithmetic": "mpmath point evaluation, binary64 export",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "profile_df",
+          "local_phi_df",
+          "branch_geometry_df"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase2_boundary_profile.csv",
+          "DATA_DIR/branch_image_phase2_local_phi_profile.csv",
+          "DATA_DIR/branch_image_phase2_branchwise_geometry.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Finite-grid branch profiles are plotted and compared with certified radii but are not used as complete-boundary theorem bounds."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 21": {
+      "cell_index": 52,
+      "helper_functions": {
+        "notebook:Cell 19": [
+          "ellipse_points_np",
+          "gradient_colours"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 20::profile_df",
+        "Cell 19::PHASE2_FINAL_CERT"
+      ],
+      "execution_mode": {
+        "kind": "diagnostic_plotting",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "plot_branch_geometry"
+        ],
+        "files": [
+          "FIG_DIR/branch_image_phase2_geometry.png"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Visualises sampled branch images and the certified enclosing ellipse."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 22": {
+      "cell_index": 54,
+      "helper_functions": {
+        "notebook:Cell 19": [
+          "outer_joukowski_inverse"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 20::profile_df",
+        "Cell 19::N_CERT_X",
+        "Cell 19::r_for_geometry",
+        "Cell 19::PHASE2_FINAL_CERT"
+      ],
+      "execution_mode": {
+        "kind": "sampled_pointwise_tail_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "mpmath exact-series closed form at sampled points",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "U_tail_closed",
+          "K_tail_point",
+          "branch_image_tail_profile",
+          "kernel_profile_df",
+          "kernel_tail_max"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase2_tail_kernel_profile_N600.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Evaluates the pointwise kernel on a finite sample; the sampled maximum is not the certified complete-boundary supremum."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 23": {
+      "cell_index": 56,
+      "helper_functions": {
+        "notebook:Cell 22": [
+          "U_tail_closed",
+          "branch_image_tail_profile"
+        ],
+        "notebook:Cell 19": [
+          "phase2_save_dataframe"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 20::branch_geometry_df",
+        "Cell 20::profile_df",
+        "Cell 20::local_phi_df",
+        "Cell 19::PHASE2_FINAL_CERT"
+      ],
+      "execution_mode": {
+        "kind": "tail_bound_comparison_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "mpmath and binary64 summaries",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "tail_comparison_df"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase2_tail_comparison.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Compares sampled and fallback tail profiles without promoting sampled maxima to certificates."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 24": {
+      "cell_index": 58,
+      "helper_functions": {
+        "notebook:Cell 19": [
+          "gradient_colours"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 23::tail_comparison_df"
+      ],
+      "execution_mode": {
+        "kind": "diagnostic_plotting",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [],
+        "files": [
+          "FIG_DIR/branch_image_phase2_tail_improvement_ratios.png"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Plots diagnostic refinement ratios only."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 24A": {
+      "cell_index": 62,
+      "retained_scope": "Balanced N=600, M=610 unconditional finite-M Gauss--Legendre prefactor certificate only.",
+      "helper_functions": {
+        "blaschke_deformation_phase2_finite_m": [
+          "certify_finite_m_completion"
+        ]
+      },
+      "helper_symbols": {
+        "blaschke_deformation_phase2_finite_m": [
+          "Phase2FiniteMConfig"
+        ]
+      },
+      "file_sources": [
+        "DATA_DIR/branch_image_balanced_candidate_single_space_row_N600_M610.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 4A::DATA_DIR",
+        "Cell 8::SELECTED_MAP_LABEL",
+        "Cell 19::persisted raw balanced Phase 2 row"
+      ],
+      "execution_mode": {
+        "kind": "validated_finite_M_prefactor",
+        "parallelism": "single process",
+        "arithmetic": "python-flint Arb at 192 bits with outward float export",
+        "cache_policy": "input row required; outputs overwritten transactionally at file level only where coded"
+      },
+      "products": {
+        "prior_results": [
+          "finite_M_prefactor_df",
+          "balanced_safe_df",
+          "balanced_df",
+          "balanced_path"
+        ],
+        "files": [
+          "DATA_DIR/finite_M_safe_GL_prefactor_certificate_N600_M610.csv",
+          "DATA_DIR/branch_image_balanced_candidate_single_space_row_N600_M610_safe_GL.csv",
+          "REPORT_DIR/finite_M_safe_GL_prefactor_certificate_N600_M610.json",
+          "REPORT_DIR/finite_M_safe_GL_prefactor_certificate_N600_M610.md"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_component",
+        "claim": "Certifies the safe finite-M Gauss--Legendre prefactor and transported matrix contribution for the balanced row."
+      },
+      "unresolved_provenance": []
+    },
+    "blaschke_deformation_certification": {
+      "cell_index": 65,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_certification.py",
+      "source_sha256": "f46d403cfe1e2458e9455592f0d5e33fb95697dfabfd18d10dab53da84daf2ec",
+      "helper_functions": {},
+      "helper_symbols": {},
+      "defined_functions": [
+        "upper_float",
+        "interval_text",
+        "tau_phi",
+        "bernstein_radius_upper",
+        "selected_joukowski_preimage",
+        "packet_value",
+        "packet_value_from_preimage",
+        "local_tail_l2_upper",
+        "certify_input_tail_rows",
+        "resolved_restriction_l2_upper",
+        "certify_resolved_response_rows"
+      ],
+      "defined_classes": [
+        "InputTailCertificateConfig",
+        "ResolvedResponseCertificateConfig"
+      ],
+      "file_sources": [
+        "Final Deployment/Numerics/blaschke_deformation_certification.py, byte-identical standalone source"
+      ],
+      "prior_result_sources": [
+        "inline-module support::_install_inline_module"
+      ],
+      "execution_mode": {
+        "kind": "inline_helper_install",
+        "parallelism": "helper supports complete-boundary validated computation",
+        "arithmetic": "python-flint Arb",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "importable modules blaschke_deformation_certification and Numerics.blaschke_deformation_certification"
+        ],
+        "files": [
+          "temporary blaschke_deformation_certification.py"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Implements the theorem-facing resolved-response and unresolved-input interval certifiers; caller cells establish concrete bounds."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 24B": {
+      "cell_index": 69,
+      "helper_functions": {
+        "blaschke_deformation_phase2_resolved_response": [
+          "certify_resolved_response_completion"
+        ]
+      },
+      "helper_symbols": {
+        "blaschke_deformation_phase2_resolved_response": [
+          "Phase2ResolvedResponseConfig"
+        ]
+      },
+      "file_sources": [
+        "DATA_DIR/branch_image_balanced_candidate_single_space_row_N600_M610_safe_GL.csv",
+        "DATA_DIR/branch_image_balanced_candidate_transport_cert_N600.csv",
+        "DATA_DIR/branch_image_radius_reoptimisation_balanced_highcell_scan.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 24A::persisted safe finite-M row",
+        "Cell 4A::OUTPUT_DIR"
+      ],
+      "execution_mode": {
+        "kind": "complete_boundary_resolved_response_certificate",
+        "parallelism": "single-process Arb boundary traversal",
+        "arithmetic": "python-flint Arb complete-boundary cells with finite prefix and certified remainder",
+        "cache_policy": "recompute from listed persisted rows into the explicit output directory"
+      },
+      "products": {
+        "prior_results": [
+          "resolved_response_certificate",
+          "response_branch_df",
+          "response_df",
+          "_rp_candidate",
+          "_rp_B_out"
+        ],
+        "files": [
+          "DATA_DIR/output_response_branch_image_prefactor_interval_cert_balanced_N600.csv",
+          "DATA_DIR/output_response_branch_image_prefactor_interval_profile_balanced_N600.csv",
+          "DATA_DIR/output_response_coherent_packet_interval_cert_balanced_N600.csv",
+          "DATA_DIR/branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv",
+          "REPORT_DIR/output_response_branch_image_prefactor_interval_cert_balanced_N600.json",
+          "REPORT_DIR/output_response_branch_image_prefactor_interval_cert_balanced_N600.md"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_component",
+        "claim": "Certifies the resolved coherent Chebyshev-packet response row and selects it against scaled-Legendre and whole-ellipse fallbacks."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 24C": {
+      "cell_index": 72,
+      "helper_functions": {
+        "blaschke_deformation_phase2_final_aggregation": [
+          "certify_final_phase2_aggregation"
+        ]
+      },
+      "helper_symbols": {
+        "blaschke_deformation_phase2_final_aggregation": [
+          "Phase2FinalAggregationConfig"
+        ]
+      },
+      "file_sources": [
+        "DATA_DIR/branch_image_balanced_candidate_single_space_row_N600_M610_safe_GL.csv",
+        "DATA_DIR/branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv",
+        "DATA_DIR/output_response_branch_image_prefactor_interval_cert_balanced_N600.csv",
+        "DATA_DIR/output_response_coherent_packet_interval_cert_balanced_N600.csv",
+        "REPORT_DIR/output_response_branch_image_prefactor_interval_cert_balanced_N600.json"
+      ],
+      "prior_result_sources": [
+        "Cell 24A::persisted safe finite-M row",
+        "Cell 24B::persisted resolved-response certificate",
+        "Cell 4A::OUTPUT_DIR"
+      ],
+      "execution_mode": {
+        "kind": "complete_boundary_unresolved_input_and_final_radius_certificate",
+        "parallelism": "single-process Arb boundary traversal",
+        "arithmetic": "python-flint Arb, finite exact prefixes, certified infinite remainders and outward endpoints",
+        "cache_policy": "recompute from persisted inputs and atomically replace the promoted output files"
+      },
+      "products": {
+        "prior_results": [
+          "input_tail_certificate",
+          "input_tail_certificate_df",
+          "input_tail_profile_df",
+          "PHASE2_FINAL_CERT",
+          "BIN_CERT_X",
+          "NONCOLLOCATION_RSS_CERT_X",
+          "EPS_CERT_X",
+          "cert_summary_df"
+        ],
+        "files": [
+          "DATA_DIR/blaschke_deformation_input_tail_certificate_N600.csv",
+          "DATA_DIR/blaschke_deformation_input_tail_boundary_profile_N600.csv",
+          "REPORT_DIR/blaschke_deformation_input_tail_certificate_N600.json",
+          "DATA_DIR/branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv",
+          "REPORT_DIR/output_response_branch_image_prefactor_interval_cert_balanced_N600.json",
+          "REPORT_DIR/output_response_branch_image_prefactor_interval_cert_balanced_N600.md",
+          "DATA_DIR/branch_image_phase2_certificate_summary.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_component",
+        "claim": "Certifies branchwise and coherent unresolved-input rows, selects the rigorous minimum with the fallback, and forms the final root-sum-square plus collocation radius."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 24D": {
+      "cell_index": 73,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 24C::input_tail_profile_df",
+        "Cell 24C::input_tail_certificate"
+      ],
+      "execution_mode": {
+        "kind": "certificate_visualisation",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting of outward endpoints",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "input_tail_interpretation_df"
+        ],
+        "files": [
+          "FIG_DIR/blaschke_deformation_certified_input_tail_rows.png"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Plots complete-boundary certified rows; the plot itself is not used in the proof gate."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 24E": {
+      "cell_index": 74,
+      "helper_functions": {},
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 11::raw_results",
+        "Cell 11::raw_24_spectral_points_display_df",
+        "Cell 24B::resolved_response_certificate",
+        "Cell 24C::input_tail_certificate",
+        "Cell 24C::PHASE2_FINAL_CERT"
+      ],
+      "execution_mode": {
+        "kind": "assertion_audit",
+        "parallelism": "single process",
+        "arithmetic": "exact Boolean and integer consistency checks over stored results",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "_certification_audit_df"
+        ],
+        "files": [
+          "DATA_DIR/blaschke_deformation_certification_audit.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "validation_test",
+        "claim": "Checks selected-map scope, target inventory, process use and component identities; it does not create an independent bound."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 25": {
+      "cell_index": 76,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "notebook:Cell 19": [
+          "phase2_save_dataframe"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 24B::response_branch_df",
+        "Cell 24B::response_df"
+      ],
+      "execution_mode": {
+        "kind": "certificate_summary",
+        "parallelism": "single process",
+        "arithmetic": "binary64 display values from certified endpoints",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "response_summary_df"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase2_response_prefactor_summary.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Summarises resolved-response certificate routes without changing their bounds."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 26": {
+      "cell_index": 78,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "notebook:Cell 19": [
+          "gradient_colours"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 24C::cert_summary_df",
+        "Cell 23::tail_comparison_df"
+      ],
+      "execution_mode": {
+        "kind": "certificate_visualisation",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [],
+        "files": [
+          "FIG_DIR/branch_image_phase2_certificate_components.png",
+          "FIG_DIR/branch_image_phase2_certificate_array_1x2.png"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Plots retained certificate components and diagnostic comparisons."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 27": {
+      "cell_index": 80,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "notebook:Cell 19": [
+          "phase2_save_dataframe"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 24C::PHASE2_FINAL_CERT"
+      ],
+      "execution_mode": {
+        "kind": "certificate_export",
+        "parallelism": "single process",
+        "arithmetic": "outward endpoints converted for tabular export",
+        "cache_policy": "overwrite current Phase 2 exports"
+      },
+      "products": {
+        "prior_results": [
+          "phase2_branch_image_export",
+          "phase2_schur_compat",
+          "phase2_report"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase2_certified_single_space_row_N600_M610.csv",
+          "DATA_DIR/phase2_certified_single_space_row_N600_M610.csv",
+          "DATA_DIR/branch_image_phase2_N600_schur_single_space_certificate.csv",
+          "DATA_DIR/phase2_N600_schur_single_space_certificate.csv",
+          "REPORT_DIR/branch_image_phase2_certificate_report.md"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Exports the theorem-facing Phase 2 certificate and compatibility schemas without recomputing the bound."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 30": {
+      "cell_index": 84,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/phase2_certified_single_space_row_N600_M610.csv",
+        "DATA_DIR/branch_image_phase2_certificate_summary.csv",
+        "DATA_DIR/raw_spectrum_square_N_sweep.csv, first conditional Phase 3 fallback",
+        "DATA_DIR/phase3_square_raw_cluster_data.csv, second conditional Phase 3 fallback",
+        "DATA_DIR/phase3_final_raw_curve_square.csv, third conditional Phase 3 fallback"
+      ],
+      "prior_result_sources": [
+        "Cell 24C::PHASE2_FINAL_CERT, preferred in-memory source",
+        "Cell 11::raw_df, preferred in-memory source"
+      ],
+      "execution_mode": {
+        "kind": "phase3_data_ingestion",
+        "parallelism": "single process",
+        "arithmetic": "binary64 tabular conversion of certified and empirical data",
+        "cache_policy": "prefer in-memory current results, then current exports, then named fallbacks"
+      },
+      "products": {
+        "prior_results": [
+          "PHASE3_CERT",
+          "phase3_square_raw_df",
+          "phase3_cert_compare_df"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase3_square_raw_cluster_data.csv",
+          "DATA_DIR/branch_image_phase3_certificate_comparison.csv",
+          "DATA_DIR/branch_image_phase3_rate_diagnostics.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Joins certified Phase 2 data to empirical Phase 1 diagnostics; it introduces no new certificate."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 31": {
+      "cell_index": 86,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "notebook:Cell 3": [
+          "phase1_gradient_palette"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 30::phase3_square_raw_df",
+        "Cell 30::QSTAR_X"
+      ],
+      "execution_mode": {
+        "kind": "empirical_rate_fit",
+        "parallelism": "single process",
+        "arithmetic": "binary64 least-squares fits and plotting",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "phase3_raw_curve_df",
+          "phase3_fit_df"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase3_raw_cluster_curves.csv",
+          "DATA_DIR/branch_image_phase3_raw_cluster_fitted_bases.csv",
+          "FIG_DIR/branch_image_phase3_raw_cluster_errors_vs_branch-image_qstar.png",
+          "FIG_DIR/branch_image_phase3_raw_cluster_errors_normalised_by_qstar.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Fits observed finite-section spectral errors; fitted bases are not operator-norm certificates."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 32": {
+      "cell_index": 88,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "notebook:Cell 3": [
+          "phase1_gradient_palette"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 30::phase3_cert_compare_df"
+      ],
+      "execution_mode": {
+        "kind": "certificate_comparison_plotting",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting of retained certified endpoints",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "plot_df"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase3_certificate_comparison.csv",
+          "DATA_DIR/branch_image_phase3_rate_diagnostics.csv",
+          "FIG_DIR/branch_image_phase3_certificate_components.png",
+          "FIG_DIR/branch_image_phase3_rate_diagnostics.png"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Compares certified rows visually; no extrapolated row is promoted to a certificate."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 33": {
+      "cell_index": 90,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "notebook:Cell 3": [
+          "phase1_gradient_palette"
+        ],
+        "notebook:Cell 31": [
+          "phase3_positive_log_limits",
+          "phase3_latex_target_label"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 31::phase3_raw_curve_df",
+        "Cell 31::phase3_fit_df",
+        "Cell 32::plot_df",
+        "Cell 30::PHASE3_CERT"
+      ],
+      "execution_mode": {
+        "kind": "phase3_bridge_report",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting and text export",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "phase3_report"
+        ],
+        "files": [
+          "FIG_DIR/branch_image_phase3_empirical_vs_deterministic_bridge.png",
+          "REPORT_DIR/branch_image_phase3_report.md"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Explains the empirical-to-certified distinction and points Phase 4 to the Phase 2 certificate export."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 34": {
+      "cell_index": 92,
+      "helper_functions": {
+        "notebook:Cell 7": [
+          "transfer_lab_execute_selected_map_cell"
+        ],
+        "notebook:Cell 3": [
+          "phase1_gradient_palette"
+        ],
+        "notebook:Cell 31": [
+          "phase3_latex_target_label"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [],
+      "prior_result_sources": [
+        "Cell 31::phase3_fit_df",
+        "Cell 30::PHASE3_CERT"
+      ],
+      "execution_mode": {
+        "kind": "geometric_rate_extrapolation_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "binary64 extrapolation and plotting",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "phase3_table_df",
+          "phase3_branch_image_rate_panel_df"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_phase3_fitted_base_table_for_rate_panel.csv",
+          "DATA_DIR/branch_image_phase3_components_vs_geometric_rate.csv",
+          "FIG_DIR/branch_image_phase3_schur_components_vs_qstar.png",
+          "FIG_DIR/branch_image_phase3_table_and_schur_components_vs_qstar.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Only the N=600 certified row is theorem-facing; extrapolated component curves are rate diagnostics."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 38": {
+      "cell_index": 104,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "display_table",
+          "plot_phase4_sampled_validation",
+          "plot_phase4_small_gain_values",
+          "plot_phase4_moat_heatmap",
+          "plot_phase4_moat_profiles",
+          "plot_phase4_moat_minima_table",
+          "plot_phase4_moat_minima"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_moat_plot_table_N600_M610_J128.csv",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_profiles_N600_M610_J128.csv",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_profile_minima_table_N600_M610_J128.csv",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_profile_summary_N600_M610_J128.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 3::FIG_DIR",
+        "Cell 3::np",
+        "Cell 3::pd"
+      ],
+      "execution_mode": {
+        "kind": "file_backed_sampled_phase4_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "binary64 loading and tabular reshaping only; all rendering is delegated to plotting.py",
+        "cache_policy": "consume the retained sampled Phase 4 CSV artefacts"
+      },
+      "products": {
+        "prior_results": [
+          "phase4_sampled_validation_result",
+          "phase4_small_gain_result",
+          "phase4_heatmap_result",
+          "phase4_profiles_result",
+          "phase4_minima_table_result",
+          "phase4_moat_minima_result"
+        ],
+        "files": [
+          "FIG_DIR/branch_image_wide_candidate_first15_sampled_validation_1x2.png",
+          "FIG_DIR/branch_image_wide_candidate_first15_small_gain_horizontal.png",
+          "FIG_DIR/branch_image_wide_candidate_first15_contour_moat_heatmap.png",
+          "FIG_DIR/branch_image_wide_candidate_first15_contour_moat_profiles_lines.png",
+          "FIG_DIR/branch_image_wide_candidate_first15_contour_profile_minima_table.png",
+          "FIG_DIR/branch_image_wide_candidate_first15_moat_minima_profile.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Restores six sampled first-fifteen Phase 4 views from retained artefacts; none supplies a complete-contour moat or enters a theorem gate."
+      },
+      "unresolved_provenance": [
+        "The retained CSV artefacts originate in the superseded sampled first-fifteen workflow removed by the appendix transformer."
+      ]
+    },
+    "Cell 38B": {
+      "cell_index": 106,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "display_table",
+          "plot_phase4_single_packet_profile"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_profiles_N600_M610_J128.csv",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_profile_summary_N600_M610_J128.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 3::FIG_DIR",
+        "Cell 3::np",
+        "Cell 3::pd",
+        "Cell 38::_phase4_restored_data_dir"
+      ],
+      "execution_mode": {
+        "kind": "file_backed_sampled_packet_profile",
+        "parallelism": "single process",
+        "arithmetic": "binary64 loading and point selection only; rendering is delegated to plotting.py",
+        "cache_policy": "consume the retained sampled profile CSV artefacts"
+      },
+      "products": {
+        "prior_results": [
+          "phase4_profile_result",
+          "phase4_profile_target",
+          "phase4_alpha11_profile_result"
+        ],
+        "files": [
+          "FIG_DIR/branch_image_wide_candidate_sampled_hardy_moat_profile_mu4_N600_M610.png",
+          "FIG_DIR/branch_image_wide_candidate_sampled_hardy_moat_profile_alpha11_N600_M610.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Restores the selected sampled packet profile and the fixed alpha^11 comparator for presentation; neither is a validated complete-circle moat."
+      },
+      "unresolved_provenance": [
+        "The retained profile CSVs originate in the superseded sampled first-fifteen workflow removed by the appendix transformer."
+      ]
+    },
+    "Cell 40": {
+      "cell_index": 110,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "display_table",
+          "plot_phase4_fragile_robustness"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/branch_image_wide_candidate_first15_fragile_robustness_N600_M610.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 3::FIG_DIR",
+        "Cell 3::pd",
+        "Cell 38::_phase4_restored_data_dir"
+      ],
+      "execution_mode": {
+        "kind": "file_backed_fragile_packet_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "binary64 table loading only; rendering is delegated to plotting.py",
+        "cache_policy": "consume the retained fragile-packet CSV artefact"
+      },
+      "products": {
+        "prior_results": [
+          "phase4_fragile_result",
+          "phase4_fragile_robustness"
+        ],
+        "files": [
+          "FIG_DIR/branch_image_wide_candidate_first15_fragile_robustness.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Restores the angular-sampling robustness diagnostic; it does not certify the contour moat."
+      },
+      "unresolved_provenance": [
+        "The retained robustness table originates in the superseded sampled first-fifteen workflow removed by the appendix transformer."
+      ]
+    },
+    "Cell 81": {
+      "cell_index": 118,
+      "helper_functions": {
+        "notebook:Cell 81": [
+          "phase4_branch_image_load_hardy_gauge_A_X_for_visual",
+          "phase4_branch_image_load_mu2_visual_inputs",
+          "phase4_branch_image_compute_or_load_mu2_moat_surface",
+          "phase4_branch_image_exact_targets_for_mu2_window"
+        ],
+        "scipy.linalg": [
+          "svdvals"
+        ],
+        "matplotlib.colors.LinearSegmentedColormap": [
+          "from_list"
+        ]
+      },
+      "helper_symbols": {
+        "mpl_toolkits.mplot3d": [
+          "Axes3D"
+        ]
+      },
+      "file_sources": [
+        "DATA_DIR/branch_image_wide_candidate_A_X_from_mp_scaled_N600_M610_r2p225974769705636.npz, selected matrix source in the executed cell",
+        "DATA_DIR/phase4_hp_A_X_N600_M610.npz, conditional matrix fallback",
+        "DATA_DIR/phase4_diag_A_X_N600_M610.npz, conditional matrix fallback",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_profiles_N600_M610_J128.csv",
+        "DATA_DIR/branch_image_phase1_raw_eigs_N600_M610.csv, first optional eigenvalue source",
+        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv, second optional eigenvalue source",
+        "DATA_DIR/phase4_diag_hardy_gauge_eigenvalues_N600_M610.csv, third optional eigenvalue source",
+        "DATA_DIR/branch_image_wide_candidate_mu2_hardy_moat_surface_N600_M610_grid25.npz, conditional sampled-surface cache"
+      ],
+      "prior_result_sources": [
+        "Cell 3::DATA_DIR",
+        "Cell 3::FIG_DIR",
+        "Cell 3::PALETTE",
+        "Cell 3::np",
+        "Cell 3::pd",
+        "Cell 3::plt",
+        "Cell 8::SELECTED_MAP_HAS_BLASCHKE_CERTIFICATION"
+      ],
+      "execution_mode": {
+        "kind": "sampled_local_moat_plot_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "binary64 NumPy and SciPy singular values on a 25 by 25 grid",
+        "cache_policy": "reuse the exact grid25 NPZ when present; otherwise compute and store the sampled surface"
+      },
+      "products": {
+        "prior_results": [
+          "A_X_visual",
+          "A_X_visual_source",
+          "mu2_row",
+          "mu2_profile",
+          "phase4_visual_eigs",
+          "x_grid",
+          "y_grid",
+          "s_grid",
+          "surface_df",
+          "phase4_3d_fig_path"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_wide_candidate_mu2_hardy_moat_surface_N600_M610_grid25.npz",
+          "DATA_DIR/branch_image_wide_candidate_mu2_hardy_moat_surface_N600_M610.csv",
+          "FIG_DIR/branch_image_wide_candidate_mu2_hardy_moat_surface_3d_2d_N600_M610.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Sampled local singular-value landscape near the mu-squared packet; it is not a complete-contour moat certificate and enters no theorem gate."
+      },
+      "unresolved_provenance": [
+        "The plotted wide-row matrix and first-fifteen sampled contour inputs originate in the superseded Phase 4 workflow removed by the appendix transformer; this retained cell preserves diagnostic output only."
+      ]
+    },
+    "Cell 82": {
+      "cell_index": 120,
+      "helper_functions": {
+        "hardy_moat_surface_worker": [
+          "initialise_surface_worker",
+          "sample_surface_row_block"
+        ],
+        "notebook:Cell 82": [
+          "phase4_global_complex_centre",
+          "phase4_global_target_family",
+          "phase4_global_load_visible_eigenvalues",
+          "phase4_global_exact_targets_in_window",
+          "phase4_global_show_target_label",
+          "phase4_global_window",
+          "phase4_global_cache_path",
+          "phase4_global_grid_signature",
+          "phase4_global_cache_matches",
+          "phase4_global_matrix_cache",
+          "phase4_global_load_row_blocks",
+          "phase4_global_compute_or_load_surface",
+          "phase4_global_plot_3d_panel"
+        ],
+        "matplotlib.colors.LinearSegmentedColormap": [
+          "from_list"
+        ]
+      },
+      "helper_symbols": {
+        "concurrent.futures": [
+          "ProcessPoolExecutor"
+        ],
+        "scipy.interpolate": [
+          "RegularGridInterpolator"
+        ],
+        "mpl_toolkits.mplot3d": [
+          "Axes3D"
+        ]
+      },
+      "file_sources": [
+        "Final Deployment/Numerics/hardy_moat_surface_worker.py",
+        "DATA_DIR/branch_image_phase1_raw_eigs_N600_M610.csv, first optional eigenvalue source",
+        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv, second optional eigenvalue source",
+        "DATA_DIR/phase4_diag_hardy_gauge_eigenvalues_N600_M610.csv, third optional eigenvalue source",
+        "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45.npz, conditional global cache",
+        "DATA_DIR/branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161.npz, conditional zoom cache",
+        "DATA_DIR/branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201.npz, conditional deep-zoom cache",
+        "DATA_DIR/branch_image_wide_candidate_phase4_A_X_surface_N600_M610_complex128.npy, conditional worker matrix cache",
+        "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45_row_blocks_{signature}/rows_{y_start:04d}_{y_stop:04d}.npz, conditional row-block cache template",
+        "DATA_DIR/branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161_row_blocks_{signature}/rows_{y_start:04d}_{y_stop:04d}.npz, conditional row-block cache template",
+        "DATA_DIR/branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201_row_blocks_{signature}/rows_{y_start:04d}_{y_stop:04d}.npz, conditional row-block cache template"
+      ],
+      "prior_result_sources": [
+        "Cell 3::DATA_DIR",
+        "Cell 3::FIG_DIR",
+        "Cell 3::PALETTE",
+        "Cell 3::np",
+        "Cell 3::pd",
+        "Cell 3::plt",
+        "Cell 8::SELECTED_MAP_HAS_BLASCHKE_CERTIFICATION",
+        "removed source Cell 35::A_X_phase4",
+        "removed source Cell 38::phase4_moat_export"
+      ],
+      "execution_mode": {
+        "kind": "sampled_global_moat_plot_diagnostic",
+        "parallelism": "ProcessPoolExecutor with at most six workers and row-block worker caches",
+        "arithmetic": "binary64 NumPy and SciPy sampled singular-value surfaces",
+        "cache_policy": "reuse signature-compatible global, zoom, deep-zoom and row-block NPZ caches; otherwise compute and store them"
+      },
+      "products": {
+        "prior_results": [
+          "phase4_global_targets",
+          "x_grid",
+          "y_grid",
+          "s_grid",
+          "Z_log",
+          "phase4_global_surface_df",
+          "phase4_global_eigs",
+          "phase4_global_exact_targets",
+          "x_zoom_grid",
+          "y_zoom_grid",
+          "s_zoom_grid",
+          "x_deep_grid",
+          "y_deep_grid",
+          "s_deep_grid",
+          "phase4_global_fig_path"
+        ],
+        "files": [
+          "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201.npz",
+          "DATA_DIR/branch_image_wide_candidate_phase4_A_X_surface_N600_M610_complex128.npy",
+          "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45_row_blocks_{signature}/rows_{y_start:04d}_{y_stop:04d}.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45_row_blocks_{signature}/surface_grid_meta.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161_row_blocks_{signature}/rows_{y_start:04d}_{y_stop:04d}.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161_row_blocks_{signature}/surface_grid_meta.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201_row_blocks_{signature}/rows_{y_start:04d}_{y_stop:04d}.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201_row_blocks_{signature}/surface_grid_meta.npz",
+          "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610.csv",
+          "FIG_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_3d_2d_N600_M610.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Sampled global, zoom and deep-zoom finite-section moat landscapes for visual diagnosis only; no sampled value enters a theorem gate."
+      },
+      "unresolved_provenance": [
+        "The in-memory A_X_phase4 and phase4_moat_export inputs were produced by source Cells 35 and 38, which the appendix transformer removes; the retained executed output is diagnostic rather than reconstructive."
+      ]
+    },
+    "Cell 82B": {
+      "cell_index": 122,
+      "helper_functions": {
+        "notebook:Cell 82B": [
+          "phase4_latex_target_label"
+        ],
+        "matplotlib.colors.LinearSegmentedColormap": [
+          "from_list"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45.npz, conditional fallback when Cell 82 grids are unavailable"
+      ],
+      "prior_result_sources": [
+        "Cell 3::DATA_DIR",
+        "Cell 3::FIG_DIR",
+        "Cell 3::PALETTE",
+        "Cell 3::np",
+        "Cell 3::plt",
+        "Cell 8::SELECTED_MAP_HAS_BLASCHKE_CERTIFICATION",
+        "Cell 82::phase4_global_targets",
+        "Cell 82::x_grid",
+        "Cell 82::y_grid",
+        "Cell 82::Z_log",
+        "Cell 82::X_grid",
+        "Cell 82::Y_grid",
+        "Cell 82::family_colours",
+        "removed source Cell 38::phase4_moat_export, conditional fallback"
+      ],
+      "execution_mode": {
+        "kind": "sampled_zoom_and_symlog_plot_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "binary64 plotting of the sampled Cell 82 surface",
+        "cache_policy": "consume Cell 82 arrays when available; otherwise load the exact grid45 NPZ fallback"
+      },
+      "products": {
+        "prior_results": [
+          "zoom_targets",
+          "phase4_global_zoom_fig_path"
+        ],
+        "files": [
+          "FIG_DIR/branch_image_wide_candidate_first15_global_hardy_moat_zoom_symlog_N600_M610.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Near-origin and symlog views of the sampled global surface only; the figure does not certify a moat or a Riesz rank."
+      },
+      "unresolved_provenance": [
+        "Its fallback phase4_moat_export source belongs to removed Cell 38; normal retained execution consumes the stored Cell 82 diagnostic state."
+      ]
+    },
+    "Cell 82G": {
+      "cell_index": 127,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "display_saved_image"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "FIG_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_3d_2d_N600_M610.png"
+      ],
+      "prior_result_sources": [
+        "Cell 3::FIG_DIR"
+      ],
+      "execution_mode": {
+        "kind": "saved_figure_display",
+        "parallelism": "single process",
+        "arithmetic": "none",
+        "cache_policy": "display the retained full-resolution PNG"
+      },
+      "products": {
+        "prior_results": [
+          "phase4_static_fallback"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Displays an existing sampled moat-surface diagnostic and contributes no numerical certificate."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 82F": {
+      "cell_index": 129,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "make_phase4_interactive_dashboard_renderer",
+          "create_phase4_interactive_dashboard"
+        ]
+      },
+      "required_helper_contract": {
+        "make_phase4_interactive_dashboard_renderer": "keyword-only surface_paths, packet_frame, eigenvalue_path, output_dir and stem; returns a callback accepting packet_count, order_mode, opacity, azimuth, elevation, xy_scale, z_scale, zoom_factor, surface_resolution and show_eigenvalues",
+        "create_phase4_interactive_dashboard": "render_callback plus keyword-only maximum_packets, default_packets and display_dashboard"
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45.npz",
+        "DATA_DIR/branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161.npz",
+        "DATA_DIR/branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201.npz",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv",
+        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 3::FIG_DIR",
+        "Cell 3::pd",
+        "Cell 38::_phase4_restored_data_dir"
+      ],
+      "execution_mode": {
+        "kind": "helper_owned_interactive_phase4_dashboard",
+        "parallelism": "single process",
+        "arithmetic": "stored binary64 sampled surfaces; renderer and widget construction belong exclusively to plotting.py",
+        "cache_policy": "consume retained NPZ and CSV artefacts"
+      },
+      "products": {
+        "prior_results": [
+          "phase4_dashboard_renderer",
+          "phase4_dashboard_snapshot",
+          "phase4_dashboard"
+        ],
+        "files": [
+          "FIG_DIR/branch_image_wide_candidate_first15_interactive_dashboard_snapshot_N600_M610.png"
+        ]
+      },
+      "proof_status": {
+        "class": "presentation_only",
+        "claim": "Restores the interactive sampled moat dashboard and one initial snapshot; neither is theorem-facing."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 100": {
+      "cell_index": 151,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "display_table",
+          "plot_certification_ladder"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/raw_spectrum_square_N_sweep_extended_targets.csv",
+        "DATA_DIR/transfer_lab_blaschke_mu_0p3_active_geometry.csv",
+        "DATA_DIR/transfer_lab_blaschke_mu_0p3_generic_sampled_schur_envelope.csv",
+        "DATA_DIR/branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv",
+        "Final Deployment/Numerics/blaschke_deformation_diagnostic_audits.py, byte-identical standalone source",
+        "DATA_DIR/transfer_lab_blaschke_mu_0p3_universal_certification_audit.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 3::FIG_DIR",
+        "Cell 3::pd",
+        "Cell 94B::SAMPLED_SCHUR_DIAGNOSTICS_RESULT"
+      ],
+      "execution_mode": {
+        "kind": "source_regenerated_symmetric_certification_ladder",
+        "parallelism": "single process",
+        "arithmetic": "binary64 diagnostic audit reconstruction; rendering is delegated to plotting.py",
+        "cache_policy": "rebuild from four explicit generated input frames; retained audit CSVs are never accepted as seeds"
+      },
+      "products": {
+        "prior_results": [
+          "selected_map_certification_audit_df",
+          "phase4_certification_ladder_result"
+        ],
+        "files": [
+          "DATA_DIR/transfer_lab_blaschke_mu_0p3_universal_certification_audit.csv",
+          "DATA_DIR/transfer_lab_blaschke_mu_0p3_first14_packet_audit.csv",
+          "REPORT_DIR/blaschke_deformation_diagnostic_audits_rebuild.json",
+          "FIG_DIR/transfer_lab_blaschke_mu_0p3_Cell_100_universal_certification_ladder.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Regenerates the two retained diagnostic audit tables from explicit source-generated frames and renders their status ladder; neither the audit nor the plot is a theorem gate."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 102": {
+      "cell_index": 153,
+      "helper_functions": {
+        "Final Deployment/Numerics/plotting.py": [
+          "display_table",
+          "parse_complex_for_plot",
+          "plot_packet_contours"
+        ]
+      },
+      "helper_symbols": {},
+      "file_sources": [
+        "DATA_DIR/transfer_lab_blaschke_mu_0p3_first14_packet_audit.csv",
+        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv"
+      ],
+      "prior_result_sources": [
+        "Cell 3::FIG_DIR",
+        "Cell 3::np",
+        "Cell 3::pd"
+      ],
+      "execution_mode": {
+        "kind": "file_backed_symmetric_packet_contour_diagnostic",
+        "parallelism": "single process",
+        "arithmetic": "binary64 parsing only; rendering is delegated to plotting.py",
+        "cache_policy": "consume the retained first-fourteen audit and eigenvalue CSVs"
+      },
+      "products": {
+        "prior_results": [
+          "packet_table",
+          "phase4_eigenvalues",
+          "phase4_packet_contours_result"
+        ],
+        "files": [
+          "FIG_DIR/transfer_lab_blaschke_mu_0p3_Cell_102_first14_packet_audit.png"
+        ]
+      },
+      "proof_status": {
+        "class": "empirical_diagnostic",
+        "claim": "Restores the first-fourteen contour presentation from retained symmetric audit data; the plot itself is not a complete-contour certificate."
+      },
+      "unresolved_provenance": [
+        "The retained first-fourteen audit CSV is consumed rather than reconstructed by this cell."
+      ]
+    },
+    "blaschke_deformation_spectral_certification": {
+      "cell_index": 157,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py",
+      "source_sha256": "b20bac59a78a8233ce7d1e11f10e54f5fbbf10d2c6951a983c76c15328c31824",
+      "helper_functions": {},
+      "helper_symbols": {},
+      "defined_functions": [
+        "sha256_file",
+        "logical_source_hashes",
+        "normalise_source_hashes",
+        "upper_float",
+        "upper_text",
+        "assemble_interval_hardy_matrix",
+        "build_or_load_hardy_matrix_certificate",
+        "load_exact_dyadic_midpoint"
+      ],
+      "defined_classes": [
+        "HardyMatrixCertificateConfig"
+      ],
+      "file_sources": [
+        "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py, byte-identical standalone source"
+      ],
+      "prior_result_sources": [
+        "inline-module support::_install_inline_module"
+      ],
+      "execution_mode": {
+        "kind": "inline_helper_install",
+        "parallelism": "python-flint thread count supplied by caller",
+        "arithmetic": "python-flint Arb and exact-dyadic midpoint extraction",
+        "cache_policy": "transactional hash-validated payload checkpoints"
+      },
+      "products": {
+        "prior_results": [
+          "importable modules blaschke_deformation_spectral_certification and Numerics.blaschke_deformation_spectral_certification"
+        ],
+        "files": [
+          "temporary blaschke_deformation_spectral_certification.py"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Implements validated Hardy-gauge matrix assembly and exact-dyadic enclosure; Cell 102A applies it to the production geometry."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 102A": {
+      "cell_index": 158,
+      "helper_functions": {
+        "blaschke_deformation_spectral_certification": [
+          "build_or_load_hardy_matrix_certificate"
+        ]
+      },
+      "helper_symbols": {
+        "blaschke_deformation_spectral_certification": [
+          "HardyMatrixCertificateConfig"
+        ]
+      },
+      "file_sources": [
+        "INLINE_MODULE_PATHS/blaschke_deformation_spectral_certification",
+        "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024.pkl.gz, conditional cache input",
+        "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_diagnostic_midpoint.npz, conditional cache input",
+        "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.csv, conditional cache input",
+        "REPORT_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.json, conditional cache input",
+        "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048.pkl.gz, conditional cache input",
+        "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_diagnostic_midpoint.npz, conditional cache input",
+        "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_certificate.csv, conditional cache input",
+        "REPORT_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_certificate.json, conditional cache input"
+      ],
+      "prior_result_sources": [
+        "Cell 24C::PHASE2_FINAL_CERT",
+        "Cell 4A::CERTIFIER_PROCESS_WORKERS"
+      ],
+      "execution_mode": {
+        "kind": "validated_hardy_matrix_build_or_reuse",
+        "parallelism": "24 python-flint threads",
+        "arithmetic": "1024-bit tightness audit and 2048-bit production Arb enclosure",
+        "cache_policy": "transactional reuse only after schema, configuration, source-hash and payload-digest validation"
+      },
+      "products": {
+        "prior_results": [
+          "STARTING_HARDY_MATRIX_AUDIT",
+          "BALANCED_HARDY_MATRIX_CERTIFICATE",
+          "A_X_phase4_balanced_certified_midpoint",
+          "A_X_phase4",
+          "CELL103_A_N_CIRC_PAYLOAD_PATH",
+          "CELL103_ETA_A_UPPER",
+          "balanced_hardy_matrix_gate_df"
+        ],
+        "files": [
+          "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024.pkl.gz",
+          "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_diagnostic_midpoint.npz",
+          "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.csv",
+          "REPORT_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits1024_certificate.json",
+          "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048.pkl.gz",
+          "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_diagnostic_midpoint.npz",
+          "DATA_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_certificate.csv",
+          "REPORT_DIR/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_certificate.json",
+          "DATA_DIR/blaschke_deformation_hardy_matrix_precision_audit.csv",
+          "DATA_DIR/blaschke_deformation_balanced_hardy_matrix_gate.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_finite_matrix",
+        "claim": "Encloses the mathematical N=600, M=610 Hardy-gauge matrix, records an exact-dyadic midpoint and certifies the matrix-replacement radius eta_A."
+      },
+      "unresolved_provenance": []
+    },
+    "blaschke_deformation_contour_certification": {
+      "cell_index": 161,
+      "source_file": "Final Deployment/Numerics/blaschke_deformation_contour_certification.py",
+      "source_sha256": "1aebcc004a19a6d09366c75a76a31fb297bad657666d6f91506f068401c95675",
+      "helper_functions": {
+        "blaschke_deformation_spectral_certification": [
+          "sha256_file",
+          "logical_source_hashes",
+          "normalise_source_hashes",
+          "load_exact_dyadic_midpoint"
+        ]
+      },
+      "helper_symbols": {},
+      "defined_functions": [
+        "certify_all_target_contours",
+        "main"
+      ],
+      "defined_classes": [
+        "ContourCertificateConfig",
+        "TargetContour"
+      ],
+      "file_sources": [
+        "Final Deployment/Numerics/blaschke_deformation_contour_certification.py, byte-identical standalone source",
+        "blaschke_deformation_spectral_certification module installed by its inline cell"
+      ],
+      "prior_result_sources": [
+        "inline-module support::_install_inline_module",
+        "blaschke_deformation_spectral_certification::installed module"
+      ],
+      "execution_mode": {
+        "kind": "inline_helper_install",
+        "parallelism": "python-flint threads supplied by caller",
+        "arithmetic": "exact-dyadic matrix reconstruction, Arb Schur validation and Arb Laurent residual bounds",
+        "cache_policy": "transactional, input-hash and geometry validated"
+      },
+      "products": {
+        "prior_results": [
+          "importable modules blaschke_deformation_contour_certification and Numerics.blaschke_deformation_contour_certification"
+        ],
+        "files": [
+          "temporary blaschke_deformation_contour_certification.py"
+        ]
+      },
+      "proof_status": {
+        "class": "infrastructure_only",
+        "claim": "Implements twenty-four Schur-derived counts, seventeen Schur moats, seven Schur-count and Laurent-moat routes, and epsilon-dependent small-gain reaggregation."
+      },
+      "unresolved_provenance": []
+    },
+    "structural Phase 4 provenance tests": {
+      "cell_index": 163,
+      "helper_functions": {
+        "test_blaschke_deformation_contour_certification.CountAndMoatProvenanceTests": [
+          "test_repeated_diagonal_count_survives_nonnormality",
+          "test_wrong_expected_multiplicity_does_not_invalidate_count",
+          "test_failed_schur_homotopy_blocks_count_transport",
+          "test_failed_laurent_residual_preserves_count_provenance",
+          "test_zero_complement_requires_strict_exclusion",
+          "test_logical_source_hashes_ignore_temporary_parent_paths",
+          "test_small_gain_reaggregation_preserves_finite_geometry"
+        ]
+      },
+      "helper_symbols": {
+        "test_blaschke_deformation_contour_certification": [
+          "CountAndMoatProvenanceTests"
+        ]
+      },
+      "file_sources": [
+        "Final Deployment/Numerics/test_blaschke_deformation_contour_certification.py",
+        "Final Deployment/Numerics/blaschke_deformation_contour_certification.py",
+        "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py"
+      ],
+      "prior_result_sources": [
+        "inline contour and spectral helper modules"
+      ],
+      "execution_mode": {
+        "kind": "unittest_failure_mode_suite",
+        "parallelism": "single process",
+        "arithmetic": "small exact and validated structural cases",
+        "cache_policy": "none"
+      },
+      "products": {
+        "prior_results": [
+          "_phase4_test_result"
+        ],
+        "files": []
+      },
+      "proof_status": {
+        "class": "validation_test",
+        "claim": "Tests count provenance, nonnormality, homotopy failure, Laurent failure, zero-complement exclusion, source-hash stability and epsilon-only reaggregation."
+      },
+      "unresolved_provenance": []
+    },
+    "Cell 103": {
+      "cell_index": 164,
+      "helper_functions": {
+        "blaschke_deformation_contour_certification": [
+          "certify_all_target_contours"
+        ]
+      },
+      "helper_symbols": {
+        "blaschke_deformation_contour_certification": [
+          "ContourCertificateConfig",
+          "CERTIFICATE_ROUTE_LAURENT",
+          "CERTIFICATE_ROUTE_SCHUR",
+          "COUNT_METHOD_SCHUR_DIAGONAL",
+          "MOAT_METHOD_LAURENT",
+          "MOAT_METHOD_SCHUR_TRIANGULAR",
+          "SCHEMA"
+        ]
+      },
+      "file_sources": [
+        "Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE.payload_path",
+        "Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE.midpoint_path",
+        "Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE.report_path",
+        "DATA_DIR/branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv",
+        "INLINE_MODULE_PATHS/blaschke_deformation_contour_certification",
+        "INLINE_MODULE_PATHS/blaschke_deformation_spectral_certification",
+        "DATA_DIR/blaschke_deformation_24_target_N600_M610_contour_plan.csv, conditional cache input",
+        "DATA_DIR/blaschke_deformation_24_target_N600_M610_validated_schur.npz, conditional cache input",
+        "REPORT_DIR/blaschke_deformation_24_target_N600_M610_validated_schur.json, conditional cache input",
+        "DATA_DIR/blaschke_deformation_24_target_N600_M610_schur_attempts.csv, conditional cache input",
+        "DATA_DIR/blaschke_deformation_24_target_N600_M610_laurent_mode_bounds.csv, conditional cache input",
+        "DATA_DIR/blaschke_deformation_24_target_N600_M610_laurent_witness_reconstruction.csv, conditional cache input",
+        "DATA_DIR/blaschke_deformation_24_target_N600_M610_spectral_certificate.csv, conditional cache input",
+        "REPORT_DIR/blaschke_deformation_24_target_N600_M610_spectral_certificate.json, conditional cache input"
+      ],
+      "prior_result_sources": [
+        "Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE",
+        "Cell 102A::_hardy_gate_path",
+        "Cell 24C::PHASE2_FINAL_CERT",
+        "structural Phase 4 provenance tests::_phase4_test_result",
+        "Cell 4A::CERTIFIER_PROCESS_WORKERS"
+      ],
+      "execution_mode": {
+        "kind": "transactional_complete_contour_certificate",
+        "parallelism": "24 python-flint threads",
+        "arithmetic": "256-bit Arb, exact-dyadic Schur count transport, complete-circle Schur or Laurent moat bounds, exact lifting of binary64 Laurent coefficients and outward decimal display",
+        "cache_policy": "reuse only after source hashes, matrix hashes, geometry, seven-row Laurent reconstruction manifest and proof-route gates pass; BLASCHKE_FORCE_CONTOURS forces source reconstruction"
+      },
+      "products": {
+        "prior_results": [
+          "SPECTRAL_CONTOUR_CERTIFICATE",
+          "spectral_contour_certificate_df",
+          "spectral_contour_certificate_text_df",
+          "laurent_witness_reconstruction_df",
+          "laurent_witness_reconstruction_display_df",
+          "CELL103_LAURENT_COEFFICIENT_MATRIX_COUNT",
+          "CELL103_MINIMUM_CERTIFIED_MOAT",
+          "CELL103_MAXIMUM_SMALL_GAIN",
+          "CELL103_MINIMUM_CERTIFIED_MOAT_TEXT",
+          "CELL103_MAXIMUM_SMALL_GAIN_TEXT",
+          "balanced_hardy_matrix_gate_df",
+          "spectral_contour_certificate_display_df"
+        ],
+        "files": [
+          "DATA_DIR/blaschke_deformation_24_target_N600_M610_contour_plan.csv",
+          "DATA_DIR/blaschke_deformation_24_target_N600_M610_validated_schur.npz",
+          "REPORT_DIR/blaschke_deformation_24_target_N600_M610_validated_schur.json",
+          "DATA_DIR/blaschke_deformation_24_target_N600_M610_schur_attempts.csv",
+          "DATA_DIR/blaschke_deformation_24_target_N600_M610_laurent_mode_bounds.csv",
+          "DATA_DIR/blaschke_deformation_24_target_N600_M610_laurent_witness_reconstruction.csv",
+          "DATA_DIR/blaschke_deformation_24_target_N600_M610_spectral_certificate.csv",
+          "REPORT_DIR/blaschke_deformation_24_target_N600_M610_spectral_certificate.json",
+          "DATA_DIR/blaschke_deformation_balanced_hardy_matrix_gate.csv"
+        ]
+      },
+      "proof_status": {
+        "class": "certified_spectral_transfer",
+        "claim": "Final theorem-facing certificate: twenty-four nontrivial contours, thirty total algebraic multiplicities, all counts Schur-derived, seventeen Schur-triangular moats, seven source-reconstructed Laurent moats, complete-circle coverage and finite-to-exact Riesz-rank transfer."
+      },
+      "unresolved_provenance": []
+    }
+  },
+  "unresolved_provenance": {},
+  "source_hash_refresh": {
+    "date": "2026-08-29",
+    "method": "refresh_notebook_cell_provenance.py",
+    "notebook_sha256": "8951e32d004283135d674e18a445792812a265472b97b1f5154537c4e8d2424f",
+    "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
+    "standalone_source_count": 9,
+    "standalone_source_sha256": {
+      "Final Deployment/Numerics/blaschke_deformation_certification.py": "f46d403cfe1e2458e9455592f0d5e33fb95697dfabfd18d10dab53da84daf2ec",
+      "Final Deployment/Numerics/blaschke_deformation_contour_certification.py": "1aebcc004a19a6d09366c75a76a31fb297bad657666d6f91506f068401c95675",
+      "Final Deployment/Numerics/blaschke_deformation_historical_comparisons.py": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_geometry.py": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_matrix.py": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_pipeline.py": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5",
+      "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py": "b20bac59a78a8233ce7d1e11f10e54f5fbbf10d2c6951a983c76c15328c31824",
+      "Final Deployment/Numerics/mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c"
+    },
+    "inline_helper_count": 18,
+    "inline_helper_sha256": {
+      "blaschke_deformation_certification.py": "f46d403cfe1e2458e9455592f0d5e33fb95697dfabfd18d10dab53da84daf2ec",
+      "blaschke_deformation_contour_certification.py": "1aebcc004a19a6d09366c75a76a31fb297bad657666d6f91506f068401c95675",
+      "blaschke_deformation_diagnostic_audits.py": "d1d63f19ec117b5d1c913847ed984902a5db55a01f3541a9f027353e42867e70",
+      "blaschke_deformation_historical_comparisons.py": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
+      "blaschke_deformation_historical_phase4.py": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
+      "blaschke_deformation_phase1_diagnostics.py": "93dcebd2450f92df3e488fb5f5765a6ad9cb34d954e01000b29edb61613fdaf9",
+      "blaschke_deformation_phase2_final_aggregation.py": "5d16e65ba102ecfd44b28ef509606273fc3aef5ec52766b3f00dee063136f1c0",
+      "blaschke_deformation_phase2_finite_m.py": "5c1c9cd5034b0520f66a5565e60184a263958af53e1b555a725ad25103c0d86f",
+      "blaschke_deformation_phase2_geometry.py": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
+      "blaschke_deformation_phase2_matrix.py": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
+      "blaschke_deformation_phase2_pipeline.py": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
+      "blaschke_deformation_phase2_resolved_response.py": "3047063eba4c36e27dc2824e62e76b9a8b070f3ab3e6334b59c99027fb7a238e",
+      "blaschke_deformation_phase2_transport.py": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5",
+      "blaschke_deformation_sampled_schur_diagnostics.py": "15f3cc33ed067043f3845493aa11c2230e94876d2d8993fe1fdf63f178fe2eea",
+      "blaschke_deformation_spectral_certification.py": "b20bac59a78a8233ce7d1e11f10e54f5fbbf10d2c6951a983c76c15328c31824",
+      "hardy_moat_surface_worker.py": "fe2614db853182a5e7ed73da3e4e2746e719308ab0b71d85474c564102cc9b46",
+      "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
+      "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a"
+    },
+    "stored_output_status": "retained historical outputs; full clean-room execution is required after the fail-closed source correction"
+  }
+}

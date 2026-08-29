@@ -34,7 +34,8 @@ def initialise_surface_worker(matrix_path: str) -> None:
 
 
 def sample_surface_row_block(task: tuple) -> str:
-    """Compute and save one row block of the singular-value surface."""
+    '''Explanation: The smallest singular value of zeta I minus A visualises finite resolvent separation over a region of the complex plane. A row block contributes to that explanatory surface, but grid sampling does not certify the gaps between points.
+Functionality: Compute and save one row block of the singular-value surface.'''
 
     if _A is None or _I is None:
         raise RuntimeError("Surface worker was not initialised with a matrix.")

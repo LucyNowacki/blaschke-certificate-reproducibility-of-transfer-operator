@@ -1,0 +1,43 @@
+{
+  "certificate": {
+    "N": 600,
+    "arb_dps": 116,
+    "configuration_digest": "17afab09f212f9da53ddbbc24af34faf2699760f25e745cc80feac39f7eb6cf2",
+    "coordinate_orientation": "c to y=D_r,N c to d=T_N(r)y",
+    "geometry_configuration_digest": "8bd24292d75f65571d0f5b8027c16c6d6eb43f0f9ba0cd1d8e361074f8baf66c",
+    "inverse_backend": "numpy binary64 witness with Arb residual",
+    "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+    "inverse_witness_sha256": "9f3d39154217340b36c7067095f52ead46c4aa6bac4145ff6499db0c4270db58",
+    "kappa_diag": "1.2530528397052667",
+    "kappa_hat": "6.04202342448072018237207036900000000000000000000000000000000000000000000000000000E+2",
+    "lambda_max_cert": "1.93000543617319454119806479000000000000000000000000000000000000000000000000000000E+2",
+    "lambda_min_cert": "5.28681024515407293519732012900000000000000000000000000000000000000000000000000000E-4",
+    "norm_B0_frob_cert": "4.34913750229539526498228297900000000000000000000000000000000000000000000000000000E+1",
+    "norm_T_frob_cert": "1.38924635546514734817558788300000000000000000000000000000000000000000000000000000E+1",
+    "producer_schema": "phase2-transport-v2",
+    "r": "2.47366980779132410932127326000000000000000000000000000000000000000000000000000000E+0",
+    "r_tau": "2.29309191182255744934082031200000000000000000000000000000000000000000000000000000E+0",
+    "residual_delta_cert": "8.01075468784560494134342361900000000000000000000000000000000000000000000000000000E-15",
+    "rho": "2.725",
+    "transport_certified": true,
+    "transport_method": "process-block upper-triangular Arb inverse-residual Frobenius certificate",
+    "transport_process_workers": 24,
+    "transport_row_blocks": 24
+  },
+  "configuration": {
+    "N": 600,
+    "flint_threads": 24,
+    "geometry_configuration_digest": "8bd24292d75f65571d0f5b8027c16c6d6eb43f0f9ba0cd1d8e361074f8baf66c",
+    "precision_bits": 384,
+    "r": "2.47366980779132410932127326000000000000000000000000000000000000000000000000000000E+0",
+    "r_tau": "2.29309191182255744934082031200000000000000000000000000000000000000000000000000000E+0",
+    "rho": "2.725"
+  },
+  "configuration_digest": "17afab09f212f9da53ddbbc24af34faf2699760f25e745cc80feac39f7eb6cf2",
+  "csv_path": "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_cert_N600.csv",
+  "csv_sha256": "6f4a6c124b0247c3957fc03fb4ae7f338abcf637ef811e3212753c91f78d96ba",
+  "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+  "inverse_witness_sha256": "9f3d39154217340b36c7067095f52ead46c4aa6bac4145ff6499db0c4270db58",
+  "map_label": "blaschke_mu_0p3",
+  "producer_schema": "phase2-transport-v2"
+}

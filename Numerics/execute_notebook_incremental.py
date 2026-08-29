@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 import time
 
@@ -16,9 +17,19 @@ def cell_label(cell, index: int) -> str:
     return f"{index:03d} {first[:100]}"
 
 
-def execute(path: Path) -> None:
+def execute(
+    path: Path,
+    *,
+    kernel_name: str | None = None,
+    record_timing: bool = False,
+) -> None:
     notebook = nbformat.read(path, as_version=4)
     started: dict[int, float] = {}
+    selected_kernel = (
+        kernel_name
+        or os.environ.get("BLASCHKE_KERNEL_NAME")
+        or notebook.metadata.get("kernelspec", {}).get("name", "python3")
+    )
 
     def on_cell_start(cell, cell_index, **_):
         started[int(cell_index)] = time.monotonic()
@@ -33,12 +44,12 @@ def execute(path: Path) -> None:
     client = NotebookClient(
         notebook,
         timeout=None,
-        kernel_name=notebook.metadata.get("kernelspec", {}).get("name", "python3"),
+        kernel_name=selected_kernel,
         resources={"metadata": {"path": str(path.parent)}},
         on_cell_start=on_cell_start,
         on_cell_executed=on_cell_executed,
         allow_errors=False,
-        record_timing=True,
+        record_timing=bool(record_timing),
     )
     client.execute(cwd=str(path.parent))
     nbformat.write(notebook, path)
@@ -48,8 +59,14 @@ def execute(path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("notebook", type=Path)
+    parser.add_argument("--kernel-name")
+    parser.add_argument("--record-timing", action="store_true")
     args = parser.parse_args()
-    execute(args.notebook.resolve())
+    execute(
+        args.notebook.resolve(),
+        kernel_name=args.kernel_name,
+        record_timing=args.record_timing,
+    )
 
 
 if __name__ == "__main__":

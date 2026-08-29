@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "bundle_root_name": "blaschke_deformation_certifier_reproducibility",
+  "generated_prefixes": [
+    "Numerics/outputs"
+  ],
+  "generated_files": [
+    "Numerics/blaschke_deformation_certifier.ipynb",
+    "Numerics/blaschke_deformation_certifier_thesis_math.ipynb"
+  ],
+  "immutable_external_inputs": [],
+  "classification_notes": {
+    "Numerics/blaschke_deformation_certifier_template.ipynb": "Immutable locked notebook source.",
+    "Numerics/outputs": "Entirely generated evidence, caches, reports, figures, matrices, and producer intermediates for this benchmark.",
+    "upstream_artifact_names": "The plan's upstream artifacts are intra-workflow producer outputs, not external immutable inputs.",
+    "map_and_targets": "The map definition, constants, and exact target families are encoded in immutable Python/notebook sources; no external numerical data file is required."
+  }
+}

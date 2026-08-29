@@ -5,9 +5,18 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+import re
+import tempfile
 import unittest
 
 from build_blaschke_deformation_thesis_math_notebook import (
+    CURATED_INLINE_HELPER_ORDINALS,
+    DEPENDENCY_MAP_CELL_ID,
+    _merge_preserved_execution_state,
+    build_curated,
+    dependency_map_cell,
+    main as builder_main,
+    validate_curated_counterpart,
     validate_inline_helper_sync,
 )
 
@@ -34,6 +43,7 @@ SYMMETRIC_PROVENANCE_WARNING = (
     "The external formula supplies target identities and multiplicities, "
     "not finite counts or contour moats."
 )
+APPENDIX_HELPER_ORDINALS = CURATED_INLINE_HELPER_ORDINALS
 
 
 class InlineHelperProvenanceTests(unittest.TestCase):
@@ -42,7 +52,77 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         cls.notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
 
     def test_current_notebook_matches_all_standalone_helpers(self) -> None:
-        validate_inline_helper_sync(self.notebook)
+        validate_inline_helper_sync(
+            self.notebook,
+            helper_ordinals=APPENDIX_HELPER_ORDINALS,
+            allow_notebook_provenance=True,
+        )
+
+    def test_all_current_cell_sources_match_a_fresh_output_free_build(self) -> None:
+        expected, _ = build_curated()
+        self.assertEqual(len(self.notebook["cells"]), len(expected["cells"]))
+        for actual_cell, expected_cell in zip(
+            self.notebook["cells"], expected["cells"], strict=True
+        ):
+            self.assertEqual(actual_cell.get("id"), expected_cell.get("id"))
+            self.assertEqual(
+                "".join(actual_cell.get("source", [])),
+                "".join(expected_cell.get("source", [])),
+                msg=str(actual_cell.get("id")),
+            )
+            self.assertEqual(
+                actual_cell.get("attachments", {}),
+                expected_cell.get("attachments", {}),
+                msg=str(actual_cell.get("id")),
+            )
+
+    def test_cell_0m_matches_its_builder_owned_source(self) -> None:
+        validate_curated_counterpart(self.notebook)
+        expected = dependency_map_cell()
+        actual = self.notebook["cells"][0]
+        actual_source = "".join(actual.get("source", []))
+        self.assertEqual(actual.get("id"), DEPENDENCY_MAP_CELL_ID)
+        self.assertEqual(actual_source, expected["source"])
+
+    def test_altered_cell_0m_is_rejected(self) -> None:
+        altered = deepcopy(self.notebook)
+        map_cell = altered["cells"][0]
+        source = map_cell["source"]
+        if isinstance(source, list):
+            map_cell["source"] = [
+                line.replace("Reproducibility dependency map", "Unverified map", 1)
+                for line in source
+            ]
+        else:
+            map_cell["source"] = source.replace(
+                "Reproducibility dependency map", "Unverified map", 1
+            )
+        with self.assertRaises(AssertionError):
+            validate_curated_counterpart(altered)
+
+    def test_source_refresh_preserves_execution_state_by_stable_id(self) -> None:
+        current, _ = build_curated()
+        merged = _merge_preserved_execution_state(current, self.notebook)
+        validate_curated_counterpart(merged)
+        for expected, actual in zip(
+            self.notebook["cells"], merged["cells"], strict=True
+        ):
+            if expected.get("cell_type") != "code":
+                continue
+            self.assertEqual(
+                actual.get("execution_count"), expected.get("execution_count")
+            )
+            self.assertEqual(actual.get("outputs", []), expected.get("outputs", []))
+        self.assertIn("source_sync_after_execution", merged["metadata"])
+
+    def test_builder_refuses_implicit_executed_notebook_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / NOTEBOOK.name
+            output.write_bytes(NOTEBOOK.read_bytes())
+            before = output.read_bytes()
+            with self.assertRaisesRegex(RuntimeError, "Refusing to overwrite"):
+                builder_main(["--output", str(output)])
+            self.assertEqual(output.read_bytes(), before)
 
     def test_altered_inline_byte_is_rejected(self) -> None:
         altered = deepcopy(self.notebook)
@@ -52,11 +132,18 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         )
         source = source_cell["source"]
         if isinstance(source, list):
-            source[1] = source[1].replace("Rigorous", "rigorous", 1)
+            source_cell["source"] = [
+                line.replace("Rigorous", "rigorous", 1)
+                for line in source
+            ]
         else:
             source_cell["source"] = source.replace("Rigorous", "rigorous", 1)
         with self.assertRaises(AssertionError):
-            validate_inline_helper_sync(altered)
+            validate_inline_helper_sync(
+                altered,
+                helper_ordinals=APPENDIX_HELPER_ORDINALS,
+                allow_notebook_provenance=True,
+            )
 
     def test_altered_displayed_digest_is_rejected(self) -> None:
         altered = deepcopy(self.notebook)
@@ -66,20 +153,20 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         )
         source = heading["source"]
         if isinstance(source, list):
-            heading["source"] = [
-                line.replace(
-                    "dbe80820b21637e2cd3f24e28f6c4ee0288af81197af40a4e6871511bfa17501",
-                    "0" * 64,
-                )
-                for line in source
-            ]
+            joined = "".join(source)
+            heading["source"] = re.sub(
+                r"(?<=SHA-256: `)[0-9a-f]{64}(?=`)", "0" * 64, joined, count=1
+            )
         else:
-            heading["source"] = source.replace(
-                "dbe80820b21637e2cd3f24e28f6c4ee0288af81197af40a4e6871511bfa17501",
-                "0" * 64,
+            heading["source"] = re.sub(
+                r"(?<=SHA-256: `)[0-9a-f]{64}(?=`)", "0" * 64, source, count=1
             )
         with self.assertRaises(AssertionError):
-            validate_inline_helper_sync(altered)
+            validate_inline_helper_sync(
+                altered,
+                helper_ordinals=APPENDIX_HELPER_ORDINALS,
+                allow_notebook_provenance=True,
+            )
 
     def test_deployment_contains_no_obsolete_certification_terms(self) -> None:
         paths = (

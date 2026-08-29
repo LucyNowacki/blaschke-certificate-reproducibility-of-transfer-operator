@@ -33,11 +33,8 @@ class CertificationCapability:
 
 
 def balanced_single_space_geometry(rho: float, r_tau: float) -> dict[str, float]:
-    """Balance the sampled output and branch-gap exponential bases.
-
-    The Hardy radius must exceed one.  When a sampled branch radius is below
-    one, the effective lower constraint is therefore one rather than r_tau.
-    """
+    '''Explanation: The Hardy radius must be larger than the branch-image radius but smaller than the available analytic radius. Balancing the two resulting geometric ratios minimises the slower exponential decay mechanism in the sampled model.
+Functionality: Balance the sampled output and branch-gap exponential bases. The Hardy radius must exceed one. When a sampled branch radius is below one, the effective lower constraint is therefore one rather than r_tau.'''
     rho = float(rho)
     r_tau = float(r_tau)
     if not (math.isfinite(rho) and math.isfinite(r_tau) and rho > 1.0 and r_tau < rho):
@@ -64,11 +61,8 @@ def select_sampled_geometry(
     coarse_samples: int = 256,
     final_samples: int = 1024,
 ) -> tuple[dict[str, Any], pd.DataFrame]:
-    """Select the best admissible sampled geometry from candidate ellipses.
-
-    This routine is deliberately diagnostic.  Boundary sampling does not
-    replace an interval enclosure of branch images or transfer weights.
-    """
+    '''Explanation: Different ellipse radii trade analytic room against branch contraction. Selecting the best sampled candidate helps design the rigorous scan, but boundary samples alone cannot establish the continuum inequalities required by the thesis.
+Functionality: Select the best admissible sampled geometry from candidate ellipses. This routine is deliberately diagnostic. Boundary sampling does not replace an interval enclosure of branch images or transfer weights.'''
     rows: list[dict[str, Any]] = []
     for rho in rho_candidates:
         row: dict[str, Any] = {"rho": float(rho), "boundary_samples": int(coarse_samples)}
@@ -125,32 +119,46 @@ def select_sampled_geometry(
 
 
 def _theta_log(N: int, t: float) -> float:
+    '''Explanation: Theta_N sums the squared sizes of the retained scaled modes and may span enormous magnitudes. Log-sum-exp evaluates this finite basis-growth factor without overflow in the diagnostic envelope.
+Functionality: Evaluate log Theta_N(t) by log-sum-exp to avoid overflow in sampled diagnostics.'''
     values = [math.log(2 * j + 1) + 2 * j * math.log(float(t)) for j in range(int(N))]
     maximum = max(values)
     return maximum + math.log(sum(math.exp(value - maximum) for value in values))
 
 
 def _tail_T(N: int, q: float) -> float:
+    '''Explanation: The omitted weighted modes form a geometric series with a polynomial degree factor. Its closed tail displays the exponential N-dependence expected from analytic truncation.
+Functionality: Evaluate the closed weighted geometric tail sum beginning at N.'''
     return q**N * ((2 * N + 1) / (1 - q) + 2 * q / (1 - q) ** 2)
 
 
 def _S_infty(q: float) -> float:
+    '''Explanation: The full weighted geometric sum gives a closed normalisation for all degrees at once. It is the infinite-series counterpart of the finite basis-growth terms in the sampled bound.
+Functionality: Evaluate the complete weighted geometric sum (1+q)/(1-q)^2.'''
     return (1 + q) / (1 - q) ** 2
 
 
 def _C2(radius: float) -> float:
+    '''Explanation: Analyticity on a Bernstein ellipse yields geometrically decaying Legendre coefficients in L2, up to a radius-dependent constant. This is that norm-compatible sampled constant.
+Functionality: Evaluate the L2 ellipse coefficient factor at the sampled radius.'''
     return math.sqrt((radius**2 + radius**-2) / (radius**2 - radius**-2))
 
 
 def _Cinf(radius: float) -> float:
+    '''Explanation: A uniform coefficient estimate pays a different ellipse constant from the L2 estimate. This factor records that stronger pointwise control in the sampled diagnostic calculation.
+Functionality: Evaluate the uniform ellipse coefficient factor at the sampled radius.'''
     return (radius + radius**-1) / (radius - radius**-1)
 
 
 def _CGL_core(rho: float) -> float:
+    '''Explanation: The non-exponential prefactor in the analytic Gauss--Legendre remainder determines how the quadrature order M converts into matrix accuracy. It complements the dominant ellipse-decay power.
+Functionality: Evaluate the sampled Gauss-Legendre remainder prefactor core at rho.'''
     return math.pi * math.sqrt(1 + rho**-2) * (1 + 1 / (2 * (rho**2 - 1)))
 
 
 def _input_tail(N: int, r: float, r_tau: float) -> float:
+    '''Explanation: After mode N, the branch image is measured relative to the chosen Hardy radius. When that ratio is below one, a closed geometric sum bounds the unresolved input mass.
+Functionality: Evaluate the closed unresolved-input tail factor from N, r, and the branch-image radius.'''
     q = r_tau / r
     return (1 + r_tau ** (-2 * N)) / math.sqrt(1 - q * q) * q**N
 
@@ -161,12 +169,8 @@ def sampled_schur_envelope(
     geometry: Mapping[str, float],
     kappa: Callable[[int, float], float] | None = None,
 ) -> pd.DataFrame:
-    """Evaluate the closed Schur fallback using sampled geometry.
-
-    The auxiliary ZWX13 factor D_M is set to one.  Consequently these rows are
-    diagnostics unless every supplied constant has a separate certified upper
-    enclosure and the transport factor is certified.
-    """
+    '''Explanation: This envelope combines sampled branch geometry, analytic tails, finite matrix error, and basis transport into a proposed perturbation size. It explains the Schur strategy but is not theorem evidence unless every input is independently enclosed.
+Functionality: Evaluate the closed Schur fallback using sampled geometry. The auxiliary ZWX13 factor D_M is set to one. Consequently these rows are diagnostics unless every supplied constant has a separate certified upper enclosure and the transport factor is certified.'''
     rho = float(geometry["rho"])
     r_tau = float(geometry["r_tau"])
     r = float(geometry["r"])
@@ -222,16 +226,8 @@ def build_certification_audit(
     schur_rows: pd.DataFrame | None,
     moat_rows: pd.DataFrame | None,
 ) -> pd.DataFrame:
-    """Build a truth-preserving Riesz-rank certification ladder.
-
-    Exact eigenvalue formulae are useful for naming contours, but they are not
-    a hypothesis of the perturbative Riesz-projector argument.  For an
-    unknown-spectrum map, high-resolution reference points may therefore be
-    used only to propose contours.  A theorem-level conclusion still requires
-    certified branch geometry, a certified operator perturbation radius, a
-    validated contour-moat lower bound, a certified finite-section count, and
-    a strict small-gain inequality.
-    """
+    '''Explanation: Riesz-rank equality follows only after geometry, perturbation size, contour moat, finite count, and strict small gain are all certified. The audit makes that implication chain explicit and refuses to infer the conclusion from exact target formulas or samples alone.
+Functionality: Build a truth-preserving Riesz-rank certification ladder. Exact eigenvalue formulae are useful for naming contours, but they are not a hypothesis of the perturbative Riesz-projector argument. For an configuration without a closed-form target list, high-resolution reference points may therefore be used only to propose contours. A theorem-level conclusion still requires certified branch geometry, a certified operator perturbation radius, a validated contour-moat lower bound, a certified finite-section count, and a strict small-gain inequality.'''
     geometry = dict(geometry or {})
     schur_rows = pd.DataFrame() if schur_rows is None else schur_rows
     moat_rows = pd.DataFrame() if moat_rows is None else moat_rows

@@ -1,20 +1,27 @@
 """Build the phase-preserving, inline thesis-mathematics certifier.
 
 The counterpart starts from the output-free source notebook produced by
-``build_blaschke_deformation_certifier.py``. Every original Markdown cell,
-code cell and metadata item is retained in its original order. The
-repository-local helpers which implement thesis mathematics are then inserted
-as executable cell modules immediately before their first use. The source
-notebook is required and is never reconstructed from a generated counterpart;
-the provenance direction is always locked template to source to counterpart.
+``build_blaschke_deformation_certifier.py``.  Repository-local helpers which
+implement thesis mathematics are inserted as executable cell modules beside
+their first use, and two source-only diagnostic producers are inserted before
+their consumers.  The appendix transformer then applies the locked provenance
+and plotting rules to curate the 187-cell intermediate into the 139-cell
+computational body.  A non-executable dependency map is prepended as Cell 0M,
+giving the final 140-cell thesis-mathematics notebook without renumbering or
+altering any existing cell.  The source notebook is required and is never
+reconstructed from a generated counterpart; the provenance direction is
+always locked template to source to curated counterpart.
 """
 
 from __future__ import annotations
 
+import argparse
+import base64
 from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 import nbformat as nbf
@@ -23,6 +30,10 @@ import nbformat as nbf
 HERE = Path(__file__).resolve().parent
 SOURCE = HERE / "blaschke_deformation_certifier.ipynb"
 OUTPUT = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
+DEPENDENCY_MAP = HERE / "blaschke_deformation_notebook_dependency_map.md"
+DEPENDENCY_MAP_SVG = HERE / "blaschke_deformation_notebook_dependency_map.svg"
+DEPENDENCY_MAP_CELL_ID = "dependency-map-0m"
+DEPENDENCY_MAP_ATTACHMENT = "blaschke-deformation-dependency-map.svg"
 
 
 # The insertion index is the original zero-based cell index before which the
@@ -54,7 +65,162 @@ INLINE_HELPERS = (
         "blaschke_deformation_contour_certification.py",
         "Phase 4 contour and Riesz-rank certification",
     ),
+    (
+        31,
+        "blaschke_deformation_phase2_geometry",
+        "blaschke_deformation_phase2_geometry.py",
+        "Phase 2 complete-boundary geometry reconstruction",
+    ),
+    (
+        31,
+        "blaschke_deformation_phase2_transport",
+        "blaschke_deformation_phase2_transport.py",
+        "Phase 2 finite Chebyshev-gauge transport reconstruction",
+    ),
+    (
+        31,
+        "blaschke_deformation_phase2_matrix",
+        "blaschke_deformation_phase2_matrix.py",
+        "Phase 2 pure-r-scaled matrix reconstruction",
+    ),
+    (
+        31,
+        "blaschke_deformation_phase2_pipeline",
+        "blaschke_deformation_phase2_pipeline.py",
+        "Phase 2 clean-room producer orchestration",
+    ),
+    (
+        31,
+        "blaschke_deformation_historical_comparisons",
+        "blaschke_deformation_historical_comparisons.py",
+        "Source-only Phase 2 historical-design comparison reconstruction",
+    ),
+    (
+        72,
+        "hardy_moat_surface_worker",
+        "hardy_moat_surface_worker.py",
+        "Process-based historical Phase 4 moat-surface sampling",
+    ),
+    (
+        72,
+        "blaschke_deformation_historical_phase4",
+        "blaschke_deformation_historical_phase4.py",
+        "Source-only historical Phase 4 diagnostic reconstruction",
+    ),
+    (
+        121,
+        "blaschke_deformation_diagnostic_audits",
+        "blaschke_deformation_diagnostic_audits.py",
+        "Source-only retained diagnostic-audit reconstruction",
+    ),
+    (
+        44,
+        "blaschke_deformation_phase2_finite_m",
+        "blaschke_deformation_phase2_finite_m.py",
+        "Phase 2 safe finite-order Gauss--Legendre completion",
+    ),
+    (
+        47,
+        "blaschke_deformation_phase2_resolved_response",
+        "blaschke_deformation_phase2_resolved_response.py",
+        "Phase 2 complete-boundary resolved-response completion",
+    ),
+    (
+        48,
+        "blaschke_deformation_phase2_final_aggregation",
+        "blaschke_deformation_phase2_final_aggregation.py",
+        "Phase 2 unresolved-input and final deterministic aggregation",
+    ),
+    (
+        26,
+        "blaschke_deformation_phase1_diagnostics",
+        "blaschke_deformation_phase1_diagnostics.py",
+        "Source-only retained Phase 1 diagnostic reconstruction",
+    ),
+    (
+        120,
+        "blaschke_deformation_sampled_schur_diagnostics",
+        "blaschke_deformation_sampled_schur_diagnostics.py",
+        "Source-only sampled Schur diagnostic reconstruction",
+    ),
 )
+
+CURATED_INLINE_HELPER_ORDINALS = tuple(range(1, len(INLINE_HELPERS) + 1))
+
+
+INLINE_HELPER_CELL_LABELS = {
+    "mpmath_pf_raw": ("13", "14"),
+    "transfer_spectrum_certification": ("15A", "15A"),
+    "blaschke_deformation_certification": ("51", "52"),
+    "blaschke_deformation_spectral_certification": ("99", "100"),
+    "blaschke_deformation_contour_certification": ("103", "104"),
+    "blaschke_deformation_phase2_geometry": ("35A", "35A"),
+    "blaschke_deformation_phase2_transport": ("35B", "35B"),
+    "blaschke_deformation_phase2_matrix": ("35C", "35C"),
+    "blaschke_deformation_phase2_pipeline": ("35D", "35D"),
+    "blaschke_deformation_historical_comparisons": ("35E", "35E"),
+    "hardy_moat_surface_worker": ("78A", "78A"),
+    "blaschke_deformation_historical_phase4": ("78B", "78B"),
+    "blaschke_deformation_diagnostic_audits": ("95A", "95A"),
+    "blaschke_deformation_phase2_finite_m": ("48A", "48A"),
+    "blaschke_deformation_phase2_resolved_response": ("52A", "52A"),
+    "blaschke_deformation_phase2_final_aggregation": ("54A", "54A"),
+    "blaschke_deformation_phase1_diagnostics": ("30A", "30A"),
+    "blaschke_deformation_sampled_schur_diagnostics": ("94A", "94A"),
+}
+
+
+PHASE1_DIAGNOSTIC_REBUILD = r'''# Phase 1 retained diagnostic producer.
+from Numerics.blaschke_deformation_phase1_diagnostics import (
+    Phase1DiagnosticsConfig,
+    rebuild_phase1_diagnostics,
+)
+
+PHASE1_DIAGNOSTICS_RESULT = rebuild_phase1_diagnostics(
+    Phase1DiagnosticsConfig(
+        dps=cfg.dps,
+        max_power=cfg.max_power,
+        max_clusters=RAW_SWEEP_TARGET_CLUSTER_COUNT,
+        expected_target_count=RAW_SWEEP_TARGET_CLUSTER_COUNT,
+        assembly_workers=cfg.process_workers,
+        progress=cfg.progress,
+    ),
+    map_spec=SELECTED_MAP_SPEC,
+    raw_sweep=run_pair_sweep_mpmath_raw,
+    reference_clusters=None,
+    data_dir=DATA_DIR,
+    report_path=(
+        REPORT_DIR / "blaschke_deformation_phase1_diagnostics_rebuild.json"
+    ),
+)
+'''
+
+
+SAMPLED_SCHUR_DIAGNOSTIC_REBUILD = r"""# Retained sampled Schur diagnostic producer.
+from Numerics.transfer_spectrum_certification import sampled_schur_envelope
+from Numerics.blaschke_deformation_sampled_schur_diagnostics import (
+    REPORT_FILENAME as SAMPLED_SCHUR_DIAGNOSTIC_REPORT_FILENAME,
+    SampledSchurDiagnosticsConfig,
+    rebuild_sampled_schur_diagnostics,
+)
+
+
+def _sampled_schur_kappa(N, r):
+    '''Explanation: Changing from scaled Legendre coordinates to packet coordinates can amplify finite errors. This sampled condition number estimates that amplification for diagnostic Schur rows, while the final perturbation proof uses the rigorous transport certificate.
+    Functionality: Evaluate the notebook's finite connection condition number at the requested dimension and radius.'''
+    return float(kappa_T_numeric(int(N), str(r)))
+
+
+SAMPLED_SCHUR_DIAGNOSTICS_RESULT = rebuild_sampled_schur_diagnostics(
+    SampledSchurDiagnosticsConfig(),
+    map_label=SELECTED_MAP_LABEL,
+    geometry=geometry_record,
+    sampled_schur_envelope=sampled_schur_envelope,
+    kappa=_sampled_schur_kappa,
+    data_dir=DATA_DIR,
+    report_path=REPORT_DIR / SAMPLED_SCHUR_DIAGNOSTIC_REPORT_FILENAME,
+)
+"""
 
 
 BOOTSTRAP_SOURCE = r'''# Inline-module support for the thesis-mathematics counterpart.
@@ -67,6 +233,7 @@ BOOTSTRAP_SOURCE = r'''# Inline-module support for the thesis-mathematics counte
 
 import hashlib as _inline_hashlib
 import importlib as _inline_importlib
+import re as _inline_re
 import sys as _inline_sys
 import tempfile as _inline_tempfile
 import types as _inline_types
@@ -92,7 +259,22 @@ def _install_inline_module(line, cell):
     if any(part == "" for part in module_name.split(".")):
         raise ValueError("The inline_module magic requires one dotted module name.")
 
-    actual_sha256 = _inline_hashlib.sha256(cell.encode("utf-8")).hexdigest()
+    module_source = cell
+    number_line, separator, unnumbered_source = module_source.partition("\n")
+    if separator and _inline_re.fullmatch(r"#\d+[A-Z]*N", number_line):
+        module_source = unnumbered_source
+        cell = unnumbered_source
+    provenance_begin = "# notebook-provenance: begin\n"
+    provenance_end = "# notebook-provenance: end\n"
+    if module_source.startswith(provenance_begin):
+        marker_index = module_source.find(provenance_end)
+        if marker_index < 0:
+            raise RuntimeError(
+                f"Unterminated notebook provenance header for {module_name}."
+            )
+        module_source = module_source[marker_index + len(provenance_end):]
+
+    actual_sha256 = _inline_hashlib.sha256(module_source.encode("utf-8")).hexdigest()
     if actual_sha256 != expected_sha256:
         raise RuntimeError(
             f"Inline source digest mismatch for {module_name}: "
@@ -101,12 +283,12 @@ def _install_inline_module(line, cell):
 
     short_name = module_name.rsplit(".", 1)[-1]
     module_path = _INLINE_HELPER_DIRECTORY / f"{short_name}.py"
-    module_path.write_text(cell, encoding="utf-8")
+    module_path.write_text(module_source, encoding="utf-8")
 
     module = _inline_types.ModuleType(module_name)
     module.__file__ = str(module_path)
     module.__package__ = module_name.rpartition(".")[0]
-    module.__source__ = cell
+    module.__source__ = module_source
     module.__source_sha256__ = actual_sha256
 
     canonical_name = short_name
@@ -172,6 +354,43 @@ def _code_cell(source: str, cell_id: str) -> dict[str, Any]:
     }
 
 
+def _producer_cell(source: str, cell_id: str) -> dict[str, Any]:
+    return {
+        "cell_type": "code",
+        "execution_count": None,
+        "id": cell_id,
+        "metadata": {"thesis_math_inline_helper": True, "source_producer": True},
+        "outputs": [],
+        "source": source,
+    }
+
+
+def dependency_map_cell() -> dict[str, Any]:
+    """Return the builder-owned, non-executable Cell 0M dependency map."""
+
+    source = DEPENDENCY_MAP.read_text(encoding="utf-8")
+    svg = DEPENDENCY_MAP_SVG.read_text(encoding="utf-8")
+    if not source.startswith("0M\n\n# Reproducibility dependency map\n"):
+        raise AssertionError("The dependency-map source must begin with Cell 0M.")
+    if f"attachment:{DEPENDENCY_MAP_ATTACHMENT}" not in source:
+        raise AssertionError("Cell 0M must display its attached dependency-map SVG.")
+    if not svg.startswith("<svg ") or not svg.rstrip().endswith("</svg>"):
+        raise AssertionError("The dependency-map attachment is not a complete SVG.")
+    return {
+        "attachments": {
+            DEPENDENCY_MAP_ATTACHMENT: {
+                "image/svg+xml": [
+                    base64.b64encode(svg.encode("utf-8")).decode("ascii")
+                ],
+            },
+        },
+        "cell_type": "markdown",
+        "id": DEPENDENCY_MAP_CELL_ID,
+        "metadata": {"thesis_math_dependency_map": True},
+        "source": source,
+    }
+
+
 def _checked_replace(source: str, old: str, new: str, *, label: str) -> str:
     count = source.count(old)
     if count != 1:
@@ -204,20 +423,6 @@ def _adapt_original_cell(index: int, cell: dict[str, Any]) -> dict[str, Any]:
             "if path is not None and path.exists()), None)",
             label="Phase 1 worker path filter",
         )
-
-    if index in (47, 48):
-        source = source.replace(
-            'Path("blaschke_deformation_certification.py")',
-            'INLINE_MODULE_PATHS["blaschke_deformation_certification"]',
-        )
-        source = source.replace(
-            'Path("Numerics/blaschke_deformation_certification.py")',
-            'INLINE_MODULE_PATHS["blaschke_deformation_certification"]',
-        )
-        if source.count('INLINE_MODULE_PATHS["blaschke_deformation_certification"]') != 2:
-            raise RuntimeError(
-                f"Phase 2 helper provenance paths were not adapted twice at {index}."
-            )
 
     if index == 126:
         replacements = {
@@ -258,8 +463,17 @@ def _helper_cells(
     path = HERE / filename
     module_source = path.read_text(encoding="utf-8")
     digest = hashlib.sha256(module_source.encode("utf-8")).hexdigest()
+    displayed_labels = INLINE_HELPER_CELL_LABELS.get(module_name)
+    if displayed_labels:
+        heading_label, code_label = displayed_labels
+        heading_prefix = f"{heading_label}M\n\n"
+        code_prefix = f"#{code_label}N\n"
+    else:
+        heading_prefix = ""
+        code_prefix = ""
     heading = (
-        f"### Inline thesis helper: `{module_name}`\n\n"
+        heading_prefix
+        + f"### Inline thesis helper: `{module_name}`\n\n"
         f"This is the complete helper used by **{phase_description}**. It is "
         "placed here so that the mathematical implementation can be read in "
         "the same phase as the formulas and certificate that use it. The "
@@ -269,7 +483,10 @@ def _helper_cells(
         f"Source file: `{filename}`  \n"
         f"SHA-256: `{digest}`\n"
     )
-    code = f"%%inline_module {module_name} {digest}\n{module_source}"
+    code = (
+        f"%%inline_module {module_name} {digest}\n"
+        f"{code_prefix}{module_source}"
+    )
     return [
         _markdown_cell(heading, f"inline-helper-heading-{ordinal}"),
         _code_cell(code, f"inline-helper-source-{ordinal}"),
@@ -287,9 +504,8 @@ def build() -> dict[str, Any]:
         "its Markdown, LaTeX, phase structure, diagnostics, figures and stored "
         "results. The additional cells expose the repository-local helpers "
         "that implement the symmetric Blaschke deformation mathematics. "
-        "Plotting workers, the asymmetric exact-model helper and archive "
-        "packaging remain external because they are outside this counterpart's "
-        "mathematical scope.\n",
+        "Plotting workers and archive packaging remain external because they "
+        "are outside this counterpart's mathematical scope.\n",
         "inline-helper-bootstrap-heading",
     )
     bootstrap_code = _code_cell(
@@ -305,6 +521,15 @@ def build() -> dict[str, Any]:
         insertions.setdefault(index, []).extend(
             _helper_cells(module_name, filename, phase_description, ordinal)
         )
+    insertions.setdefault(26, []).append(
+        _producer_cell(PHASE1_DIAGNOSTIC_REBUILD, "producer-phase1-diagnostics")
+    )
+    insertions.setdefault(120, []).append(
+        _producer_cell(
+            SAMPLED_SCHUR_DIAGNOSTIC_REBUILD,
+            "producer-sampled-schur-diagnostics",
+        )
+    )
     rebuilt_cells = []
     for index, cell in enumerate(original_cells):
         rebuilt_cells.extend(insertions.get(index, []))
@@ -324,7 +549,54 @@ def _normalise_source(source: Any) -> str:
     return "".join(source) if isinstance(source, list) else str(source)
 
 
-def validate_inline_helper_sync(counterpart: dict[str, Any]) -> None:
+def _normalise_attachments(value: Any) -> dict[str, dict[str, str]]:
+    """Normalise nbformat's list-versus-string MIME payload representation."""
+
+    return {
+        str(name): {
+            str(mime): _normalise_source(payload)
+            for mime, payload in dict(mime_bundle).items()
+        }
+        for name, mime_bundle in dict(value or {}).items()
+    }
+
+
+def _without_notebook_provenance(source: str) -> str:
+    """Remove only the appendix provenance preamble following a cell magic."""
+
+    lines = source.splitlines(keepends=True)
+    if not lines or not lines[0].lstrip().startswith("%%inline_module"):
+        return source
+    begin = "# notebook-provenance: begin"
+    end = "# notebook-provenance: end"
+    begin_index = 1
+    if (
+        len(lines) >= 3
+        and re.fullmatch(r"#\d+[A-Z]*N", lines[1].rstrip("\r\n"))
+        and lines[2].rstrip("\r\n") == begin
+    ):
+        begin_index = 2
+    if len(lines) <= begin_index or lines[begin_index].rstrip("\r\n") != begin:
+        return source
+    end_index = next(
+        (
+            index
+            for index in range(begin_index + 1, len(lines))
+            if lines[index].rstrip("\r\n") == end
+        ),
+        None,
+    )
+    if end_index is None:
+        raise AssertionError("Inline helper has an unterminated notebook provenance header.")
+    return "".join(lines[:begin_index]) + "".join(lines[end_index + 1:])
+
+
+def validate_inline_helper_sync(
+    counterpart: dict[str, Any],
+    *,
+    helper_ordinals: tuple[int, ...] | None = None,
+    allow_notebook_provenance: bool = False,
+) -> None:
     """Require every inline source and displayed digest to match its file."""
 
     cells = counterpart["cells"]
@@ -332,10 +604,10 @@ def validate_inline_helper_sync(counterpart: dict[str, Any]) -> None:
     for index, cell in enumerate(cells):
         positions.setdefault(str(cell.get("id", "")), []).append(index)
 
-    for ordinal, (_, module_name, filename, phase_description) in enumerate(
-        INLINE_HELPERS,
-        start=1,
-    ):
+    selected_ordinals = set(helper_ordinals or range(1, len(INLINE_HELPERS) + 1))
+    for ordinal, (_, module_name, filename, phase_description) in enumerate(INLINE_HELPERS, start=1):
+        if ordinal not in selected_ordinals:
+            continue
         heading_id = f"inline-helper-heading-{ordinal}"
         source_id = f"inline-helper-source-{ordinal}"
         heading_positions = positions.get(heading_id, [])
@@ -359,6 +631,8 @@ def validate_inline_helper_sync(counterpart: dict[str, Any]) -> None:
         )
         actual_heading = _normalise_source(cells[heading_index].get("source", ""))
         actual_source = _normalise_source(cells[source_index].get("source", ""))
+        if allow_notebook_provenance:
+            actual_source = _without_notebook_provenance(actual_source)
         if actual_heading != _normalise_source(expected_heading["source"]):
             raise AssertionError(
                 f"Displayed source provenance does not match {filename}."
@@ -385,13 +659,13 @@ def validate_counterpart(counterpart: dict[str, Any]) -> None:
     ]
     if len(retained) != len(original_cells):
         raise AssertionError("An original notebook cell was added, removed or duplicated.")
-    if len(inserted) != 2 + 2 * len(INLINE_HELPERS):
+    if len(inserted) != 4 + 2 * len(INLINE_HELPERS):
         raise AssertionError("The inline-helper insertion count is incorrect.")
     validate_inline_helper_sync(counterpart)
     if counterpart.get("metadata", {}) != original.get("metadata", {}):
         raise AssertionError("Notebook metadata or widget state changed.")
 
-    adapted_indices = {10, 47, 48, 126, 130}
+    adapted_indices = {10, 126, 130}
     for index, (before, after) in enumerate(zip(original_cells, retained)):
         if before.get("cell_type") != after.get("cell_type"):
             raise AssertionError(f"Cell type changed at original index {index}.")
@@ -430,26 +704,237 @@ def validate_counterpart(counterpart: dict[str, Any]) -> None:
         raise AssertionError("A stored PNG plot payload changed.")
 
 
-def main() -> None:
+def build_curated() -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build the output-free 140-cell thesis notebook in memory."""
+
+    import prepare_blaschke_deformation_thesis_appendix as preparation
+
+    full_counterpart = build()
+    validate_counterpart(full_counterpart)
+    provenance_records, _ = preparation.load_provenance_records(
+        preparation.DEFAULT_PROVENANCE,
+        full_counterpart,
+    )
+    plotting_replacements, _ = preparation.load_plotting_replacements(
+        preparation.DEFAULT_PLOTTING_REPLACEMENTS,
+        full_counterpart,
+    )
+    preparation.validate_plotting_replacement_coverage(plotting_replacements)
+    curated, report = preparation.transform_notebook(
+        full_counterpart,
+        provenance_records,
+        plotting_replacements,
+        require_stored_outputs=False,
+    )
+    validate_inline_helper_sync(
+        curated,
+        helper_ordinals=CURATED_INLINE_HELPER_ORDINALS,
+        allow_notebook_provenance=True,
+    )
+    curated["cells"].insert(0, dependency_map_cell())
+    return curated, report
+
+
+def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
+    """Validate the stable size, terminal numbering and helper digests."""
+
+    cells = counterpart.get("cells", [])
+    if len(cells) != 140:
+        raise AssertionError("The final thesis counterpart must contain 140 cells.")
+    expected_map = dependency_map_cell()
+    actual_map = cells[0] if cells else {}
+    if (
+        actual_map.get("cell_type") != expected_map["cell_type"]
+        or actual_map.get("id") != expected_map["id"]
+        or actual_map.get("metadata", {}) != expected_map["metadata"]
+        or _normalise_attachments(actual_map.get("attachments", {}))
+        != _normalise_attachments(expected_map["attachments"])
+        or _normalise_source(actual_map.get("source", ""))
+        != _normalise_source(expected_map["source"])
+    ):
+        raise AssertionError("The builder-owned Cell 0M dependency map is missing or stale.")
+    if sum(
+        cell.get("metadata", {}).get("thesis_math_dependency_map") is True
+        for cell in cells
+    ) != 1:
+        raise AssertionError("The final notebook must contain exactly one Cell 0M map.")
+    code_count = sum(
+        cell.get("cell_type") == "code"
+        for cell in cells
+    )
+    if code_count != 68:
+        raise AssertionError("The curated thesis counterpart must contain 68 code cells.")
+    expected_terminal = {
+        "3e8b784c": "#108N\n",
+        "128b5369": "#109N\n",
+    }
+    actual_terminal = {
+        str(cell.get("id")): _normalise_source(cell.get("source", ""))
+        for cell in counterpart.get("cells", [])
+        if str(cell.get("id")) in expected_terminal
+    }
+    if actual_terminal != expected_terminal:
+        raise AssertionError("The terminal Cell 108 and Cell 109 labels changed.")
+    validate_inline_helper_sync(
+        counterpart,
+        helper_ordinals=CURATED_INLINE_HELPER_ORDINALS,
+        allow_notebook_provenance=True,
+    )
+    positions = {
+        str(cell.get("id", "")): index
+        for index, cell in enumerate(cells)
+    }
+    for ordinal, producer_id in (
+        (17, "producer-phase1-diagnostics"),
+        (18, "producer-sampled-schur-diagnostics"),
+    ):
+        heading_id = f"inline-helper-heading-{ordinal}"
+        source_id = f"inline-helper-source-{ordinal}"
+        expected = (
+            positions[heading_id],
+            positions[source_id],
+            positions[producer_id],
+        )
+        if expected[1] != expected[0] + 1 or expected[2] != expected[1] + 1:
+            raise AssertionError(
+                f"The producer {producer_id} must immediately follow helper {ordinal}."
+            )
+
+
+def _contains_execution_state(notebook: dict[str, Any]) -> bool:
+    """Return whether any code cell carries an execution count or output."""
+
+    return any(
+        cell.get("cell_type") == "code"
+        and (
+            cell.get("execution_count") is not None
+            or bool(cell.get("outputs", []))
+        )
+        for cell in notebook.get("cells", [])
+    )
+
+
+def _merge_preserved_execution_state(
+    current: dict[str, Any],
+    preserved: dict[str, Any],
+) -> dict[str, Any]:
+    """Replace sources while retaining one stable-ID notebook's execution evidence."""
+
+    current_cells = current.get("cells", [])
+    preserved_cells = preserved.get("cells", [])
+    current_signature = [
+        (str(cell.get("id", "")), str(cell.get("cell_type", "")))
+        for cell in current_cells
+    ]
+    preserved_signature = [
+        (str(cell.get("id", "")), str(cell.get("cell_type", "")))
+        for cell in preserved_cells
+    ]
+    if current_signature != preserved_signature:
+        raise RuntimeError(
+            "Cannot preserve execution state: notebook cell IDs or types have drifted."
+        )
+    if not _contains_execution_state(preserved):
+        raise RuntimeError(
+            "Cannot preserve execution state from an output-free notebook."
+        )
+
+    merged = deepcopy(preserved)
+    for source_cell, merged_cell in zip(current_cells, merged["cells"]):
+        merged_cell["source"] = deepcopy(source_cell.get("source", ""))
+        if "attachments" in source_cell:
+            merged_cell["attachments"] = deepcopy(source_cell["attachments"])
+        else:
+            merged_cell.pop("attachments", None)
+
+        source_metadata = deepcopy(source_cell.get("metadata", {}))
+        execution_metadata = merged_cell.get("metadata", {}).get("execution")
+        if execution_metadata is not None:
+            source_metadata["execution"] = deepcopy(execution_metadata)
+        merged_cell["metadata"] = source_metadata
+
+    merged["nbformat"] = current.get("nbformat", merged.get("nbformat"))
+    merged["nbformat_minor"] = current.get(
+        "nbformat_minor", merged.get("nbformat_minor")
+    )
+    metadata = deepcopy(preserved.get("metadata", {}))
+    metadata.update(deepcopy(current.get("metadata", {})))
+    metadata["source_sync_after_execution"] = {
+        "date": "2026-08-29",
+        "scope": "mathematical docstrings and fail-closed Phase 2 gate propagation",
+        "stored_output_status": (
+            "retained historical outputs; not evidence for the post-sync sources "
+            "until a full clean-room replay"
+        ),
+    }
+    merged["metadata"] = metadata
+    return merged
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Build the output-free 140-cell thesis-mathematics notebook."
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=OUTPUT,
+        help="Destination notebook (default: the canonical thesis-mathematics path).",
+    )
+    parser.add_argument(
+        "--preserve-execution-from",
+        type=Path,
+        help=(
+            "Stable-ID executed notebook whose counts, outputs, widget state and "
+            "execution metadata are retained while current sources are installed."
+        ),
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = _parser().parse_args(argv)
     if not SOURCE.is_file():
         raise FileNotFoundError(
             f"Missing source notebook {SOURCE}; run "
             "build_blaschke_deformation_certifier.py first."
         )
     source_bytes_before = SOURCE.read_bytes()
-    counterpart = build()
-    validate_counterpart(counterpart)
-    OUTPUT.write_text(
+    counterpart, report = build_curated()
+    validate_curated_counterpart(counterpart)
+
+    output = args.output.resolve()
+    if args.preserve_execution_from is not None:
+        preserved_path = args.preserve_execution_from.resolve()
+        if not preserved_path.is_file():
+            raise FileNotFoundError(
+                f"Missing execution-state notebook {preserved_path}."
+            )
+        preserved = json.loads(preserved_path.read_text(encoding="utf-8"))
+        counterpart = _merge_preserved_execution_state(counterpart, preserved)
+        validate_curated_counterpart(counterpart)
+    elif output.is_file():
+        existing = json.loads(output.read_text(encoding="utf-8"))
+        if _contains_execution_state(existing):
+            raise RuntimeError(
+                "Refusing to overwrite an executed notebook. Use --output for an "
+                "isolated build or --preserve-execution-from for an explicit "
+                "stable-ID source refresh."
+            )
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
         nbf.writes(nbf.from_dict(counterpart), version=nbf.NO_CONVERT),
         encoding="utf-8",
     )
-    serialised = json.loads(OUTPUT.read_text(encoding="utf-8"))
-    validate_counterpart(serialised)
+    serialised = json.loads(output.read_text(encoding="utf-8"))
+    validate_curated_counterpart(serialised)
     source_bytes_after = SOURCE.read_bytes()
     source_digest_after = hashlib.sha256(source_bytes_after).hexdigest()
     if source_bytes_after != source_bytes_before:
         raise RuntimeError("The source notebook changed while building its counterpart.")
-    print(f"Wrote {OUTPUT}")
+    print(f"Wrote {output}")
+    print(f"Curated cells: {report['retained_cell_count']}")
     print(f"Source notebook SHA-256 remains {source_digest_after}")
     print(f"Counterpart cells: {len(counterpart['cells'])}")
 

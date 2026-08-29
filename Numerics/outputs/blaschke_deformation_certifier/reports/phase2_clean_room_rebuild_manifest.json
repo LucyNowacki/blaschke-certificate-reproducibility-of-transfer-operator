@@ -1,0 +1,92 @@
+{
+  "clean_room_chain": [
+    "complete-boundary geometry scan",
+    "Arb inverse-residual finite transport",
+    "Arb pure-r-scaled raw matrix certificate"
+  ],
+  "configuration": {
+    "M": 610,
+    "N": 600,
+    "cells": 65536,
+    "expected_selected_q_gap": "0.927",
+    "expected_selected_rho": "2.725",
+    "geometry_precision_bits": 192,
+    "matrix_precision_bits": 384,
+    "mu": "0.3",
+    "transport_precision_bits": 384
+  },
+  "legacy_seed_dependency": false,
+  "map_label": "blaschke_mu_0p3",
+  "outputs": {
+    "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_single_space_row_N600_M610.csv": "88d23d2033b76f314eb34a56a31dc6f91c2963dcb5da922410c21d8e637cf145",
+    "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_cert_N600.csv": "6f4a6c124b0247c3957fc03fb4ae7f338abcf637ef811e3212753c91f78d96ba",
+    "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz": "9f3d39154217340b36c7067095f52ead46c4aa6bac4145ff6499db0c4270db58",
+    "outputs/blaschke_deformation_certifier/data/branch_image_radius_reoptimisation_balanced_highcell_scan.csv": "85ed4ba755d808884391de5f7208ae1a126bcad6a8a92602001dae2cfe57afbe",
+    "outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_single_space_row_N600_M610.json": "46a4507aa7a3f15ff755f22885745baac9b5a377d236d2513ebe8a3566e41851",
+    "outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_transport_cert_N600.json": "394b627869384d23a36db2eb9dc44aeee64babf7ed6a3b3f584e8d91ec2cdd87",
+    "outputs/blaschke_deformation_certifier/reports/branch_image_radius_reoptimisation_balanced_highcell_scan.json": "38dcf3cc61341ead08323871c4e75bc9a55d892e290646fbeec671cd9536da9a"
+  },
+  "process_workers": 24,
+  "producer_schema": "phase2-pipeline-v2",
+  "producer_sources": {
+    "geometry": {
+      "path": "Numerics/blaschke_deformation_phase2_geometry.py",
+      "sha256": "d72256c46cd89d6b65f19a9ce7f913a7b087271550c9d755b67e85d108b45813"
+    },
+    "matrix": {
+      "path": "Numerics/blaschke_deformation_phase2_matrix.py",
+      "sha256": "23d87bcdfb12dc13fc47160b1231b324fc2a7b82ba21a66b429a655df9b57bce"
+    },
+    "pipeline": {
+      "path": "Numerics/blaschke_deformation_phase2_pipeline.py",
+      "sha256": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5"
+    },
+    "transport": {
+      "path": "Numerics/blaschke_deformation_phase2_transport.py",
+      "sha256": "4f38bcdbcc78ffeceacc895227c13c5e59449f8339dc4dca13387d9c594bc89a"
+    }
+  },
+  "resolved_response_stage": "blaschke_deformation_phase2_resolved_response.py, invoked by Cell 24B",
+  "safe_finite_M_stage": "blaschke_deformation_phase2_finite_m.py, invoked by Cell 24A",
+  "selected_geometry": {
+    "Z_tail_out_u": "1.34299199750859668355332686900000000000000000000000000000000000000000000000000000E-23",
+    "Z_terms_used": 488,
+    "acos_unit_disk_margin_l": "2.05875388266050229901793500000000000000000000000000000000000000000000000000000000E-2",
+    "admissible_chain_sufficient": true,
+    "analytic_branch_sufficient": true,
+    "basic_singularity_margin": "2.45216588710858773343322754700000000000000000000000000000000000000000000000000000E-2",
+    "basic_singularity_safe": true,
+    "boundary_blocks": 24,
+    "branch1_phi_u": "2.39343874529004096984863281200000000000000000000000000000000000000000000000000000E+0",
+    "branch1_r_tau_u": "2.29309191182255744934082031200000000000000000000000000000000000000000000000000000E+0",
+    "branch2_phi_u": "2.39343874529004096984863281200000000000000000000000000000000000000000000000000000E+0",
+    "branch2_r_tau_u": "2.29309191182255744934082031200000000000000000000000000000000000000000000000000000E+0",
+    "branch_image_B_in_u": "3.52279983991245203840646592600000000000000000000000000000000000000000000000000000E-20",
+    "branch_image_in_Er_sufficient": true,
+    "cells": 65536,
+    "configuration_digest": "8bd24292d75f65571d0f5b8027c16c6d6eb43f0f9ba0cd1d8e361074f8baf66c",
+    "input_over_output": "7.46862185057023728984871159200000000000000000000000000000000000000000000000000000E-1",
+    "max_abs_mu_cos_u": "9.79412461173394977009820650000000000000000000000000000000000000000000000000000000E-1",
+    "max_input_cell": 25350,
+    "min_abs_1_minus_y2_l": "4.07502769376151263713836669900000000000000000000000000000000000000000000000000000E-2",
+    "nearest_basic_singularity_radius": "2.74952165887108587733433227500000000000000000000000000000000000000000000000000000E+0",
+    "phi_star_interval_u": "4.72831506282091140747070312500000000000000000000000000000000000000000000000000000E+0",
+    "producer_schema": "phase2-geometry-v2",
+    "q_gap_certified_u": "9.27000000000000000000000000000000000000000000000000000000000000000000000000000000E-1",
+    "q_gap_grid_index": 2,
+    "q_gap_target": "0.927",
+    "q_out": "9.07768736804155636448173673400000000000000000000000000000000000000000000000000000E-1",
+    "q_star": "9.27000000000000000000000000000000000000000000000000000000000000000000000000000000E-1",
+    "r_candidate": "2.47366980779132410932127326000000000000000000000000000000000000000000000000000000E+0",
+    "r_tau_interval_u": "2.29309191182255744934082031200000000000000000000000000000000000000000000000000000E+0",
+    "rho": "2.725",
+    "rho_grid_index": 2,
+    "selected": true,
+    "selection_rank": 1,
+    "selection_rule": "minimum certified historical tail-floor upper; q-star and grid order are tie-breakers",
+    "status": "ok",
+    "tail_floor_u": "8.23960022209204048783013083800000000000000000000000000000000000000000000000000000E-20",
+    "two_B_out_u": "4.71680038217958844942366491200000000000000000000000000000000000000000000000000000E-20"
+  },
+  "unresolved_input_and_final_aggregation_stage": "blaschke_deformation_phase2_final_aggregation.py, invoked by Cell 24C"
+}

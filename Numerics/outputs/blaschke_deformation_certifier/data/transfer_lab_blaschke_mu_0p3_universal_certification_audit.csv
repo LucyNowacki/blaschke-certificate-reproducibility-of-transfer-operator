@@ -1,8 +1,8 @@
 map_label,audit_item,status,evidence
 blaschke_mu_0p3,target source and contour role,theorem_certified,14 nontrivial packets in exact_targets mode; exact-model contour centres
-blaschke_mu_0p3,Bernstein branch geometry,theorem_certified,"rho=2.725, r_tau=2.2926584027370747, r=2.47367"
-blaschke_mu_0p3,single-space Schur envelope,theorem_certified,6 computed rows
+blaschke_mu_0p3,Bernstein branch geometry,sampled_not_interval_certified,"rho=2.725, r_tau=2.2926584027370747, r=2.47367"
+blaschke_mu_0p3,single-space Schur envelope,sampled_not_theorem_certified,6 computed rows
 blaschke_mu_0p3,finite packet counts,sampled_pass,matching counts on the first 14 contour packets; certified_count=False
 blaschke_mu_0p3,finite-section contour moats,sampled_not_interval_certified,positive sampled minima
 blaschke_mu_0p3,sampled small-gain test,sampled_pass,epsilon times the resolvent factor is below one on every packet
-blaschke_mu_0p3,overall spectral certification,diagnostic_not_theorem_certified,Missing theorem gates: validated contour-moat lower bound; certified finite-section packet count
+blaschke_mu_0p3,overall spectral certification,diagnostic_not_theorem_certified,Missing theorem gates: certified branch geometry; certified X-to-X perturbation bound; validated contour-moat lower bound; certified finite-section packet count

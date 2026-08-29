@@ -45,7 +45,8 @@ def _assembly_settings(kwargs):
 
 
 def frobenius_norm_mp(A):
-    '''Return the high-precision Frobenius norm of an mpmath matrix.'''
+    '''Explanation: The Frobenius norm summarises the size of all matrix entries and bounds the operator norm. At high precision it provides a stable diagnostic scale for comparing assembled finite transfer sections.
+Functionality: Return the high-precision Frobenius norm of an mpmath matrix.'''
     s = mp.mpf("0")
     for i in range(A.rows):
         for j in range(A.cols):
@@ -54,14 +55,16 @@ def frobenius_norm_mp(A):
 
 
 def gauss_legendre_mp(M: int):
-    '''Return the M-point Gauss--Legendre nodes and weights as mpmath scalars.'''
+    '''Explanation: Gauss--Legendre quadrature evaluates the Galerkin inner products at optimally chosen Legendre roots. High-precision nodes and weights suppress ordinary floating-point noise so Phase 1 exposes truncation and quadrature behaviour clearly.
+Functionality: Return the M-point Gauss--Legendre nodes and weights as mpmath scalars.'''
     M = int(M)
     xs, ws = mp.gauss_quadrature(M, "legendre")
     return [mp.mpf(xs[j]) for j in range(M)], [mp.mpf(ws[j]) for j in range(M)]
 
 
 def ortho_legendre_values(N: int, x):
-    '''Evaluate the first N L2-normalised Legendre polynomials at x.'''
+    '''Explanation: The orthonormal Legendre modes form the single-space trial and test basis. Evaluating them by recurrence supplies all coordinate values needed to project the weighted inverse-branch action onto a finite section.
+Functionality: Evaluate the first N L2-normalised Legendre polynomials at x.'''
     N = int(N)
     if N <= 0:
         return []
@@ -206,7 +209,8 @@ def _normalised_params(map_spec: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _eval_expr(expr: str, params: Dict[str, Any], x=None):
-    '''Evaluate a branch formula at x in the restricted mpmath environment.'''
+    '''Explanation: The map specification stores exact-looking branch formulas as controlled symbolic expressions. Evaluating them in one restricted high-precision environment ensures the numerical experiment represents the declared Blaschke map rather than duplicated handwritten formulas.
+Functionality: Evaluate a branch formula at x in the restricted mpmath environment.'''
     env = _base_env()
     env.update(params)
     if x is not None:
@@ -239,12 +243,14 @@ class FormulaTransferMap:
             raise KeyError(f"unknown branch label {label!r}") from exc
 
     def tau(self, label, x):
-        '''Evaluate the inverse branch tau for the given label and point x.'''
+        '''Explanation: An inverse branch tells the transfer operator where to pull a function value back from. This high-precision evaluation supplies that geometric part of one branch contribution in the Phase 1 Galerkin experiment.
+Functionality: Evaluate the inverse branch tau for the given label and point x.'''
         b = self._branch_spec(label)
         return _eval_expr(b["tau"], self.parameters, x=x)
 
     def phi(self, label, x):
-        '''Evaluate the transfer weight phi for the given label and point x.'''
+        '''Explanation: The Perron--Frobenius weight tells how strongly an inverse image contributes after the change of variables. Evaluating it beside the branch map completes one weighted pullback term.
+Functionality: Evaluate the transfer weight phi for the given label and point x.'''
         b = self._branch_spec(label)
         return _eval_expr(b["phi"], self.parameters, x=x)
 
@@ -267,7 +273,8 @@ def make_transfer_map(map_spec: Dict[str, Any]):
 
 
 def exact_clusters_for_map(map_spec: Dict[str, Any], max_power: int = 12, include_trivial: bool = True, full_multiplicity: bool = True):
-    '''Build the ordered exact spectral-target clusters declared by a map specification.'''
+    '''Explanation: For this symmetric Blaschke map, formula eigenvalues occur in alpha and mu packets with known multiplicities. These declared clusters label the convergence experiment; they do not replace the later perturbative rank proof.
+Functionality: Build the ordered exact spectral-target clusters declared by a map specification.'''
     map_spec = serialisable_map_spec(map_spec)
     params_block = map_spec.get("params", {})
     raw_clusters = list(params_block.get("exact_clusters", []))
@@ -298,7 +305,8 @@ def exact_clusters_for_map(map_spec: Dict[str, Any], max_power: int = 12, includ
 
 
 def _assemble_transfer_row_block_job(payload: Dict[str, Any]) -> Dict[str, Any]:
-    '''Assemble one contiguous output-row block of the transfer and Gram matrices.'''
+    '''Explanation: Each Galerkin entry is an inner product between a Legendre test mode and the two weighted pullbacks of a trial mode. A row block computes a disjoint portion of that finite mathematical projection.
+Functionality: Assemble one contiguous output-row block of the transfer and Gram matrices.'''
     mp.mp.dps = int(payload.get("dps", mp.mp.dps))
     N = int(payload["N"])
     M = int(payload["M"])
@@ -367,7 +375,8 @@ def _assemble_transfer_block_parallel(N: int, M: int, map_spec: Dict[str, Any], 
 
 
 def assemble_transfer_block(N: int, M: int, map_spec: Dict[str, Any] | None = None, return_gram: bool = True, **kwargs):
-    '''Assemble the raw N-by-N Legendre--Gauss transfer block and optional Gram block.'''
+    '''Explanation: The finite transfer section is obtained by Gauss--Legendre approximation of all projected weighted pullbacks. Assembling the whole block creates the matrix whose spectral convergence is studied in Phase 1.
+Functionality: Assemble the raw N-by-N Legendre--Gauss transfer block and optional Gram block.'''
     N = int(N); M = int(M)
     dps = int(kwargs.get("dps", mp.mp.dps))
     mp.mp.dps = dps
@@ -424,7 +433,8 @@ def assemble_transfer_block(N: int, M: int, map_spec: Dict[str, Any] | None = No
 
 
 def assemble_pure_scaled_transfer_block(N: int, M: int, r, map_spec: Dict[str, Any], **kwargs):
-    '''Conjugate the raw transfer block by the pure Legendre scaling diag(r**n).'''
+    '''Explanation: Conjugating by powers of a radius expresses the same finite operator in a Hardy-like scaled Legendre norm. This exposes geometric coefficient decay without changing the finite eigenvalues.
+Functionality: Conjugate the raw transfer block by the pure Legendre scaling diag(r**n).'''
     dps = kwargs.get("dps")
     if dps is not None:
         mp.mp.dps = int(dps)
@@ -465,7 +475,8 @@ def _float_or_nan(x):
 
 
 def greedy_cluster_errors(eigvals, clusters, max_clusters: int):
-    '''Greedily match unused eigenvalues to target clusters and return raw cluster errors.'''
+    '''Explanation: A numerical eigenvalue cloud must be paired with the expected multiplicity packets before convergence errors can be summarised. Greedy matching gives a reproducible diagnostic pairing, not a certified spectral count.
+Functionality: Greedily match unused eigenvalues to target clusters and return raw cluster errors.'''
     pool = list(eigvals)
     rows = []
     for cl in clusters[:int(max_clusters)]:
@@ -644,7 +655,8 @@ def run_pair_sweep_mpmath_raw(pairs: Iterable[Tuple[int, int]], map_spec: Dict[s
 
 
 def build_reference_clusters_mpmath_raw(payloads: Iterable[Dict[str, Any]], dps: int = 80, workers: int = 1, assembly_workers: int = 1, row_block_size=None, progress: bool = True):
-    '''Build numerical reference clusters from larger high-precision transfer blocks.'''
+    '''Explanation: A larger high-precision finite section can serve as a numerical reference when no closed target is being used. Such reference clusters measure empirical convergence only and remain logically below the thesis's exact contour certificates.
+Functionality: Build numerical reference clusters from larger high-precision transfer blocks.'''
     out = []
     iterator = list(payloads)
     if progress and tqdm is not None:
