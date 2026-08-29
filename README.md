@@ -41,10 +41,28 @@ The chapter-to-notebook mathematics is a source-controlled part of that third
 stage. `Numerics/numerical_certification_transfer_markdown.toml` binds all 52
 stable Markdown owners, covering all 68 code cells, to exact labels under
 `chap:numerical-certification-transfer`, an operation-specific mathematical
-explanation and an explicit evidence class. The builder applies this map after
-curation, preserving the locked 140-cell ID/type signature and all code-cell
-sources. Focused regressions reject missing chapter grounding, ownership drift
-and sampled-to-certified claim upgrades.
+explanation and an explicit evidence class. Its 63-entry source-reference
+registry also supplies the integrated-thesis chapter, section, subsection,
+result, equation, figure and table numbers together with every available
+reader-facing title or caption lead. The generated notebook therefore shows a
+PDF-findable title and number beside each stable LaTeX label; equations, which
+have no independent title, are identified by their formatted equation number
+without inventing one. The builder applies this map after curation, preserving
+the locked 140-cell ID/type signature and all code-cell sources. Focused
+regressions reject missing chapter grounding, title or ancestry drift,
+ownership drift and sampled-to-certified claim upgrades.
+
+For a publication checkout that also contains the integrated thesis artifacts,
+verify all recorded hashes, formatted numbers, named titles and visible caption
+leads against that exact `main.pdf` snapshot with:
+
+```bash
+python -B Numerics/verify_integrated_thesis_source_references.py \
+  --thesis-root /path/to/E.L.U.K_0
+```
+
+This is a manuscript-integration gate, not a numerical input or a substitute
+for the source-only numerical replay.
 
 The recorded execution uses the Conda environment `lucy`; the commands below
 assume that environment has been activated.

@@ -18,6 +18,8 @@ from build_blaschke_deformation_thesis_math_notebook import (
     DEPENDENCY_MAP_CELL_ID,
     _chapter_math_entries,
     _chapter_math_payload,
+    _chapter_math_source_references,
+    _format_source_reference,
     _merge_preserved_execution_state,
     build_curated,
     dependency_map_cell,
@@ -34,6 +36,9 @@ NOTEBOOK = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
 TEMPLATE = HERE / "blaschke_deformation_certifier_template.ipynb"
 SOURCE = HERE / "blaschke_deformation_certifier.ipynb"
 BUILDER = HERE / "build_blaschke_deformation_thesis_math_notebook.py"
+INTEGRATED_REFERENCE_VERIFIER = (
+    HERE / "verify_integrated_thesis_source_references.py"
+)
 CONTOUR_HELPER = HERE / "blaschke_deformation_contour_certification.py"
 DETERMINISTIC_HELPER = HERE / "blaschke_deformation_certification.py"
 
@@ -80,6 +85,35 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         self.assertEqual(len(mapped_code_ids), 68)
         self.assertEqual(len(set(mapped_code_ids)), 68)
 
+        payload = _chapter_math_payload()
+        references = payload["source_references"]
+        cited_labels = {CHAPTER_MATH_LABEL}
+        for entry in entries.values():
+            cited_labels.update(entry["chapter_labels"])
+        self.assertEqual(payload["schema_version"], "1.1.0")
+        self.assertEqual(len(cited_labels), 57)
+        self.assertEqual(len(references), 63)
+        self.assertEqual(payload["integrated_thesis_driver"], "main.tex")
+        self.assertEqual(payload["integrated_thesis_pdf"], "main.pdf")
+        self.assertEqual(payload["integrated_thesis_page_count_at_mapping"], 278)
+        self.assertRegex(
+            payload["integrated_thesis_driver_sha256_at_mapping"],
+            r"^[0-9a-f]{64}$",
+        )
+        self.assertRegex(
+            payload["integrated_thesis_pdf_sha256_at_mapping"], r"^[0-9a-f]{64}$"
+        )
+        self.assertRegex(
+            payload["integrated_thesis_aux_sha256_at_mapping"], r"^[0-9a-f]{64}$"
+        )
+        for label, reference in references.items():
+            self.assertTrue(reference["number"], msg=label)
+            if reference["kind"] == "Equation":
+                self.assertNotIn("title", reference, msg=label)
+            else:
+                self.assertTrue(reference["title"], msg=label)
+        self.assertTrue(INTEGRATED_REFERENCE_VERIFIER.is_file())
+
         code_ids = {
             str(cell.get("id"))
             for cell in self.notebook["cells"]
@@ -94,6 +128,11 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             self.assertEqual(source.count(CHAPTER_MATH_MARKER), 1, msg=markdown_id)
             generated = source.split(CHAPTER_MATH_MARKER, 1)[1]
             self.assertIn(f"`{CHAPTER_MATH_LABEL}`", generated, msg=markdown_id)
+            self.assertIn(
+                "**Thesis source.** Integrated `main.pdf` locator",
+                generated,
+                msg=markdown_id,
+            )
             self.assertIn("**Mathematical reading.**", generated, msg=markdown_id)
             self.assertIn("**Evidence status.**", generated, msg=markdown_id)
             self.assertIn("**Code covered.**", generated, msg=markdown_id)
@@ -103,6 +142,37 @@ class InlineHelperProvenanceTests(unittest.TestCase):
                 self.assertNotIn(delimiter, generated, msg=markdown_id)
             for label in entry["chapter_labels"]:
                 self.assertIn(f"`{label}`", generated, msg=markdown_id)
+            references = _chapter_math_payload()["source_references"]
+            for label in _chapter_math_source_references(markdown_id):
+                self.assertIn(
+                    _format_source_reference(label, references[label]),
+                    generated,
+                    msg=f"{markdown_id}: {label}",
+                )
+
+    def test_pdf_facing_titles_make_internal_labels_findable(self) -> None:
+        cells = {str(cell.get("id")): cell for cell in self.notebook["cells"]}
+        setup = "".join(cells["67a01ec3"].get("source", []))
+        for visible_locator in (
+            "Chapter 5: *Numerical certification of transfer spectra for analytic "
+            "expanding interval maps*",
+            "Section 5.1: *Numerical methodology for analytic expanding interval maps*",
+            "Subsection 5.1.1: *Logical provenance of the certification statements*",
+            "Subsection 5.1.5: *Three finite coordinate gauges*",
+        ):
+            self.assertIn(visible_locator, setup)
+
+        direct_theory = "".join(cells["3f36d6e7"].get("source", []))
+        for visible_locator in (
+            "Chapter 4: *Single-space deterministic bounds for Legendre–EDMD "
+            "transfer approximations*",
+            "Section 4.3: *Single-space deterministic bridge in the Chebyshev gauge*",
+            "Subsection 4.3.4: *$X$-Galerkin tail and projector mismatch*",
+            "Definition 4.62: *Pointwise unresolved Chebyshev-tail kernel*",
+            "Equation (4.85)",
+            "Remark 4.64: *Certified finite-prefix evaluation of the pointwise kernel*",
+        ):
+            self.assertIn(visible_locator, direct_theory)
 
     def test_semantic_routes_for_matrix_tail_and_phase2_figures(self) -> None:
         entries = _chapter_math_entries()
@@ -285,8 +355,20 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         for expected, actual in zip(
             self.notebook["cells"], merged["cells"], strict=True
         ):
+            self.assertEqual(actual.get("id"), expected.get("id"))
+            self.assertEqual(actual.get("cell_type"), expected.get("cell_type"))
             if expected.get("cell_type") != "code":
                 continue
+            actual_source = actual.get("source", "")
+            expected_source = expected.get("source", "")
+            self.assertEqual(
+                "".join(actual_source)
+                if isinstance(actual_source, list)
+                else str(actual_source),
+                "".join(expected_source)
+                if isinstance(expected_source, list)
+                else str(expected_source),
+            )
             self.assertEqual(
                 actual.get("execution_count"), expected.get("execution_count")
             )

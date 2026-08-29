@@ -39,6 +39,23 @@ DEPENDENCY_MAP_ATTACHMENT = "blaschke-deformation-dependency-map.svg"
 CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
 CHAPTER_MATH_MARKER = "<!-- NUMERICS_1_CHAPTER_MATH -->"
 CHAPTER_MATH_LABEL = "chap:numerical-certification-transfer"
+PDF_REFERENCE_KINDS = frozenset(
+    {
+        "Chapter",
+        "Section",
+        "Subsection",
+        "Definition",
+        "Remark",
+        "Lemma",
+        "Proposition",
+        "Theorem",
+        "Corollary",
+        "Algorithm",
+        "Equation",
+        "Figure",
+        "Table",
+    }
+)
 
 
 CHAPTER_MATH_STATUS = {
@@ -439,6 +456,42 @@ def _checked_replace(source: str, old: str, new: str, *, label: str) -> str:
     return source.replace(old, new)
 
 
+def _source_reference_chain(
+    label: str, references: dict[str, dict[str, Any]]
+) -> list[str]:
+    """Return one integrated-PDF locator path from chapter to cited object."""
+
+    chain: list[str] = []
+    seen: set[str] = set()
+    current: str | None = label
+    while current is not None:
+        if current in seen:
+            raise RuntimeError(f"Cyclic PDF source-reference ancestry at {current!r}.")
+        seen.add(current)
+        reference = references.get(current)
+        if reference is None:
+            raise RuntimeError(f"Missing PDF source reference {current!r}.")
+        chain.append(current)
+        parent = reference.get("parent")
+        current = str(parent) if parent is not None else None
+    chain.reverse()
+    return chain
+
+
+def _format_source_reference(
+    label: str, reference: dict[str, Any]
+) -> str:
+    """Format the same numbered locator a thesis-PDF reader sees."""
+
+    kind = str(reference["kind"])
+    number = str(reference["number"])
+    if kind == "Equation":
+        visible = f"Equation ({number})"
+    else:
+        visible = f"{kind} {number}: *{reference['title']}*"
+    return f"- {visible} (`{label}`)."
+
+
 @lru_cache(maxsize=1)
 def _chapter_math_payload() -> dict[str, Any]:
     """Load and validate the chapter-to-notebook Markdown contract."""
@@ -448,7 +501,7 @@ def _chapter_math_payload() -> dict[str, Any]:
             f"Missing chapter mathematics map {CHAPTER_MATH_MAP}."
         )
     payload = tomllib.loads(CHAPTER_MATH_MAP.read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "1.0.0":
+    if payload.get("schema_version") != "1.1.0":
         raise RuntimeError("Unsupported chapter mathematics map schema.")
     if payload.get("chapter_label") != CHAPTER_MATH_LABEL:
         raise RuntimeError(
@@ -457,8 +510,48 @@ def _chapter_math_payload() -> dict[str, Any]:
     entries = payload.get("entries")
     if not isinstance(entries, dict) or not entries:
         raise RuntimeError("The chapter mathematics map has no entries.")
+    references = payload.get("source_references")
+    if not isinstance(references, dict) or not references:
+        raise RuntimeError("The chapter mathematics map has no PDF source references.")
+
+    for label, reference in references.items():
+        if not isinstance(label, str) or not label or not isinstance(reference, dict):
+            raise RuntimeError("Invalid PDF source-reference record.")
+        kind = reference.get("kind")
+        number = reference.get("number")
+        title = reference.get("title")
+        parent = reference.get("parent")
+        if kind not in PDF_REFERENCE_KINDS:
+            raise RuntimeError(
+                f"PDF source reference {label!r} has invalid kind {kind!r}."
+            )
+        if not isinstance(number, str) or not number:
+            raise RuntimeError(
+                f"PDF source reference {label!r} has no formatted number."
+            )
+        if kind == "Equation":
+            if title is not None:
+                raise RuntimeError(
+                    f"Equation reference {label!r} must not invent a title."
+                )
+        elif not isinstance(title, str) or not title:
+            raise RuntimeError(
+                f"PDF source reference {label!r} has no reader-facing title."
+            )
+        if parent is not None and (not isinstance(parent, str) or not parent):
+            raise RuntimeError(
+                f"PDF source reference {label!r} has an invalid parent."
+            )
+
+    for label in references:
+        chain = _source_reference_chain(label, references)
+        if references[chain[0]]["kind"] != "Chapter":
+            raise RuntimeError(
+                f"PDF source reference {label!r} is not rooted at a chapter."
+            )
 
     seen_code_ids: set[str] = set()
+    cited_labels = {CHAPTER_MATH_LABEL}
     for markdown_id, raw_entry in entries.items():
         if not isinstance(raw_entry, dict):
             raise RuntimeError(f"Invalid Markdown-map entry {markdown_id!r}.")
@@ -509,6 +602,23 @@ def _chapter_math_payload() -> dict[str, Any]:
                 f"Code cells mapped more than once: {sorted(duplicate_code_ids)}."
             )
         seen_code_ids.update(map(str, code_ids))
+        cited_labels.update(map(str, labels))
+
+    missing_references = cited_labels - set(references)
+    if missing_references:
+        raise RuntimeError(
+            "Cited labels lack integrated-PDF locators: "
+            f"{sorted(missing_references)}."
+        )
+    used_references: set[str] = set()
+    for label in cited_labels:
+        used_references.update(_source_reference_chain(label, references))
+    orphan_references = set(references) - used_references
+    if orphan_references:
+        raise RuntimeError(
+            "Unreferenced integrated-PDF locators: "
+            f"{sorted(orphan_references)}."
+        )
     fidelity_replacements = payload.get("fidelity_replacements", {})
     if not isinstance(fidelity_replacements, dict):
         raise RuntimeError("Invalid chapter-fidelity replacement table.")
@@ -528,11 +638,31 @@ def _chapter_math_entries() -> dict[str, dict[str, Any]]:
     return _chapter_math_payload()["entries"]
 
 
+def _chapter_math_source_references(markdown_id: str) -> list[str]:
+    """Return deduplicated PDF locators, including structural ancestors."""
+
+    payload = _chapter_math_payload()
+    references = payload["source_references"]
+    entry = payload["entries"][markdown_id]
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for cited_label in [CHAPTER_MATH_LABEL, *entry["chapter_labels"]]:
+        for label in _source_reference_chain(cited_label, references):
+            if label not in seen:
+                seen.add(label)
+                ordered.append(label)
+    return ordered
+
+
 def _chapter_math_block(markdown_id: str) -> str:
     """Render one operation-specific chapter-derived mathematical bridge."""
 
     entry = _chapter_math_entries()[markdown_id]
-    labels = ", ".join(f"`{label}`" for label in entry["chapter_labels"])
+    references = _chapter_math_payload()["source_references"]
+    source_locators = "\n".join(
+        _format_source_reference(label, references[label])
+        for label in _chapter_math_source_references(markdown_id)
+    )
     code_ids = ", ".join(f"`{cell_id}`" for cell_id in entry["code_cell_ids"])
     statuses = "  \n".join(
         f"- `{status}`: {CHAPTER_MATH_STATUS[status]}"
@@ -542,7 +672,9 @@ def _chapter_math_block(markdown_id: str) -> str:
     return (
         f"{CHAPTER_MATH_MARKER}\n\n"
         "#### Chapter-derived mathematical bridge\n\n"
-        f"**Thesis source.** `{CHAPTER_MATH_LABEL}`; {labels}.\n\n"
+        "**Thesis source.** Integrated `main.pdf` locator, with the visible "
+        "title and number followed by the stable LaTeX label.\n\n"
+        f"{source_locators}\n\n"
         f"**Mathematical reading.** {mathematics}\n\n"
         f"**Evidence status.**\n\n{statuses}\n\n"
         f"**Code covered.** Stable code-cell IDs: {code_ids}."
@@ -965,6 +1097,7 @@ def validate_chapter_math_coverage(counterpart: dict[str, Any]) -> None:
     """Require one mapped mathematical owner for every retained code-cell group."""
 
     entries = _chapter_math_entries()
+    references = _chapter_math_payload()["source_references"]
     cells = counterpart.get("cells", [])
     actual_groups: dict[str, list[str]] = {}
     markdown_sources: dict[str, str] = {}
@@ -1010,10 +1143,20 @@ def validate_chapter_math_coverage(counterpart: dict[str, Any]) -> None:
             raise AssertionError(
                 f"Markdown owner {markdown_id!r} is not rooted at the chapter label."
             )
+        if "**Thesis source.** Integrated `main.pdf` locator" not in source:
+            raise AssertionError(
+                f"Markdown owner {markdown_id!r} lacks its PDF-facing source heading."
+            )
         for label in entries[markdown_id]["chapter_labels"]:
             if f"`{label}`" not in source:
                 raise AssertionError(
                     f"Markdown owner {markdown_id!r} lost chapter label {label!r}."
+                )
+        for label in _chapter_math_source_references(markdown_id):
+            rendered = _format_source_reference(label, references[label])
+            if rendered not in source:
+                raise AssertionError(
+                    f"Markdown owner {markdown_id!r} lost PDF locator {label!r}."
                 )
 
 
@@ -1146,8 +1289,9 @@ def _merge_preserved_execution_state(
     metadata["source_sync_after_execution"] = {
         "date": "2026-08-29",
         "scope": (
-            "chapter-derived mathematical Markdown, stable-label corrections, "
-            "and prior source synchronisation"
+            "chapter-derived mathematical Markdown, integrated-PDF-facing source "
+            "titles and numbers, stable-label corrections, and prior source "
+            "synchronisation"
         ),
         "stored_output_status": (
             "retained historical outputs; not evidence for the post-sync sources "

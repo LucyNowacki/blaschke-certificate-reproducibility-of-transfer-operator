@@ -1,11 +1,373 @@
-schema_version = "1.0.0"
+schema_version = "1.1.0"
 chapter_label = "chap:numerical-certification-transfer"
 chapter_source = "chapters/numerical_certification_transfer.tex"
 chapter_source_sha256_at_mapping = "de540dc4ed905a42b29c783cfae890b6dc02545297b712e08e32c28c0b47902c"
 direct_theory_source = "chapters/single_space_legendre_edmd.tex"
 direct_theory_source_sha256_at_mapping = "0c0ae3c0278bba2b291da6921bb32773cf443f7646eb18bc03a84ea529448f4c"
+integrated_thesis_driver = "main.tex"
+integrated_thesis_driver_sha256_at_mapping = "bf874999006fdfa9c683c107e64ce23fcfe83b56e8e7d1305ca930b53199bc50"
+integrated_thesis_pdf = "main.pdf"
+integrated_thesis_pdf_sha256_at_mapping = "63ffa7c892f2c980f0b91ec4e3332ccb3f41ea0f64912b5eaccd89a3ce809e00"
+integrated_thesis_aux = "main.aux"
+integrated_thesis_aux_sha256_at_mapping = "b552ab358309357db57a43044bb5fe2ad16cb1b602fe2a3bde16d5a12c41d3f8"
+integrated_thesis_page_count_at_mapping = 278
 mapping_date = "2026-08-29"
-mapping_scope = "52 stable Markdown owners covering the complete 68-code-cell execution topology"
+mapping_scope = "52 stable Markdown owners covering all 68 code cells, with 63 integrated-PDF-facing source locators"
+
+[source_references."chap:single-space-legendre-edmd"]
+kind = "Chapter"
+number = "4"
+title = "Single-space deterministic bounds for Legendre–EDMD transfer approximations"
+
+[source_references."legEDMD:single-space-bridge"]
+kind = "Section"
+number = "4.3"
+title = "Single-space deterministic bridge in the Chebyshev gauge"
+parent = "chap:single-space-legendre-edmd"
+
+[source_references."legEDMD:subsec-X-tail-projector-mismatch"]
+kind = "Subsection"
+number = "4.3.4"
+title = "$X$-Galerkin tail and projector mismatch"
+parent = "legEDMD:single-space-bridge"
+
+[source_references."legEDMD:def-branch-image-Chebyshev-input-tail-kernel"]
+kind = "Definition"
+number = "4.62"
+title = "Pointwise unresolved Chebyshev-tail kernel"
+parent = "legEDMD:subsec-X-tail-projector-mismatch"
+
+[source_references."eq:branch-image-Chebyshev-tail-kernel"]
+kind = "Equation"
+number = "4.85"
+parent = "legEDMD:def-branch-image-Chebyshev-input-tail-kernel"
+
+[source_references."legEDMD:rem-certified-finite-prefix-pointwise-kernel"]
+kind = "Remark"
+number = "4.64"
+title = "Certified finite-prefix evaluation of the pointwise kernel"
+parent = "legEDMD:subsec-X-tail-projector-mismatch"
+
+[source_references."chap:numerical-certification-transfer"]
+kind = "Chapter"
+number = "5"
+title = "Numerical certification of transfer spectra for analytic expanding interval maps"
+
+[source_references."sec:numerical-methodology-transfer"]
+kind = "Section"
+number = "5.1"
+title = "Numerical methodology for analytic expanding interval maps"
+parent = "chap:numerical-certification-transfer"
+
+[source_references."subsec:numerics-certification-provenance"]
+kind = "Subsection"
+number = "5.1.1"
+title = "Logical provenance of the certification statements"
+parent = "sec:numerical-methodology-transfer"
+
+[source_references."subsec:numerics-branch-geometry"]
+kind = "Subsection"
+number = "5.1.2"
+title = "Analytic branch data and Bernstein-ellipse geometry"
+parent = "sec:numerical-methodology-transfer"
+
+[source_references."subsec:numerics-legendre-gauss-transfer-block"]
+kind = "Subsection"
+number = "5.1.3"
+title = "Legendre–Gauss Galerkin–EDMD transfer block"
+parent = "sec:numerical-methodology-transfer"
+
+[source_references."subsec:numerics-cluster-matching"]
+kind = "Subsection"
+number = "5.1.4"
+title = "Empirical cluster matching for raw spectra"
+parent = "sec:numerical-methodology-transfer"
+
+[source_references."subsec:numerics-three-gauges"]
+kind = "Subsection"
+number = "5.1.5"
+title = "Three finite coordinate gauges"
+parent = "sec:numerical-methodology-transfer"
+
+[source_references."subsec:numerics-schur-envelope"]
+kind = "Subsection"
+number = "5.1.6"
+title = "Branch-image single-space deterministic envelope"
+parent = "sec:numerical-methodology-transfer"
+
+[source_references."subsec:numerics-contour-validation"]
+kind = "Subsection"
+number = "5.1.7"
+title = "Contour/Riesz certification protocol"
+parent = "sec:numerical-methodology-transfer"
+
+[source_references."eq:numerics-transfer-inverse-branch"]
+kind = "Equation"
+number = "5.1"
+parent = "subsec:numerics-branch-geometry"
+
+[source_references."eq:numerics-transfer-block-entry"]
+kind = "Equation"
+number = "5.2"
+parent = "subsec:numerics-legendre-gauss-transfer-block"
+
+[source_references."eq:numerics-Lhat-PWh"]
+kind = "Equation"
+number = "5.3"
+parent = "subsec:numerics-legendre-gauss-transfer-block"
+
+[source_references."eq:numerics-coordinate-chain"]
+kind = "Equation"
+number = "5.4"
+parent = "subsec:numerics-three-gauges"
+
+[source_references."eq:numerics-pure-r-gauge-matrix"]
+kind = "Equation"
+number = "5.5"
+parent = "subsec:numerics-three-gauges"
+
+[source_references."eq:numerics-X-gauge-matrix"]
+kind = "Equation"
+number = "5.6"
+parent = "subsec:numerics-three-gauges"
+
+[source_references."eq:numerics-single-space-envelope"]
+kind = "Equation"
+number = "5.7"
+parent = "subsec:numerics-schur-envelope"
+
+[source_references."eq:numerics-safe-GL-remainder"]
+kind = "Equation"
+number = "5.9"
+parent = "subsec:numerics-schur-envelope"
+
+[source_references."eq:numerics-safe-GL-prefactor"]
+kind = "Equation"
+number = "5.10"
+parent = "subsec:numerics-schur-envelope"
+
+[source_references."eq:numerics-safe-effective-multiplier"]
+kind = "Equation"
+number = "5.11"
+parent = "subsec:numerics-schur-envelope"
+
+[source_references."eq:numerics-safe-Bmat-rescaling"]
+kind = "Equation"
+number = "5.12"
+parent = "subsec:numerics-schur-envelope"
+
+[source_references."eq:numerics-small-gain"]
+kind = "Equation"
+number = "5.13"
+parent = "subsec:numerics-contour-validation"
+
+[source_references."legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"]
+kind = "Proposition"
+number = "5.1"
+title = "Exact-dyadic Hardy-matrix replacement"
+parent = "subsec:numerics-contour-validation"
+
+[source_references."eq:numerics-Hardy-entry-error-radii"]
+kind = "Equation"
+number = "5.14"
+parent = "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"
+
+[source_references."eq:numerics-Hardy-row-column-radii"]
+kind = "Equation"
+number = "5.15"
+parent = "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"
+
+[source_references."eq:numerics-Hardy-matrix-replacement-radius-general"]
+kind = "Equation"
+number = "5.16"
+parent = "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"
+
+[source_references."legEDMD:prop-validated-exact-binary-Schur-surrogate"]
+kind = "Proposition"
+number = "5.3"
+title = "Validated surrogate from exact-binary Schur factors"
+parent = "subsec:numerics-contour-validation"
+
+[source_references."legEDMD:prop-complete-circle-triangular-Schur-moat"]
+kind = "Proposition"
+number = "5.4"
+title = "Complete-circle triangular Schur moat"
+parent = "subsec:numerics-contour-validation"
+
+[source_references."legEDMD:prop-complete-circle-Laurent-moat"]
+kind = "Proposition"
+number = "5.5"
+title = "Complete-circle Laurent approximate-inverse moat"
+parent = "subsec:numerics-contour-validation"
+
+[source_references."legEDMD:cor-Schur-count-and-Hardy-moat-transport"]
+kind = "Corollary"
+number = "5.6"
+title = "Schur count and Hardy-moat transport"
+parent = "subsec:numerics-contour-validation"
+
+[source_references."legEDMD:cor-certified-finite-to-exact-contour-rank"]
+kind = "Corollary"
+number = "5.7"
+title = "Certified finite-to-exact contour rank"
+parent = "subsec:numerics-contour-validation"
+
+[source_references."eq:numerics-certified-lifted-moat-resolvent-bound"]
+kind = "Equation"
+number = "5.52"
+parent = "legEDMD:cor-certified-finite-to-exact-contour-rank"
+
+[source_references."eq:numerics-certified-small-gain"]
+kind = "Equation"
+number = "5.53"
+parent = "legEDMD:cor-certified-finite-to-exact-contour-rank"
+
+[source_references."sec:numerical-results-transfer"]
+kind = "Section"
+number = "5.2"
+title = "Numerical results and certification workflow"
+parent = "chap:numerical-certification-transfer"
+
+[source_references."subsec:numerics-phase1-empirical"]
+kind = "Subsection"
+number = "5.2.1"
+title = "Phase 1: empirical Legendre–Gauss transfer spectra"
+parent = "sec:numerical-results-transfer"
+
+[source_references."subsec:numerics-phase2-schur"]
+kind = "Subsection"
+number = "5.2.2"
+title = "Phase 2: Branch-image single-space deterministic certificate"
+parent = "sec:numerical-results-transfer"
+
+[source_references."subsec:numerics-phase3-rates"]
+kind = "Subsection"
+number = "5.2.3"
+title = "Phase 3: empirical spectra versus deterministic rates"
+parent = "sec:numerical-results-transfer"
+
+[source_references."subsec:numerics-phase4-contours"]
+kind = "Subsection"
+number = "5.2.4"
+title = "Phase 4: Certified Hardy-gauge contours and Riesz-rank transfer"
+parent = "sec:numerical-results-transfer"
+
+[source_references."subsec:numerics-bottleneck-future"]
+kind = "Subsection"
+number = "5.2.6"
+title = "Bottleneck analysis and closing remarks"
+parent = "sec:numerical-results-transfer"
+
+[source_references."eq:numerics-phase2-single-space-envelope"]
+kind = "Equation"
+number = "5.56"
+parent = "subsec:numerics-phase2-schur"
+
+[source_references."eq:numerics-promoted-final-epsilon"]
+kind = "Equation"
+number = "5.57"
+parent = "subsec:numerics-phase2-schur"
+
+[source_references."eq:numerics-phase4-hardy-gauge-matrix"]
+kind = "Equation"
+number = "5.58"
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."legEDMD:prop-certified-Blaschke-spectral-packets"]
+kind = "Proposition"
+number = "5.8"
+title = "Certified Blaschke spectral packets at $N=600$, $M=610$"
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."legEDMD:cor-certified-exterior-Blaschke-spectrum"]
+kind = "Corollary"
+number = "5.9"
+title = "Hybrid certified exterior Blaschke spectrum"
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."fig:numerics-phase1-raw-cluster-errors"]
+kind = "Figure"
+number = "5.1"
+title = 'Raw cluster errors for the square Legendre–Gauss Galerkin–EDMD transfer blocks $\widehat L_N^{(N)}$ in the Blaschke benchmark with $\mu=0.3$'
+parent = "subsec:numerics-phase1-empirical"
+
+[source_references."fig:numerics-phase1-M-sweep"]
+kind = "Figure"
+number = "5.2"
+title = "Raw cluster errors for the finite-$M$ quadrature sweep at fixed trial dimension $N=25$"
+parent = "subsec:numerics-phase1-empirical"
+
+[source_references."fig:numerics-phase1-heatmap-raw"]
+kind = "Figure"
+number = "5.3"
+title = "Near-square raw cluster-error heatmaps for selected Blaschke targets"
+parent = "subsec:numerics-phase1-empirical"
+
+[source_references."fig:numerics-phase1-heatmap-excess"]
+kind = "Figure"
+number = "5.4"
+title = "Finite-$M$ excess heatmaps for the same Phase 1 grid"
+parent = "subsec:numerics-phase1-empirical"
+
+[source_references."fig:numerics-phase1-leading-eigencloud"]
+kind = "Figure"
+number = "5.5"
+title = 'Leading-interval raw eigenvalue clouds for $\widehat L_N^{(M)}$'
+parent = "subsec:numerics-phase1-empirical"
+
+[source_references."fig:numerics-phase1-oversampling-displacement"]
+kind = "Figure"
+number = "5.6"
+title = "Oversampling displacement diagnostics for the raw Legendre–Gauss transfer block"
+parent = "subsec:numerics-phase1-empirical"
+
+[source_references."fig:numerics-phase2-certified-geometry-ellipses"]
+kind = "Figure"
+number = "5.7"
+title = "Branch-image geometry for the refined Phase 2 certificate"
+parent = "subsec:numerics-phase2-schur"
+
+[source_references."fig:numerics-phase2-certificate-components"]
+kind = "Figure"
+number = "5.8"
+title = "Deterministic certificate components after the branch-image refinement"
+parent = "subsec:numerics-phase2-schur"
+
+[source_references."fig:numerics-phase2-certificate-array"]
+kind = "Figure"
+number = "5.9"
+title = "Complete-boundary unresolved-input certification"
+parent = "subsec:numerics-phase2-schur"
+
+[source_references."tab:numerics-phase3-branch-image-fitted-bases"]
+kind = "Table"
+number = "5.4"
+title = "Current Cell 69N empirical fitted bases for selected square-block clusters"
+parent = "subsec:numerics-phase3-rates"
+
+[source_references."fig:numerics-phase3-deterministic-components-rate"]
+kind = "Figure"
+number = "5.10"
+title = "Phase 3 comparison between empirical fitted spectral bases and geometric rate guides anchored at the promoted $N=600$, $M=610$ certificate"
+parent = "subsec:numerics-phase3-rates"
+
+[source_references."fig:numerics-phase3-branch-image-bridge"]
+kind = "Figure"
+number = "5.11"
+title = "Phase 3 bridge between empirical spectral diagnostics and deterministic certification, rendered by Cell 73N through `plot_phase3_empirical_deterministic_bridge`"
+parent = "subsec:numerics-phase3-rates"
+
+[source_references."fig:numerics-phase4-mu2-sampled-landscape"]
+kind = "Figure"
+number = "5.12"
+title = 'Code Cell 84N sampled Hardy-gauge moat landscape near $\mu^2$, rendered through `plot_phase4_local_moat_surface`, for the archived wide-candidate geometry at $N=600$, $M=610$, $\rho=2.45$, and $r\approx2.225975$'
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."fig:numerics-phase4-global-sampled-landscape"]
+kind = "Figure"
+number = "5.14"
+title = 'Code Cell 86N global sampled Hardy-gauge moat landscape, rendered through `plot_phase4_global_moat_surface`, for the first fifteen nontrivial packets of the archived wide-candidate geometry at $N=600$, $M=610$, $\rho=2.45$, and $r\approx2.225975$'
+parent = "subsec:numerics-phase4-contours"
 
 [fidelity_replacements."md-12580490"]
 old = '''Their certified intersection equals the branchwise upper endpoint on every deployed boundary cell, so the selected unresolved-input certificate demonstrates no cancellation gain.'''

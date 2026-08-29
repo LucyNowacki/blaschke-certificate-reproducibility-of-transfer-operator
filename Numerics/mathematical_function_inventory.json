@@ -9,7 +9,7 @@
   "inline_helper_count": 18,
   "notebook_cell_count": 140,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "313d7ce9a63c935350a284724e0c82ee61461f559dab4d1292387c20a31a2dd9",
+  "notebook_sha256": "0d5e85b879d6a056f9aae1b509c952a713fb73b68e23884364353f8e8dc068bd",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",
