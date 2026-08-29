@@ -3,7 +3,7 @@
   "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
   "notebook": {
     "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-    "sha256_at_manifest_creation": "c1894865ec6d8f91a417190a7ca87addf4d92dd46f8329c5a2f01279a8020731",
+    "sha256_at_manifest_creation": "d10e9f04048100b0d669e7a89c951dafc232cdb67b5a860b8469dc24d4de4d8b",
     "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
     "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
     "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 141-cell, 68-code-cell notebook, including Cell 0M, the two source-only diagnostic producers and final auditor Markdown Cell 110M.",
@@ -13,8 +13,8 @@
     "expected_stored_png_output_count": 34,
     "map_label": "blaschke_mu_0p3",
     "execution_order": "top-to-bottom stateful Jupyter execution",
-    "thesis_math_builder_sha256": "ee5b21623a9d0e60822813e3de3d21b1cae866ec9023ce6d1ddfd597350b8312",
-    "chapter_math_map_sha256": "46defa82575d8720d203139e8886a91eadb92bb0152e97cf522c19c2aad45444",
+    "thesis_math_builder_sha256": "54ae3a25013016809d3bf75b134ec1343047c6a66c7a1b3bcc639d6feb279627",
+    "chapter_math_map_sha256": "7e216cb84e33313c9b2eb7cfc0bbb2207eb08079406e32a614d194a04ae023ca",
     "stored_png_count_note": "The 34-payload contract includes both PNG outputs in Cell 80N: the selected sampled profile and the restored alpha^11 profile."
   },
   "prepared_cell_indices": {
@@ -2737,10 +2737,10 @@
   "source_hash_refresh": {
     "date": "2026-08-29",
     "method": "refresh_notebook_cell_provenance.py",
-    "notebook_sha256": "c1894865ec6d8f91a417190a7ca87addf4d92dd46f8329c5a2f01279a8020731",
+    "notebook_sha256": "d10e9f04048100b0d669e7a89c951dafc232cdb67b5a860b8469dc24d4de4d8b",
     "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
-    "thesis_math_builder_sha256": "ee5b21623a9d0e60822813e3de3d21b1cae866ec9023ce6d1ddfd597350b8312",
-    "chapter_math_map_sha256": "46defa82575d8720d203139e8886a91eadb92bb0152e97cf522c19c2aad45444",
+    "thesis_math_builder_sha256": "54ae3a25013016809d3bf75b134ec1343047c6a66c7a1b3bcc639d6feb279627",
+    "chapter_math_map_sha256": "7e216cb84e33313c9b2eb7cfc0bbb2207eb08079406e32a614d194a04ae023ca",
     "visual_cell_count": 20,
     "stored_png_output_count": 34,
     "standalone_source_count": 9,

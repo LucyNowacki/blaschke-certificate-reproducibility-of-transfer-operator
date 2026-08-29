@@ -46,9 +46,11 @@ explanation and an explicit evidence class. Its 63-entry source-reference
 registry also supplies the integrated-thesis chapter, section, subsection,
 result, equation, figure and table numbers together with every available
 reader-facing title or caption lead. The generated notebook therefore shows a
-PDF-findable title and number beside each stable LaTeX label; equations, which
-have no independent title, are identified by their formatted equation number
-without inventing one. The builder applies this map after curation, preserving
+`Research thesis source` heading with a PDF-findable title and number beside
+each stable LaTeX label; equations, which have no independent title, are
+identified by their formatted equation number without inventing one. The
+separate heading `Distilled thesis source` is reserved for a future alternative
+mapping and is not emitted by the current schema. The builder applies this map after curation, preserving
 all pre-existing cell IDs, types and code-cell sources while appending the
 source-controlled terminal auditor cell. Focused
 regressions reject missing chapter grounding, title or ancestry drift,

@@ -13,8 +13,10 @@ digest-checked inline helper modules and the visible terminal auditor Markdown C
 `Numerics/numerical_certification_transfer_markdown.toml` maps the mathematics established and
 applied under `chap:numerical-certification-transfer` to all 52 stable Markdown owners and, through
 their contiguous groups, all 68 code cells. The builder appends an operation-specific mathematical
-bridge, exact chapter labels and an evidence-status statement without changing any pre-existing
-cell ID or type. It appends Cell 110M after Cell 109N so the final certificate explanation is
+bridge under `Research thesis source`, exact chapter labels and an evidence-status statement
+without changing any pre-existing cell ID or type. The distinct `Distilled thesis source` heading
+is reserved for a later alternative mapping and is not emitted by the current contract. The builder
+appends Cell 110M after Cell 109N so the final certificate explanation is
 visible below the stored output. The contract also keeps sampled diagnostics, presentation cells and theorem-facing
 producers distinct. Its regression rejects an unmapped code cell, a duplicated owner, a missing
 chapter label or an evidence-class drift.

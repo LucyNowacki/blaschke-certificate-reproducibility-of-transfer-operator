@@ -40,6 +40,7 @@ DEPENDENCY_MAP_ATTACHMENT = "blaschke-deformation-dependency-map.svg"
 CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
 CHAPTER_MATH_MARKER = "<!-- NUMERICS_1_CHAPTER_MATH -->"
 CHAPTER_MATH_LABEL = "chap:numerical-certification-transfer"
+RESEARCH_THESIS_SOURCE_HEADING = "Research thesis source"
 TERMINAL_AUDITOR_CELL_ID = "terminal-certificate-auditor-110m"
 PDF_REFERENCE_KINDS = frozenset(
     {
@@ -503,8 +504,13 @@ def _chapter_math_payload() -> dict[str, Any]:
             f"Missing chapter mathematics map {CHAPTER_MATH_MAP}."
         )
     payload = tomllib.loads(CHAPTER_MATH_MAP.read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "1.2.0":
+    if payload.get("schema_version") != "1.3.0":
         raise RuntimeError("Unsupported chapter mathematics map schema.")
+    if (
+        payload.get("research_thesis_source_heading")
+        != RESEARCH_THESIS_SOURCE_HEADING
+    ):
+        raise RuntimeError("The research-thesis source heading changed.")
     if payload.get("chapter_label") != CHAPTER_MATH_LABEL:
         raise RuntimeError(
             "The Markdown map is not rooted at the numerical-certification chapter."
@@ -737,7 +743,8 @@ def _chapter_math_block_for_entry(
     return (
         f"{CHAPTER_MATH_MARKER}\n\n"
         "#### Chapter-derived mathematical bridge\n\n"
-        "**Thesis source.** Integrated `main.pdf` locator, with the visible "
+        f"**{RESEARCH_THESIS_SOURCE_HEADING}.** Integrated `main.pdf` locator, "
+        "with the visible "
         "title and number followed by the stable LaTeX label.\n\n"
         f"{source_locators}\n\n"
         f"**Mathematical reading.** {mathematics}\n\n"
@@ -1244,10 +1251,22 @@ def validate_chapter_math_coverage(counterpart: dict[str, Any]) -> None:
             raise AssertionError(
                 f"Markdown owner {markdown_id!r} is not rooted at the chapter label."
             )
-        if "**Thesis source.** Integrated `main.pdf` locator" not in source:
+        if (
+            f"**{RESEARCH_THESIS_SOURCE_HEADING}.** Integrated `main.pdf` locator"
+            not in source
+        ):
             raise AssertionError(
                 f"Markdown owner {markdown_id!r} lacks its PDF-facing source heading."
             )
+        for forbidden_heading in (
+            "**Thesis source.**",
+            "**Distilled thesis source.**",
+        ):
+            if forbidden_heading in source:
+                raise AssertionError(
+                    f"Markdown owner {markdown_id!r} mixes research and future "
+                    "source headings."
+                )
         for label in entries[markdown_id]["chapter_labels"]:
             if f"`{label}`" not in source:
                 raise AssertionError(

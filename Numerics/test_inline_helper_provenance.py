@@ -16,6 +16,7 @@ from build_blaschke_deformation_thesis_math_notebook import (
     CHAPTER_MATH_MARKER,
     CURATED_INLINE_HELPER_ORDINALS,
     DEPENDENCY_MAP_CELL_ID,
+    RESEARCH_THESIS_SOURCE_HEADING,
     TERMINAL_AUDITOR_CELL_ID,
     _chapter_math_entries,
     _chapter_math_payload,
@@ -92,7 +93,11 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         for entry in entries.values():
             cited_labels.update(entry["chapter_labels"])
         cited_labels.update(payload["terminal_auditor"]["chapter_labels"])
-        self.assertEqual(payload["schema_version"], "1.2.0")
+        self.assertEqual(payload["schema_version"], "1.3.0")
+        self.assertEqual(
+            payload["research_thesis_source_heading"],
+            RESEARCH_THESIS_SOURCE_HEADING,
+        )
         self.assertEqual(
             payload["terminal_auditor"]["cell_id"],
             TERMINAL_AUDITOR_CELL_ID,
@@ -129,15 +134,20 @@ class InlineHelperProvenanceTests(unittest.TestCase):
 
     def test_every_mapped_markdown_has_detailed_chapter_grounding(self) -> None:
         cells = {str(cell.get("id")): cell for cell in self.notebook["cells"]}
-        for markdown_id, entry in _chapter_math_entries().items():
+        entries = _chapter_math_entries()
+        for markdown_id, entry in entries.items():
             source = "".join(cells[markdown_id].get("source", []))
             self.assertEqual(source.count(CHAPTER_MATH_MARKER), 1, msg=markdown_id)
             generated = source.split(CHAPTER_MATH_MARKER, 1)[1]
             self.assertIn(f"`{CHAPTER_MATH_LABEL}`", generated, msg=markdown_id)
             self.assertIn(
-                "**Thesis source.** Integrated `main.pdf` locator",
+                "**Research thesis source.** Integrated `main.pdf` locator",
                 generated,
                 msg=markdown_id,
+            )
+            self.assertNotIn("**Thesis source.**", generated, msg=markdown_id)
+            self.assertNotIn(
+                "**Distilled thesis source.**", generated, msg=markdown_id
             )
             self.assertIn("**Mathematical reading.**", generated, msg=markdown_id)
             self.assertIn("**Evidence status.**", generated, msg=markdown_id)
@@ -155,6 +165,17 @@ class InlineHelperProvenanceTests(unittest.TestCase):
                     generated,
                     msg=f"{markdown_id}: {label}",
                 )
+        all_markdown = "\n".join(
+            "".join(cell.get("source", []))
+            for cell in self.notebook["cells"]
+            if cell.get("cell_type") == "markdown"
+        )
+        self.assertEqual(
+            all_markdown.count("**Research thesis source.**"),
+            len(entries) + 1,
+        )
+        self.assertNotIn("**Thesis source.**", all_markdown)
+        self.assertNotIn("**Distilled thesis source.**", all_markdown)
 
     def test_pdf_facing_titles_make_internal_labels_findable(self) -> None:
         cells = {str(cell.get("id")): cell for cell in self.notebook["cells"]}
