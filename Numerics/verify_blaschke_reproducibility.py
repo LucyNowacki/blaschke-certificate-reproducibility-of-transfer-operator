@@ -263,7 +263,13 @@ EXPECTED_SCHUR_MOAT_COUNT = 17
 EXPECTED_LAURENT_MOAT_COUNT = 7
 EXPECTED_NOTEBOOK_CELLS = 140
 EXPECTED_NOTEBOOK_CODE_CELLS = 68
-EXPECTED_REPORT_STATUS = "theorem-certified twenty-four-target Riesz-rank package"
+EXPECTED_REPORT_STATUSES = frozenset({
+    "theorem-certified twenty-four-target Riesz-rank package",
+    (
+        "theorem-certified twenty-four-target Riesz-rank package; "
+        "finite moats reused and small-gain products reaggregated"
+    ),
+})
 EXPECTED_HISTORICAL_SCHEMA = "phase2-historical-comparisons-v1"
 EXPECTED_HISTORICAL_CONFIGURATION = {
     "N": 600,
@@ -590,7 +596,7 @@ def _validate_plan_and_report(
         "total_certified_algebraic_multiplicity",
         EXPECTED_MULTIPLICITY,
     )
-    if report.get("status") != EXPECTED_REPORT_STATUS:
+    if report.get("status") not in EXPECTED_REPORT_STATUSES:
         raise VerificationError("Unexpected theorem-facing report status.")
     for key in TRUE_THEOREM_GATES:
         _expect_bool(report, key, True)

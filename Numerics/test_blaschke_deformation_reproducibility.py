@@ -1151,6 +1151,23 @@ class ReproducibilityBundleTests(unittest.TestCase):
         ):
             packager.refresh_reproducibility_plan(plan, report)
 
+    def test_archive_verifier_accepts_only_exact_reaggregated_status(self) -> None:
+        plan = self.deployment.source_plan()
+        report = self.deployment.report()
+        report["status"] = (
+            "theorem-certified twenty-four-target Riesz-rank package; "
+            "finite moats reused and small-gain products reaggregated"
+        )
+        effective = packager.refresh_reproducibility_plan(plan, report)
+        verifier._validate_plan_and_report(effective, report)
+
+        report["status"] = str(report["status"]) + "; unreviewed suffix"
+        with self.assertRaisesRegex(
+            verifier.VerificationError,
+            "Unexpected theorem-facing report status",
+        ):
+            verifier._validate_plan_and_report(effective, report)
+
     def test_semantic_source_digest_ignores_only_docstrings(self) -> None:
         source_path = self.deployment.root / "semantic-source.py"
         source_path.write_text(
