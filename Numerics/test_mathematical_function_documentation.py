@@ -65,7 +65,7 @@ class MathematicalFunctionDocumentationTests(unittest.TestCase):
         current = inventory_module.build_inventory()
         self.assertEqual(self.stored, current)
         self.assertEqual(current["inline_helper_count"], 18)
-        self.assertEqual(current["notebook_cell_count"], 140)
+        self.assertEqual(current["notebook_cell_count"], 141)
         self.assertEqual(current["notebook_code_cell_count"], 68)
         self.assertEqual(
             sum(current["counts"].values()),

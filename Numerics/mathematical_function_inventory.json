@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "scope": "Every function in the 18 digest-checked inline helpers and every function in non-inline code cells of the 140-cell final notebook.",
+  "scope": "Every function in the 18 digest-checked inline helpers and every function in non-inline code cells of the 141-cell final notebook.",
   "classification_policy": {
     "mathematical": "Directly implements theorem-facing or retained diagnostic mathematics and requires the two-field triple-single-quoted docstring.",
     "infrastructure": "I/O, caching, provenance, parsing, orchestration, progress, or presentation plumbing; deliberately not relabelled as theorem mathematics.",
     "plotting": "Plotting or display-only code; deliberately outside the mathematical docstring gate."
   },
   "inline_helper_count": 18,
-  "notebook_cell_count": 140,
+  "notebook_cell_count": 141,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "06203f990bd6971e41a67f18f6cdfd0d3352bdef1ccc88e8d5338d98da58d440",
+  "notebook_sha256": "c1894865ec6d8f91a417190a7ca87addf4d92dd46f8329c5a2f01279a8020731",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",

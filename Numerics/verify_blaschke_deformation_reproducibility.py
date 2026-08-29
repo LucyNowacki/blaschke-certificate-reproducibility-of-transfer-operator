@@ -209,7 +209,7 @@ def _stable_report(value: object) -> object:
 
 
 def _validate_notebook(notebook: Mapping[str, object]) -> dict[str, object]:
-    """Validate the current 140-cell/68-code-cell notebook contract."""
+    """Validate the current 141-cell/68-code-cell notebook contract."""
 
     cells = notebook.get("cells")
     if not isinstance(cells, list) or len(cells) != EXPECTED_NOTEBOOK_CELLS:

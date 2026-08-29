@@ -65,8 +65,8 @@
   <text class="dep-small" x="438" y="198">dependency-map source, provenance and plotting maps</text>
   <rect class="dep-data" x="890" y="125" width="300" height="92" rx="6"/>
   <text class="dep-label" x="908" y="151">Executed final notebook</text>
-  <text class="dep-small" x="908" y="176">Cell 0M plus inherited Cells 1M--109N</text>
-  <text class="dep-small" x="908" y="198">140 cells; 68 code cells; 18 inline helpers</text>
+  <text class="dep-small" x="908" y="176">Cell 0M, inherited Cells 1M--109N, final Cell 110M</text>
+  <text class="dep-small" x="908" y="198">141 cells; 68 code cells; 18 inline helpers</text>
   <rect class="dep-data" x="1240" y="125" width="295" height="92" rx="6"/>
   <text class="dep-label" x="1258" y="151">Locks and verification</text>
   <text class="dep-small" x="1258" y="176">conda and pip locks; focused tests</text>

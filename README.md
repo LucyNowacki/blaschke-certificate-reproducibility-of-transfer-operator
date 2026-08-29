@@ -5,8 +5,9 @@ deformation experiment `blaschke_mu_0p3`.
 
 The principal executed record is
 `Numerics/blaschke_deformation_certifier_thesis_math.ipynb`.  The builder locks
-the final counterpart to 140 cells, including 68 code cells.  Its eighteen
-retained helper modules are included inline beside the phases that use them.
+the final counterpart to 141 cells, including 68 code cells and a visible
+terminal auditor Markdown cell after Cell 109N.  Its eighteen retained helper
+modules are included inline beside the phases that use them.
 They cover the theorem-facing Phase 2 and Phase 4 calculations together with
 source-only Phase 1 diagnostics, historical comparisons, process-based moat-
 surface sampling, historical Phase 4 diagnostics, sampled Schur diagnostics
@@ -48,7 +49,8 @@ reader-facing title or caption lead. The generated notebook therefore shows a
 PDF-findable title and number beside each stable LaTeX label; equations, which
 have no independent title, are identified by their formatted equation number
 without inventing one. The builder applies this map after curation, preserving
-the locked 140-cell ID/type signature and all code-cell sources. Focused
+all pre-existing cell IDs, types and code-cell sources while appending the
+source-controlled terminal auditor cell. Focused
 regressions reject missing chapter grounding, title or ancestry drift,
 ownership drift and sampled-to-certified claim upgrades.
 

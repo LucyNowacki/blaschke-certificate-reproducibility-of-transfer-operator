@@ -1,4 +1,4 @@
-schema_version = "1.1.0"
+schema_version = "1.2.0"
 chapter_label = "chap:numerical-certification-transfer"
 chapter_source = "chapters/numerical_certification_transfer.tex"
 chapter_source_sha256_at_mapping = "de540dc4ed905a42b29c783cfae890b6dc02545297b712e08e32c28c0b47902c"
@@ -12,7 +12,7 @@ integrated_thesis_aux = "main.aux"
 integrated_thesis_aux_sha256_at_mapping = "b552ab358309357db57a43044bb5fe2ad16cb1b602fe2a3bde16d5a12c41d3f8"
 integrated_thesis_page_count_at_mapping = 278
 mapping_date = "2026-08-29"
-mapping_scope = "52 stable Markdown owners covering all 68 code cells, with 63 integrated-PDF-facing source locators"
+mapping_scope = "52 stable Markdown owners covering all 68 code cells, plus one visible terminal auditor Markdown cell, with 63 integrated-PDF-facing source locators"
 
 [source_references."chap:single-space-legendre-edmd"]
 kind = "Chapter"
@@ -775,13 +775,21 @@ mathematics = '''The exact similarity $S=Q^\circ T^\circ(Q^\circ)^{-1}$ preserve
 
 [entries."bffa1d01"]
 code_cell_ids = ["ffc45508", "code-b33b0f47", "3e8b784c", "128b5369"]
+chapter_labels = ["eq:numerics-certified-lifted-moat-resolvent-bound", "eq:numerics-certified-small-gain", "legEDMD:prop-certified-Blaschke-spectral-packets", "legEDMD:cor-certified-exterior-Blaschke-spectrum"]
+evidence_status = ["validation_test", "certified_spectral_transfer", "presentation_only"]
+mathematics = '''The adversarial tests first verify that count, moat, replacement, silent-zero, and provenance gates fail independently.  Execution Cell 107N then uses
+$$
+\underline s_{\mathrm{lift}}=\min\{\underline s_{\Gamma,N}^{\mathrm H},d_{\Gamma,0}\},\qquad
+\widehat\varepsilon/\underline s_{\mathrm{lift}}<1
+$$
+to transport each finite Schur count to the exact operator's Riesz rank.  All twenty-four counts are Schur-derived; Laurent witnesses certify moats only.  The external Blaschke formula subsequently identifies the packet names and exhausts the exterior tail, so that exterior classification is a hybrid theorem-plus-external conclusion.  Cells 108N and 109N are locked no-op terminals and add no claim.'''
+
+[terminal_auditor]
+cell_id = "terminal-certificate-auditor-110m"
+code_cell_ids = ["ffc45508", "code-b33b0f47", "3e8b784c", "128b5369"]
 chapter_labels = ["subsec:numerics-certification-provenance", "subsec:numerics-three-gauges", "subsec:numerics-schur-envelope", "eq:numerics-single-space-envelope", "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement", "legEDMD:prop-validated-exact-binary-Schur-surrogate", "legEDMD:prop-complete-circle-triangular-Schur-moat", "legEDMD:prop-complete-circle-Laurent-moat", "legEDMD:cor-Schur-count-and-Hardy-moat-transport", "eq:numerics-certified-lifted-moat-resolvent-bound", "eq:numerics-certified-small-gain", "subsec:numerics-phase2-schur", "eq:numerics-phase2-single-space-envelope", "eq:numerics-promoted-final-epsilon", "subsec:numerics-phase4-contours", "eq:numerics-phase4-hardy-gauge-matrix", "legEDMD:prop-certified-Blaschke-spectral-packets", "legEDMD:cor-certified-exterior-Blaschke-spectrum"]
 evidence_status = ["validation_test", "certified_spectral_transfer", "presentation_only"]
-heading_from = "## Structural count-and-moat provenance tests"
-heading_to = "## Final auditor reading of the twenty-four-target spectral certificate"
-replace_old = "These seven lightweight adversarial checks keep the logical gates separate. They test repeated Schur diagonals with nonnormal off-diagonal structure, an intentionally incorrect expected multiplicity, a failed Schur homotopy, a failed Laurent residual, strict exclusion of the silent zero complement, logical source hashes under temporary parent paths, and small-gain reaggregation with unchanged finite geometry."
-replace_new = "Cell 106N first runs the fail-closed structural tests. Cell 107N then reconstructs and displays the theorem-facing twenty-four-contour certificate. This final Markdown cell explains every displayed field and separates the proved operator conclusion from numerical premises, diagnostics, external identifications, and provenance checks. In the stable source labels used by the notebook, Cells 108N and 109N are deliberately empty terminals."
-mathematics = '''The certificate output immediately below is emitted by execution Cell 107N.  Cells 108N and 109N contain only their labels and perform no computation; if a notebook interface visually associates the preceding output with Cell 108N, the stable source label remains Cell 107N.  This distinction matters because an auditor should attribute every numerical claim to the code that actually formed and checked it.
+mathematics = '''The certificate output immediately above is emitted by execution Cell 107N.  Cells 108N and 109N contain only their labels and perform no computation; if a notebook interface visually associates the preceding output with Cell 108N, the stable source label remains Cell 107N.  This distinction matters because an auditor should attribute every numerical claim to the code that actually formed and checked it.
 
 #### Meaning of `computed_and_certified`
 
@@ -1051,6 +1059,8 @@ together with the Schur count, the two matrix transports, the zero-block distanc
 - the code records `digest_used_in_theorem_gate = False` and tests that no digest flag can enter `theorem_certified`.
 
 That is the precise meaning of `provenance-only, not a theorem gate`.
+
+Starting from an empty output directory does not ask the digest to prove the result.  The source workflow rebuilds the Phase 2 envelope, mathematical Hardy matrix, exact-dyadic Schur surrogate and all seven Laurent candidates, and then recomputes every count, residual, moat, transport and small-gain inequality.  The theorem certificate is accepted only from those newly checked inequalities.  Digest parity is evaluated separately as historical-reconstruction evidence.  A digest match cannot rescue a failed mathematical gate; conversely, a newly reconstructed witness with different bytes could still prove a moat if all exact-dyadic and Arb gates passed, although historical reproducibility would then be reported as failed and investigated.
 
 #### What is proved, what is hybrid, and what is not proved
 

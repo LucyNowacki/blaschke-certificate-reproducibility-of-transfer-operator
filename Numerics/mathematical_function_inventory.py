@@ -1045,7 +1045,7 @@ def build_inventory() -> dict[str, object]:
     return {
         "schema_version": 1,
         "scope": (
-            "Every function in the 18 digest-checked inline helpers and every function in non-inline code cells of the 140-cell final notebook."
+            "Every function in the 18 digest-checked inline helpers and every function in non-inline code cells of the 141-cell final notebook."
         ),
         "classification_policy": {
             "mathematical": "Directly implements theorem-facing or retained diagnostic mathematics and requires the two-field triple-single-quoted docstring.",

@@ -6,9 +6,10 @@ implement thesis mathematics are inserted as executable cell modules beside
 their first use, and two source-only diagnostic producers are inserted before
 their consumers.  The appendix transformer then applies the locked provenance
 and plotting rules to curate the 187-cell intermediate into the 139-cell
-computational body.  A non-executable dependency map is prepended as Cell 0M,
-giving the final 140-cell thesis-mathematics notebook without renumbering or
-altering any existing cell.  The source notebook is required and is never
+computational body.  A non-executable dependency map is prepended as Cell 0M
+and a non-executable auditor explanation is appended as Cell 110M, giving the
+final 141-cell thesis-mathematics notebook without renumbering existing cells
+or altering any existing code cell.  The source notebook is required and is never
 reconstructed from a generated counterpart; the provenance direction is
 always locked template to source to curated counterpart.
 """
@@ -39,6 +40,7 @@ DEPENDENCY_MAP_ATTACHMENT = "blaschke-deformation-dependency-map.svg"
 CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
 CHAPTER_MATH_MARKER = "<!-- NUMERICS_1_CHAPTER_MATH -->"
 CHAPTER_MATH_LABEL = "chap:numerical-certification-transfer"
+TERMINAL_AUDITOR_CELL_ID = "terminal-certificate-auditor-110m"
 PDF_REFERENCE_KINDS = frozenset(
     {
         "Chapter",
@@ -501,7 +503,7 @@ def _chapter_math_payload() -> dict[str, Any]:
             f"Missing chapter mathematics map {CHAPTER_MATH_MAP}."
         )
     payload = tomllib.loads(CHAPTER_MATH_MAP.read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "1.1.0":
+    if payload.get("schema_version") != "1.2.0":
         raise RuntimeError("Unsupported chapter mathematics map schema.")
     if payload.get("chapter_label") != CHAPTER_MATH_LABEL:
         raise RuntimeError(
@@ -604,6 +606,55 @@ def _chapter_math_payload() -> dict[str, Any]:
         seen_code_ids.update(map(str, code_ids))
         cited_labels.update(map(str, labels))
 
+    terminal = payload.get("terminal_auditor")
+    if not isinstance(terminal, dict):
+        raise RuntimeError("The chapter mathematics map has no terminal auditor.")
+    terminal_cell_id = terminal.get("cell_id")
+    terminal_code_ids = terminal.get("code_cell_ids")
+    terminal_labels = terminal.get("chapter_labels")
+    terminal_statuses = terminal.get("evidence_status")
+    terminal_mathematics = terminal.get("mathematics")
+    if terminal_cell_id != TERMINAL_AUDITOR_CELL_ID:
+        raise RuntimeError("The terminal auditor cell ID changed.")
+    if not isinstance(terminal_code_ids, list) or not terminal_code_ids:
+        raise RuntimeError("The terminal auditor has no interpreted code-cell IDs.")
+    if any(not isinstance(value, str) or not value for value in terminal_code_ids):
+        raise RuntimeError("The terminal auditor has invalid code-cell IDs.")
+    unknown_terminal_code_ids = set(terminal_code_ids) - seen_code_ids
+    if unknown_terminal_code_ids:
+        raise RuntimeError(
+            "The terminal auditor interprets unknown code cells: "
+            f"{sorted(unknown_terminal_code_ids)}."
+        )
+    if not isinstance(terminal_labels, list) or not terminal_labels:
+        raise RuntimeError("The terminal auditor has no chapter labels.")
+    if any(not isinstance(value, str) or not value for value in terminal_labels):
+        raise RuntimeError("The terminal auditor has invalid chapter labels.")
+    if not isinstance(terminal_statuses, list) or not terminal_statuses:
+        raise RuntimeError("The terminal auditor has no evidence status.")
+    unknown_terminal_statuses = set(terminal_statuses) - set(CHAPTER_MATH_STATUS)
+    if unknown_terminal_statuses:
+        raise RuntimeError(
+            "The terminal auditor has unknown statuses "
+            f"{unknown_terminal_statuses}."
+        )
+    if (
+        not isinstance(terminal_mathematics, str)
+        or len(terminal_mathematics.split()) < 28
+        or "$" not in terminal_mathematics
+    ):
+        raise RuntimeError(
+            "The terminal auditor needs a detailed rendered mathematical explanation."
+        )
+    if any(
+        delimiter in terminal_mathematics
+        for delimiter in (r"\(", r"\)", r"\[", r"\]")
+    ):
+        raise RuntimeError(
+            "The terminal auditor must use dollar-delimited Markdown mathematics."
+        )
+    cited_labels.update(map(str, terminal_labels))
+
     missing_references = cited_labels - set(references)
     if missing_references:
         raise RuntimeError(
@@ -638,12 +689,14 @@ def _chapter_math_entries() -> dict[str, dict[str, Any]]:
     return _chapter_math_payload()["entries"]
 
 
-def _chapter_math_source_references(markdown_id: str) -> list[str]:
-    """Return deduplicated PDF locators, including structural ancestors."""
+def _terminal_auditor_entry() -> dict[str, Any]:
+    return _chapter_math_payload()["terminal_auditor"]
 
-    payload = _chapter_math_payload()
-    references = payload["source_references"]
-    entry = payload["entries"][markdown_id]
+
+def _chapter_math_source_references_for_entry(entry: dict[str, Any]) -> list[str]:
+    """Return deduplicated PDF locators for one mapped Markdown entry."""
+
+    references = _chapter_math_payload()["source_references"]
     ordered: list[str] = []
     seen: set[str] = set()
     for cited_label in [CHAPTER_MATH_LABEL, *entry["chapter_labels"]]:
@@ -654,14 +707,26 @@ def _chapter_math_source_references(markdown_id: str) -> list[str]:
     return ordered
 
 
-def _chapter_math_block(markdown_id: str) -> str:
+def _chapter_math_source_references(markdown_id: str) -> list[str]:
+    """Return deduplicated PDF locators, including structural ancestors."""
+
+    return _chapter_math_source_references_for_entry(
+        _chapter_math_entries()[markdown_id]
+    )
+
+
+def _chapter_math_block_for_entry(
+    entry: dict[str, Any],
+    source_references: list[str],
+    *,
+    code_relation: str,
+) -> str:
     """Render one operation-specific chapter-derived mathematical bridge."""
 
-    entry = _chapter_math_entries()[markdown_id]
     references = _chapter_math_payload()["source_references"]
     source_locators = "\n".join(
         _format_source_reference(label, references[label])
-        for label in _chapter_math_source_references(markdown_id)
+        for label in source_references
     )
     code_ids = ", ".join(f"`{cell_id}`" for cell_id in entry["code_cell_ids"])
     statuses = "  \n".join(
@@ -677,8 +742,43 @@ def _chapter_math_block(markdown_id: str) -> str:
         f"{source_locators}\n\n"
         f"**Mathematical reading.** {mathematics}\n\n"
         f"**Evidence status.**\n\n{statuses}\n\n"
-        f"**Code covered.** Stable code-cell IDs: {code_ids}."
+        f"**{code_relation}.** Stable code-cell IDs: {code_ids}."
     )
+
+
+def _chapter_math_block(markdown_id: str) -> str:
+    """Render one operation-specific chapter-derived mathematical bridge."""
+
+    entry = _chapter_math_entries()[markdown_id]
+    return _chapter_math_block_for_entry(
+        entry,
+        _chapter_math_source_references(markdown_id),
+        code_relation="Code covered",
+    )
+
+
+def terminal_auditor_cell() -> dict[str, Any]:
+    """Build the visible final Markdown interpretation after Cell 109N."""
+
+    entry = _terminal_auditor_entry()
+    bridge = _chapter_math_block_for_entry(
+        entry,
+        _chapter_math_source_references_for_entry(entry),
+        code_relation="Code interpreted",
+    )
+    return {
+        "cell_type": "markdown",
+        "id": TERMINAL_AUDITOR_CELL_ID,
+        "metadata": {"thesis_math_terminal_auditor": True},
+        "source": (
+            "110M\n\n"
+            "## Final auditor reading of the twenty-four-target spectral certificate\n\n"
+            "This terminal Markdown cell is intentionally placed after Cells 108N "
+            "and 109N so that the explanation remains visible directly below the "
+            "stored Cell 107N certificate output.\n\n"
+            f"{bridge}\n"
+        ),
+    }
 
 
 def _augment_markdown_cell(cell: dict[str, Any]) -> dict[str, Any]:
@@ -1057,7 +1157,7 @@ def validate_counterpart(counterpart: dict[str, Any]) -> None:
 
 
 def build_curated() -> tuple[dict[str, Any], dict[str, Any]]:
-    """Build the output-free 140-cell thesis notebook in memory."""
+    """Build the output-free 141-cell thesis notebook in memory."""
 
     import prepare_blaschke_deformation_thesis_appendix as preparation
 
@@ -1090,6 +1190,7 @@ def build_curated() -> tuple[dict[str, Any], dict[str, Any]]:
         for cell in curated["cells"]
     ]
     curated["cells"].insert(0, dependency_map_cell())
+    curated["cells"].append(terminal_auditor_cell())
     return curated, report
 
 
@@ -1164,8 +1265,8 @@ def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
     """Validate the stable size, terminal numbering and helper digests."""
 
     cells = counterpart.get("cells", [])
-    if len(cells) != 140:
-        raise AssertionError("The final thesis counterpart must contain 140 cells.")
+    if len(cells) != 141:
+        raise AssertionError("The final thesis counterpart must contain 141 cells.")
     expected_map = dependency_map_cell()
     actual_map = cells[0] if cells else {}
     if (
@@ -1199,7 +1300,25 @@ def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
         if str(cell.get("id")) in expected_terminal
     }
     if actual_terminal != expected_terminal:
-        raise AssertionError("The terminal Cell 108 and Cell 109 labels changed.")
+        raise AssertionError("The Cell 108N and Cell 109N labels changed.")
+    final_cell = cells[-1]
+    if (
+        final_cell.get("cell_type") != "markdown"
+        or str(final_cell.get("id")) != TERMINAL_AUDITOR_CELL_ID
+        or final_cell.get("metadata", {}).get("thesis_math_terminal_auditor")
+        is not True
+        or _normalise_source(final_cell.get("source", ""))
+        != _normalise_source(terminal_auditor_cell()["source"])
+    ):
+        raise AssertionError(
+            "The visible terminal Cell 110M auditor explanation is missing or stale."
+        )
+    positions = {
+        str(cell.get("id", "")): index
+        for index, cell in enumerate(cells)
+    }
+    if positions["128b5369"] != len(cells) - 2:
+        raise AssertionError("Cell 110M must immediately follow Cell 109N.")
     validate_inline_helper_sync(
         counterpart,
         helper_ordinals=CURATED_INLINE_HELPER_ORDINALS,
@@ -1207,10 +1326,6 @@ def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
         allow_chapter_math=True,
     )
     validate_chapter_math_coverage(counterpart)
-    positions = {
-        str(cell.get("id", "")): index
-        for index, cell in enumerate(cells)
-    }
     for ordinal, producer_id in (
         (17, "producer-phase1-diagnostics"),
         (18, "producer-sampled-schur-diagnostics"),
@@ -1257,7 +1372,13 @@ def _merge_preserved_execution_state(
         (str(cell.get("id", "")), str(cell.get("cell_type", "")))
         for cell in preserved_cells
     ]
-    if current_signature != preserved_signature:
+    appended_terminal = (
+        len(current_signature) == len(preserved_signature) + 1
+        and current_signature[:-1] == preserved_signature
+        and current_signature[-1]
+        == (TERMINAL_AUDITOR_CELL_ID, "markdown")
+    )
+    if current_signature != preserved_signature and not appended_terminal:
         raise RuntimeError(
             "Cannot preserve execution state: notebook cell IDs or types have drifted."
         )
@@ -1267,7 +1388,10 @@ def _merge_preserved_execution_state(
         )
 
     merged = deepcopy(preserved)
-    for source_cell, merged_cell in zip(current_cells, merged["cells"]):
+    retained_current_cells = (
+        current_cells[:-1] if appended_terminal else current_cells
+    )
+    for source_cell, merged_cell in zip(retained_current_cells, merged["cells"]):
         merged_cell["source"] = deepcopy(source_cell.get("source", ""))
         if "attachments" in source_cell:
             merged_cell["attachments"] = deepcopy(source_cell["attachments"])
@@ -1279,6 +1403,8 @@ def _merge_preserved_execution_state(
         if execution_metadata is not None:
             source_metadata["execution"] = deepcopy(execution_metadata)
         merged_cell["metadata"] = source_metadata
+    if appended_terminal:
+        merged["cells"].append(deepcopy(current_cells[-1]))
 
     merged["nbformat"] = current.get("nbformat", merged.get("nbformat"))
     merged["nbformat_minor"] = current.get(
@@ -1290,8 +1416,8 @@ def _merge_preserved_execution_state(
         "date": "2026-08-29",
         "scope": (
             "chapter-derived mathematical Markdown, integrated-PDF-facing source "
-            "titles and numbers, stable-label corrections, and prior source "
-            "synchronisation"
+            "titles and numbers, the visible terminal Cell 110M auditor explanation, "
+            "stable-label corrections, and prior source synchronisation"
         ),
         "stored_output_status": (
             "retained historical outputs; not evidence for the post-sync sources "
@@ -1304,7 +1430,7 @@ def _merge_preserved_execution_state(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Build the output-free 140-cell thesis-mathematics notebook."
+        description="Build the output-free 141-cell thesis-mathematics notebook."
     )
     parser.add_argument(
         "--output",

@@ -6,15 +6,16 @@ This diagram records the effective dependency graph of the executed notebook. Ce
 the stable display labels used below. Solid arrows are theorem-facing data dependencies, dashed
 amber arrows are diagnostic-only dependencies, and dotted grey arrows are build or provenance
 dependencies. Plotting products are shown separately because they present results but do not
-enter a theorem gate. The final builder contract is 140 cells, including 68 code cells and 18
-digest-checked inline helper modules.
+enter a theorem gate. The final builder contract is 141 cells, including 68 code cells, 18
+digest-checked inline helper modules and the visible terminal auditor Markdown Cell 110M.
 
 **Chapter-mathematics mapping boundary.** The source-controlled contract
 `Numerics/numerical_certification_transfer_markdown.toml` maps the mathematics established and
 applied under `chap:numerical-certification-transfer` to all 52 stable Markdown owners and, through
 their contiguous groups, all 68 code cells. The builder appends an operation-specific mathematical
-bridge, exact chapter labels and an evidence-status statement without changing the 140-cell ID/type
-signature. The contract also keeps sampled diagnostics, presentation cells and theorem-facing
+bridge, exact chapter labels and an evidence-status statement without changing any pre-existing
+cell ID or type. It appends Cell 110M after Cell 109N so the final certificate explanation is
+visible below the stored output. The contract also keeps sampled diagnostics, presentation cells and theorem-facing
 producers distinct. Its regression rejects an unmapped code cell, a duplicated owner, a missing
 chapter label or an evidence-class drift.
 

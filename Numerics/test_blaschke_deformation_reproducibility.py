@@ -274,7 +274,7 @@ class TemporaryDeployment:
                     "source": [f"value_{ordinal} = {ordinal}\n"],
                 }
             )
-        for ordinal in range(1, 72):
+        for ordinal in range(1, 73):
             cells.append(
                 {
                     "cell_type": "markdown",
@@ -958,7 +958,7 @@ def validate_inline_helper_sync(notebook, *, helper_ordinals, allow_notebook_pro
 
 def validate_curated_counterpart(notebook):
     cells = notebook.get("cells", [])
-    if len(cells) != 140:
+    if len(cells) != 141:
         raise AssertionError("unexpected notebook cell count")
     first = cells[0]
     if first.get("id") != "dependency-map-0m":
@@ -1333,7 +1333,7 @@ class ReproducibilityBundleTests(unittest.TestCase):
         self.assertEqual(
             summary["certificate_schema"], "blaschke-deformation-24-contour-hybrid-v3"
         )
-        self.assertEqual(summary["notebook_cell_count"], 140)
+        self.assertEqual(summary["notebook_cell_count"], 141)
         self.assertEqual(summary["executed_code_cell_count"], 68)
 
         with tarfile.open(archive_path, "r:gz") as archive:

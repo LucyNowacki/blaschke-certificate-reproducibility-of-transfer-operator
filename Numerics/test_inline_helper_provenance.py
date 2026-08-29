@@ -16,6 +16,7 @@ from build_blaschke_deformation_thesis_math_notebook import (
     CHAPTER_MATH_MARKER,
     CURATED_INLINE_HELPER_ORDINALS,
     DEPENDENCY_MAP_CELL_ID,
+    TERMINAL_AUDITOR_CELL_ID,
     _chapter_math_entries,
     _chapter_math_payload,
     _chapter_math_source_references,
@@ -90,7 +91,12 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         cited_labels = {CHAPTER_MATH_LABEL}
         for entry in entries.values():
             cited_labels.update(entry["chapter_labels"])
-        self.assertEqual(payload["schema_version"], "1.1.0")
+        cited_labels.update(payload["terminal_auditor"]["chapter_labels"])
+        self.assertEqual(payload["schema_version"], "1.2.0")
+        self.assertEqual(
+            payload["terminal_auditor"]["cell_id"],
+            TERMINAL_AUDITOR_CELL_ID,
+        )
         self.assertEqual(len(cited_labels), 57)
         self.assertEqual(len(references), 63)
         self.assertEqual(payload["integrated_thesis_driver"], "main.tex")
@@ -233,13 +239,23 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         cells = {
             str(cell.get("id")): cell for cell in self.notebook["cells"]
         }
-        source = "".join(cells["bffa1d01"].get("source", []))
+        owner_source = "".join(cells["bffa1d01"].get("source", []))
+        self.assertIn("## Structural count-and-moat provenance tests", owner_source)
+        self.assertNotIn(
+            "## Final auditor reading of the twenty-four-target spectral certificate",
+            owner_source,
+        )
+        self.assertEqual(
+            str(self.notebook["cells"][-1].get("id")), TERMINAL_AUDITOR_CELL_ID
+        )
+        source = "".join(cells[TERMINAL_AUDITOR_CELL_ID].get("source", []))
         self.assertIn(
             "## Final auditor reading of the twenty-four-target spectral certificate",
             source,
         )
         for required in (
-            "The certificate output immediately below is emitted by execution Cell 107N.",
+            "110M",
+            "The certificate output immediately above is emitted by execution Cell 107N.",
             "Meaning of `computed_and_certified`",
             "How the deterministic perturbation envelope is obtained",
             "How the finite Hardy matrix and Schur constants are certified",
@@ -255,6 +271,7 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             "44+36+48+48+36+40+48=300",
             "`digest_used_in_theorem_gate = False`",
             "Cells 108N and 109N contain only their labels",
+            "Starting from an empty output directory does not ask the digest to prove the result.",
         ):
             self.assertIn(required, source)
         self.assertEqual(
@@ -281,6 +298,9 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             terminal = cells[terminal_id]
             self.assertEqual("".join(terminal.get("source", [])), label)
             self.assertEqual(terminal.get("outputs", []), [])
+        self.assertEqual(
+            self.notebook["cells"][-2].get("id"), "128b5369"
+        )
 
     def test_all_current_cell_sources_match_a_fresh_output_free_build(self) -> None:
         expected, _ = build_curated()
@@ -427,6 +447,19 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             )
             self.assertEqual(actual.get("outputs", []), expected.get("outputs", []))
         self.assertIn("source_sync_after_execution", merged["metadata"])
+
+    def test_source_refresh_can_append_terminal_auditor_to_legacy_execution(self) -> None:
+        current, _ = build_curated()
+        legacy = deepcopy(self.notebook)
+        self.assertEqual(
+            legacy["cells"].pop().get("id"), TERMINAL_AUDITOR_CELL_ID
+        )
+        merged = _merge_preserved_execution_state(current, legacy)
+        validate_curated_counterpart(merged)
+        self.assertEqual(
+            merged["cells"][-1].get("id"), TERMINAL_AUDITOR_CELL_ID
+        )
+        self.assertEqual(len(merged["cells"]), len(legacy["cells"]) + 1)
 
     def test_builder_refuses_implicit_executed_notebook_overwrite(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
