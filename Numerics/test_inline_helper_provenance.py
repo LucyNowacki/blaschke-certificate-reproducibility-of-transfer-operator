@@ -93,7 +93,7 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         for entry in entries.values():
             cited_labels.update(entry["chapter_labels"])
         cited_labels.update(payload["terminal_auditor"]["chapter_labels"])
-        self.assertEqual(payload["schema_version"], "1.3.0")
+        self.assertEqual(payload["schema_version"], "1.4.0")
         self.assertEqual(
             payload["research_thesis_source_heading"],
             RESEARCH_THESIS_SOURCE_HEADING,
@@ -102,11 +102,11 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             payload["terminal_auditor"]["cell_id"],
             TERMINAL_AUDITOR_CELL_ID,
         )
-        self.assertEqual(len(cited_labels), 57)
-        self.assertEqual(len(references), 63)
+        self.assertEqual(len(cited_labels), 62)
+        self.assertEqual(len(references), 68)
         self.assertEqual(payload["integrated_thesis_driver"], "main.tex")
         self.assertEqual(payload["integrated_thesis_pdf"], "main.pdf")
-        self.assertEqual(payload["integrated_thesis_page_count_at_mapping"], 278)
+        self.assertEqual(payload["integrated_thesis_page_count_at_mapping"], 282)
         self.assertRegex(
             payload["integrated_thesis_driver_sha256_at_mapping"],
             r"^[0-9a-f]{64}$",
@@ -286,6 +286,11 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             "Laurent source reconstruction and the exact meaning of provenance-only",
             "What is proved, what is hybrid, and what is not proved",
             "1.636120221822047\\times10^{-13}",
+            "3.326443383901743\\times10^{-20}",
+            "3.326443383901744\\times10^{-20}",
+            "s_j^{(0)}",
+            "\\delta_j=\\vartheta_j s_j^{(0)}",
+            "m_T(U_j)",
             "2.033128947087571\\times10^{-7}",
             "2.033128947087573\\times10^{-7}<1",
             "display/provenance drift",
@@ -295,6 +300,8 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             "Starting from an empty output directory does not ask the digest to prove the result.",
         ):
             self.assertIn(required, source)
+        self.assertNotIn("g_\\Gamma", source)
+        self.assertNotIn("g_{\\Gamma", source)
         self.assertEqual(
             len(re.findall(r"(?m)^\| (?:[1-9]|1[0-9]|2[0-4]) \|", source)),
             24,
@@ -468,6 +475,14 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             )
             self.assertEqual(actual.get("outputs", []), expected.get("outputs", []))
         self.assertIn("source_sync_after_execution", merged["metadata"])
+        sync = merged["metadata"]["source_sync_after_execution"]
+        self.assertEqual(
+            sync["arithmetic_baseline_commit"],
+            "5ad612aed00e667f46bb176e7e09e3a51cb11676",
+        )
+        self.assertIn("changes only research-thesis locators", sync["release_statement"])
+        self.assertIn("No notebook cell", sync["replay_status"])
+        self.assertIn("Cell 107N remains the compute authority", sync["stored_output_status"])
 
     def test_source_refresh_can_append_terminal_auditor_to_legacy_execution(self) -> None:
         current, _ = build_curated()

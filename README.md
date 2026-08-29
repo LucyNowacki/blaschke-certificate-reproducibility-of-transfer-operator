@@ -42,7 +42,7 @@ The chapter-to-notebook mathematics is a source-controlled part of that third
 stage. `Numerics/numerical_certification_transfer_markdown.toml` binds all 52
 stable Markdown owners, covering all 68 code cells, to exact labels under
 `chap:numerical-certification-transfer`, an operation-specific mathematical
-explanation and an explicit evidence class. Its 63-entry source-reference
+explanation and an explicit evidence class. Its 68-entry source-reference
 registry also supplies the integrated-thesis chapter, section, subsection,
 result, equation, figure and table numbers together with every available
 reader-facing title or caption lead. The generated notebook therefore shows a
@@ -67,6 +67,16 @@ python -B Numerics/verify_integrated_thesis_source_references.py \
 
 This is a manuscript-integration gate, not a numerical input or a substitute
 for the source-only numerical replay.
+
+The current locator/exposition-only release preserves the executed arithmetic
+from immutable NUMERICS_1 baseline commit
+`5ad612aed00e667f46bb176e7e09e3a51cb11676` byte-for-byte.  It changes only
+the research-thesis locator registry, builder-owned explanatory Markdown and
+their static provenance/tests; no notebook cell or numerical producer was
+executed.  Cell `107N` remains the compute authority and terminal Markdown
+Cell `110M` adds no theorem gate.  A new commit-keyed archive authenticates
+this refreshed release itself; the earlier `5ad612...` archive authenticates
+the arithmetic baseline, not the later notebook file.
 
 The recorded execution uses the Conda environment `lucy`; the commands below
 assume that environment has been activated.

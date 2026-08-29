@@ -19,6 +19,7 @@ CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
 EXPECTED_VISUAL_CELL_COUNT = 20
 EXPECTED_STORED_PNG_OUTPUT_COUNT = 34
 ALPHA11_PROFILE_CELL_ID = "32961420"
+ARITHMETIC_BASELINE_COMMIT = "5ad612aed00e667f46bb176e7e09e3a51cb11676"
 
 
 def sha256_file(path: Path) -> str:
@@ -123,9 +124,18 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
         "standalone_source_sha256": dict(sorted(refreshed.items())),
         "inline_helper_count": len(inline_helper_hashes),
         "inline_helper_sha256": dict(sorted(inline_helper_hashes.items())),
+        "arithmetic_baseline_commit": ARITHMETIC_BASELINE_COMMIT,
+        "source_sync_scope": (
+            "research-thesis locators and Cell 110M explanatory Markdown only"
+        ),
+        "replay_status": (
+            "No notebook cell or numerical producer was executed for this "
+            "source synchronisation."
+        ),
         "stored_output_status": (
-            "retained historical outputs; full clean-room execution is required "
-            "before they can evidence the current source snapshot"
+            "All code-cell sources, metadata, execution counts and stored outputs "
+            "are retained byte-for-byte from the authenticated arithmetic baseline; "
+            "Cell 107N remains the compute authority and Cell 110M adds no theorem gate."
         ),
     }
     return payload

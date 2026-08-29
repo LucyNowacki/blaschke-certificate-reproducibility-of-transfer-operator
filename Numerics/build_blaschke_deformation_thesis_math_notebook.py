@@ -504,7 +504,7 @@ def _chapter_math_payload() -> dict[str, Any]:
             f"Missing chapter mathematics map {CHAPTER_MATH_MAP}."
         )
     payload = tomllib.loads(CHAPTER_MATH_MAP.read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "1.3.0":
+    if payload.get("schema_version") != "1.4.0":
         raise RuntimeError("Unsupported chapter mathematics map schema.")
     if (
         payload.get("research_thesis_source_heading")
@@ -1434,13 +1434,24 @@ def _merge_preserved_execution_state(
     metadata["source_sync_after_execution"] = {
         "date": "2026-08-29",
         "scope": (
-            "chapter-derived mathematical Markdown, integrated-PDF-facing source "
-            "titles and numbers, the visible terminal Cell 110M auditor explanation, "
-            "stable-label corrections, and prior source synchronisation"
+            "research-thesis locator and Cell 110M exposition refresh only"
+        ),
+        "arithmetic_baseline_commit": (
+            "5ad612aed00e667f46bb176e7e09e3a51cb11676"
+        ),
+        "release_statement": (
+            "This release preserves the validated NUMERICS_1 arithmetic from commit "
+            "5ad612aed00e667f46bb176e7e09e3a51cb11676 and changes only "
+            "research-thesis locators and explanatory Markdown."
+        ),
+        "replay_status": (
+            "No notebook cell, Phase 2, Hardy, Schur, Laurent, contour, or other "
+            "numerical producer was executed for this source synchronisation."
         ),
         "stored_output_status": (
-            "retained historical outputs; not evidence for the post-sync sources "
-            "until a full clean-room replay"
+            "All code-cell sources, metadata, execution counts and stored outputs "
+            "are retained byte-for-byte from the authenticated arithmetic baseline; "
+            "Cell 107N remains the compute authority and Cell 110M adds no theorem gate."
         ),
     }
     merged["metadata"] = metadata

@@ -1,19 +1,19 @@
-schema_version = "1.3.0"
+schema_version = "1.4.0"
 research_thesis_source_heading = "Research thesis source"
 chapter_label = "chap:numerical-certification-transfer"
 chapter_source = "chapters/numerical_certification_transfer.tex"
-chapter_source_sha256_at_mapping = "de540dc4ed905a42b29c783cfae890b6dc02545297b712e08e32c28c0b47902c"
+chapter_source_sha256_at_mapping = "7d5f1225e3b38e97b647eb465c1163f9966e2b53e03b9c986539f828dfa107e1"
 direct_theory_source = "chapters/single_space_legendre_edmd.tex"
 direct_theory_source_sha256_at_mapping = "0c0ae3c0278bba2b291da6921bb32773cf443f7646eb18bc03a84ea529448f4c"
 integrated_thesis_driver = "main.tex"
 integrated_thesis_driver_sha256_at_mapping = "bf874999006fdfa9c683c107e64ce23fcfe83b56e8e7d1305ca930b53199bc50"
 integrated_thesis_pdf = "main.pdf"
-integrated_thesis_pdf_sha256_at_mapping = "63ffa7c892f2c980f0b91ec4e3332ccb3f41ea0f64912b5eaccd89a3ce809e00"
+integrated_thesis_pdf_sha256_at_mapping = "86821ab2fc6e8695b13072e1c3ab16c9df7e6a92ae7a1329dce8c27fc26f28c1"
 integrated_thesis_aux = "main.aux"
-integrated_thesis_aux_sha256_at_mapping = "b552ab358309357db57a43044bb5fe2ad16cb1b602fe2a3bde16d5a12c41d3f8"
-integrated_thesis_page_count_at_mapping = 278
+integrated_thesis_aux_sha256_at_mapping = "fdf8a0dd8d537e6e01f0930c25f0dbb4626f49a54416c3adc47d8f1c7c959fe5"
+integrated_thesis_page_count_at_mapping = 282
 mapping_date = "2026-08-29"
-mapping_scope = "52 stable Markdown owners covering all 68 code cells, plus one visible terminal auditor Markdown cell, with 63 integrated-PDF-facing source locators"
+mapping_scope = "52 stable Markdown owners covering all 68 code cells, plus one visible terminal auditor Markdown cell, with 68 integrated-PDF-facing source locators"
 
 [source_references."chap:single-space-legendre-edmd"]
 kind = "Chapter"
@@ -119,47 +119,47 @@ parent = "subsec:numerics-legendre-gauss-transfer-block"
 
 [source_references."eq:numerics-coordinate-chain"]
 kind = "Equation"
-number = "5.4"
+number = "5.5"
 parent = "subsec:numerics-three-gauges"
 
 [source_references."eq:numerics-pure-r-gauge-matrix"]
 kind = "Equation"
-number = "5.5"
+number = "5.6"
 parent = "subsec:numerics-three-gauges"
 
 [source_references."eq:numerics-X-gauge-matrix"]
 kind = "Equation"
-number = "5.6"
+number = "5.7"
 parent = "subsec:numerics-three-gauges"
 
 [source_references."eq:numerics-single-space-envelope"]
 kind = "Equation"
-number = "5.7"
+number = "5.8"
 parent = "subsec:numerics-schur-envelope"
 
 [source_references."eq:numerics-safe-GL-remainder"]
 kind = "Equation"
-number = "5.9"
+number = "5.10"
 parent = "subsec:numerics-schur-envelope"
 
 [source_references."eq:numerics-safe-GL-prefactor"]
 kind = "Equation"
-number = "5.10"
+number = "5.11"
 parent = "subsec:numerics-schur-envelope"
 
 [source_references."eq:numerics-safe-effective-multiplier"]
 kind = "Equation"
-number = "5.11"
+number = "5.12"
 parent = "subsec:numerics-schur-envelope"
 
 [source_references."eq:numerics-safe-Bmat-rescaling"]
 kind = "Equation"
-number = "5.12"
+number = "5.13"
 parent = "subsec:numerics-schur-envelope"
 
 [source_references."eq:numerics-small-gain"]
 kind = "Equation"
-number = "5.13"
+number = "5.14"
 parent = "subsec:numerics-contour-validation"
 
 [source_references."legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"]
@@ -170,17 +170,17 @@ parent = "subsec:numerics-contour-validation"
 
 [source_references."eq:numerics-Hardy-entry-error-radii"]
 kind = "Equation"
-number = "5.14"
+number = "5.15"
 parent = "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"
 
 [source_references."eq:numerics-Hardy-row-column-radii"]
 kind = "Equation"
-number = "5.15"
+number = "5.16"
 parent = "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"
 
 [source_references."eq:numerics-Hardy-matrix-replacement-radius-general"]
 kind = "Equation"
-number = "5.16"
+number = "5.17"
 parent = "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement"
 
 [source_references."legEDMD:prop-validated-exact-binary-Schur-surrogate"]
@@ -215,12 +215,12 @@ parent = "subsec:numerics-contour-validation"
 
 [source_references."eq:numerics-certified-lifted-moat-resolvent-bound"]
 kind = "Equation"
-number = "5.52"
+number = "5.53"
 parent = "legEDMD:cor-certified-finite-to-exact-contour-rank"
 
 [source_references."eq:numerics-certified-small-gain"]
 kind = "Equation"
-number = "5.53"
+number = "5.54"
 parent = "legEDMD:cor-certified-finite-to-exact-contour-rank"
 
 [source_references."sec:numerical-results-transfer"]
@@ -261,17 +261,42 @@ parent = "sec:numerical-results-transfer"
 
 [source_references."eq:numerics-phase2-single-space-envelope"]
 kind = "Equation"
-number = "5.56"
+number = "5.59"
 parent = "subsec:numerics-phase2-schur"
 
 [source_references."eq:numerics-promoted-final-epsilon"]
 kind = "Equation"
-number = "5.57"
+number = "5.60"
+parent = "subsec:numerics-phase2-schur"
+
+[source_references."eq:numerics-deployed-contour-epsilon"]
+kind = "Equation"
+number = "5.61"
 parent = "subsec:numerics-phase2-schur"
 
 [source_references."eq:numerics-phase4-hardy-gauge-matrix"]
 kind = "Equation"
-number = "5.58"
+number = "5.63"
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."eq:numerics-phase4-exact-contour-plan"]
+kind = "Equation"
+number = "5.68"
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."eq:numerics-phase4-strict-Schur-membership-tests"]
+kind = "Equation"
+number = "5.70"
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."eq:numerics-phase4-Schur-diagonal-distance"]
+kind = "Equation"
+number = "5.71"
+parent = "subsec:numerics-phase4-contours"
+
+[source_references."eq:numerics-phase4-Schur-count-from-membership"]
+kind = "Equation"
+number = "5.72"
 parent = "subsec:numerics-phase4-contours"
 
 [source_references."legEDMD:prop-certified-Blaschke-spectral-packets"]
@@ -361,13 +386,13 @@ parent = "subsec:numerics-phase3-rates"
 [source_references."fig:numerics-phase4-mu2-sampled-landscape"]
 kind = "Figure"
 number = "5.12"
-title = 'Code Cell 84N sampled Hardy-gauge moat landscape near $\mu^2$, rendered through `plot_phase4_local_moat_surface`, for the archived wide-candidate geometry at $N=600$, $M=610$, $\rho=2.45$, and $r\approx2.225975$'
+title = 'Code Cell 84N sampled Hardy-gauge smallest-singular-value landscape near $\mu^2$, rendered through `plot_phase4_local_moat_surface`, for the archived wide-candidate geometry at $N=600$, $M=610$, $\rho=2.45$, and $r\approx2.225975$'
 parent = "subsec:numerics-phase4-contours"
 
 [source_references."fig:numerics-phase4-global-sampled-landscape"]
 kind = "Figure"
 number = "5.14"
-title = 'Code Cell 86N global sampled Hardy-gauge moat landscape, rendered through `plot_phase4_global_moat_surface`, for the first fifteen nontrivial packets of the archived wide-candidate geometry at $N=600$, $M=610$, $\rho=2.45$, and $r\approx2.225975$'
+title = 'Code Cell 86N global sampled Hardy-gauge smallest-singular-value landscape, rendered through `plot_phase4_global_moat_surface`, for the first fifteen nontrivial packets of the archived wide-candidate geometry at $N=600$, $M=610$, $\rho=2.45$, and $r\approx2.225975$'
 parent = "subsec:numerics-phase4-contours"
 
 [fidelity_replacements."md-12580490"]
@@ -788,7 +813,31 @@ to transport each finite Schur count to the exact operator's Riesz rank.  All tw
 [terminal_auditor]
 cell_id = "terminal-certificate-auditor-110m"
 code_cell_ids = ["ffc45508", "code-b33b0f47", "3e8b784c", "128b5369"]
-chapter_labels = ["subsec:numerics-certification-provenance", "subsec:numerics-three-gauges", "subsec:numerics-schur-envelope", "eq:numerics-single-space-envelope", "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement", "legEDMD:prop-validated-exact-binary-Schur-surrogate", "legEDMD:prop-complete-circle-triangular-Schur-moat", "legEDMD:prop-complete-circle-Laurent-moat", "legEDMD:cor-Schur-count-and-Hardy-moat-transport", "eq:numerics-certified-lifted-moat-resolvent-bound", "eq:numerics-certified-small-gain", "subsec:numerics-phase2-schur", "eq:numerics-phase2-single-space-envelope", "eq:numerics-promoted-final-epsilon", "subsec:numerics-phase4-contours", "eq:numerics-phase4-hardy-gauge-matrix", "legEDMD:prop-certified-Blaschke-spectral-packets", "legEDMD:cor-certified-exterior-Blaschke-spectrum"]
+chapter_labels = [
+  "subsec:numerics-certification-provenance",
+  "subsec:numerics-three-gauges",
+  "subsec:numerics-schur-envelope",
+  "eq:numerics-single-space-envelope",
+  "legEDMD:prop-exact-dyadic-Hardy-matrix-replacement",
+  "legEDMD:prop-validated-exact-binary-Schur-surrogate",
+  "legEDMD:prop-complete-circle-triangular-Schur-moat",
+  "legEDMD:prop-complete-circle-Laurent-moat",
+  "legEDMD:cor-Schur-count-and-Hardy-moat-transport",
+  "eq:numerics-certified-lifted-moat-resolvent-bound",
+  "eq:numerics-certified-small-gain",
+  "subsec:numerics-phase2-schur",
+  "eq:numerics-phase2-single-space-envelope",
+  "eq:numerics-promoted-final-epsilon",
+  "eq:numerics-deployed-contour-epsilon",
+  "subsec:numerics-phase4-contours",
+  "eq:numerics-phase4-hardy-gauge-matrix",
+  "eq:numerics-phase4-exact-contour-plan",
+  "eq:numerics-phase4-strict-Schur-membership-tests",
+  "eq:numerics-phase4-Schur-diagonal-distance",
+  "eq:numerics-phase4-Schur-count-from-membership",
+  "legEDMD:prop-certified-Blaschke-spectral-packets",
+  "legEDMD:cor-certified-exterior-Blaschke-spectrum",
+]
 evidence_status = ["validation_test", "certified_spectral_transfer", "presentation_only"]
 mathematics = '''The certificate output immediately above is emitted by execution Cell 107N.  Cells 108N and 109N contain only their labels and perform no computation; if a notebook interface visually associates the preceding output with Cell 108N, the stable source label remains Cell 107N.  This distinction matters because an auditor should attribute every numerical claim to the code that actually formed and checked it.
 
@@ -842,12 +891,17 @@ $$
 \widehat B_{600,610}^{\mathrm{mat,best}}
 \le 1.087247087817943\times10^{-28}.
 $$
-Consequently the outward upper endpoint passed to every contour is
+Consequently the displayed promoted deterministic endpoint is
 $$
-\varepsilon_{600,610}^{\sharp}
-:=\widehat\varepsilon_{600,610}^{X,\mathrm{fin,best}}
+\widehat\varepsilon_{600,610}^{X,\mathrm{fin,best}}
 \le 3.326443383901743\times10^{-20}.
 $$
+Every stored contour product instead uses the deliberately coarser outward deployment radius
+$$
+\varepsilon_{600,610}^{\sharp}
+:=3.326443383901744\times10^{-20},
+$$
+so the displayed hatted endpoint is not rounded down when serialised into the contour payload.  The two values have distinct roles: $\widehat\varepsilon_{600,610}^{X,\mathrm{fin,best}}$ is the displayed deterministic operator-error upper endpoint, whereas $\varepsilon_{600,610}^{\sharp}$ is the stored deployment radius used in every certified small-gain product.  Neither is an eigenvalue error or a moat.
 The larger componentwise triangle value is retained only as an independent conservative check.  Equality of two reported upper endpoints for input candidates does not prove equality of the unknown exact norms or absence of cancellation.
 
 #### How the finite Hardy matrix and Schur constants are certified
@@ -903,7 +957,48 @@ Exact similarity with $S^\circ=Q^\circ T^\circ(Q^\circ)^{-1}$ preserves the Schu
 
 #### The two complete-circle moat routes and their transport
 
-For every rational circle $\Gamma=\{c+\delta e^{i\theta}:0\le\theta\le2\pi\}$, strict Arb comparisons of the exact-dyadic Schur diagonal determine inside/outside membership.  Since $T^\circ$ is upper triangular, the number of diagonal entries inside, with repetitions, is its algebraic Riesz rank.  This is the count route for all twenty-four contours.
+For the fixed benchmark centres $\lambda_1,\ldots,\lambda_{24}$, the deployed contour plan is chosen before consulting any sampled singular-value surface:
+$$
+s_j^{(0)}
+=\min\!\left\{|\lambda_j|,\min_{k\ne j}|\lambda_j-\lambda_k|\right\},
+\qquad
+\delta_j=\vartheta_j s_j^{(0)},
+$$
+$$
+\Gamma_j=\{z:|z-\lambda_j|=\delta_j\},
+\qquad
+U_j=\{z:|z-\lambda_j|<\delta_j\},
+$$
+where the radius fraction $\vartheta_j\in(0,1)\cap\mathbb Q$ is stored exactly.  The $|\lambda_j|$ term is part of the implementation: it separates the contour from the silent zero block as well as from every other nonzero target.
+
+For exact-dyadic Schur diagonal entry $t_{kk}^{\circ}$, Arb encloses the radial distance by
+$$
+\boldsymbol d_{j,k}
+=|t_{kk}^{\circ}-\lambda_j|
+\subseteq[\underline d_{j,k},\overline d_{j,k}].
+$$
+Membership is accepted only under one of the strict tests
+$$
+\overline d_{j,k}<\delta_j
+\quad\hbox{or}\quad
+\underline d_{j,k}>\delta_j;
+$$
+otherwise the entire contour row is rejected as ambiguous.  Its certified distance from the circle is
+$$
+d_{j,k}^{\circ}
+=
+\begin{cases}
+\delta_j-\overline d_{j,k},&\overline d_{j,k}<\delta_j,\\
+\underline d_{j,k}-\delta_j,&\underline d_{j,k}>\delta_j,
+\end{cases}
+\qquad d_{j,k}^{\circ}>0.
+$$
+Since $T^\circ$ is upper triangular, the finite algebraic count for all twenty-four contours is
+$$
+m_T(U_j)
+=\sum_{k=1}^{600}\mathbf 1_{\{\overline d_{j,k}<\delta_j\}}.
+$$
+The separate benchmark gate is $m_T(U_j)=m_j$; Laurent arithmetic supplies no count.
 
 For the first seventeen contours, the moat route uses the exact complete-circle diagonal distances
 $$
@@ -968,8 +1063,7 @@ $$
 $$
 Finally, Cell 107N evaluates the outward upper small-gain product
 $$
-g_\Gamma
-=\varepsilon_{600,610}^{\sharp}
+\varepsilon_{600,610}^{\sharp}
  \overline{\mathfrak m}_{\Gamma,600}^{\mathrm H}
 =\frac{\varepsilon_{600,610}^{\sharp}}
        {\underline s_{\Gamma,600}^{\mathrm{lift}}}
@@ -1022,14 +1116,20 @@ $$
 \text{stored Cell 107N display}
 =2.033128947087571\times10^{-7}.
 $$
-That number is the historical display requested and shown above, but it must not be silently promoted to the current-source outward endpoint.  The source-controlled reaggregated CSV now stores
+That number is the historical display requested and shown above, but it must not be silently promoted to the current-source outward endpoint.  The source-controlled reaggregated CSV now stores the full upper endpoint
 $$
-g_{\Gamma_{\alpha^{17}}}^{\mathrm{CSV}}
+\left(
+\varepsilon_{600,610}^{\sharp}
+\overline{\mathfrak m}_{\Gamma_{\alpha^{17}},600}^{\mathrm H}
+\right)_{\mathrm{CSV}}
 =2.0331289470875723\times10^{-7},
 $$
 whose sixteen-significant-digit ceiling is
 $$
-\max_j g_{\Gamma_j}
+\max_j\left(
+\varepsilon_{600,610}^{\sharp}
+\overline{\mathfrak m}_{\Gamma_j,600}^{\mathrm H}
+\right)
 \le2.033128947087573\times10^{-7}<1.
 $$
 Thus the historical display differs by two units in its last shown decimal place from the current-source safe display.  This is a display/provenance drift, not a theorem-gate failure: the full stored upper endpoint remains strictly below one by more than six orders of magnitude.  The moat statement concerns the minimum of certified lower bounds and the gain statement concerns the maximum of certified upper bounds; neither asserts an attained exact singular-value extremum.
