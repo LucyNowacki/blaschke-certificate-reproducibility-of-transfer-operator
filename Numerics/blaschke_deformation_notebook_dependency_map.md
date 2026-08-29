@@ -9,6 +9,15 @@ dependencies. Plotting products are shown separately because they present result
 enter a theorem gate. The final builder contract is 140 cells, including 68 code cells and 18
 digest-checked inline helper modules.
 
+**Chapter-mathematics mapping boundary.** The source-controlled contract
+`Numerics/numerical_certification_transfer_markdown.toml` maps the mathematics established and
+applied under `chap:numerical-certification-transfer` to all 52 stable Markdown owners and, through
+their contiguous groups, all 68 code cells. The builder appends an operation-specific mathematical
+bridge, exact chapter labels and an evidence-status statement without changing the 140-cell ID/type
+signature. The contract also keeps sampled diagnostics, presentation cells and theorem-facing
+producers distinct. Its regression rejects an unmapped code cell, a duplicated owner, a missing
+chapter label or an evidence-class drift.
+
 ![Effective dependency graph for the Blaschke deformation thesis certifier](attachment:blaschke-deformation-dependency-map.svg)
 
 **Principal persisted paths.** Phase outputs are stored under

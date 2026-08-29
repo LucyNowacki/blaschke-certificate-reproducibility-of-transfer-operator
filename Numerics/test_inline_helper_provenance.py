@@ -11,12 +11,18 @@ import tempfile
 import unittest
 
 from build_blaschke_deformation_thesis_math_notebook import (
+    CHAPTER_MATH_LABEL,
+    CHAPTER_MATH_MAP,
+    CHAPTER_MATH_MARKER,
     CURATED_INLINE_HELPER_ORDINALS,
     DEPENDENCY_MAP_CELL_ID,
+    _chapter_math_entries,
+    _chapter_math_payload,
     _merge_preserved_execution_state,
     build_curated,
     dependency_map_cell,
     main as builder_main,
+    validate_chapter_math_coverage,
     validate_curated_counterpart,
     validate_inline_helper_sync,
 )
@@ -58,6 +64,99 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             self.notebook,
             helper_ordinals=APPENDIX_HELPER_ORDINALS,
             allow_notebook_provenance=True,
+            allow_chapter_math=True,
+        )
+
+    def test_chapter_math_map_covers_every_code_cell_group(self) -> None:
+        validate_chapter_math_coverage(self.notebook)
+        entries = _chapter_math_entries()
+        self.assertEqual(CHAPTER_MATH_MAP.name, "numerical_certification_transfer_markdown.toml")
+        self.assertEqual(len(entries), 52)
+        mapped_code_ids = [
+            str(code_id)
+            for entry in entries.values()
+            for code_id in entry["code_cell_ids"]
+        ]
+        self.assertEqual(len(mapped_code_ids), 68)
+        self.assertEqual(len(set(mapped_code_ids)), 68)
+
+        code_ids = {
+            str(cell.get("id"))
+            for cell in self.notebook["cells"]
+            if cell.get("cell_type") == "code"
+        }
+        self.assertEqual(set(mapped_code_ids), code_ids)
+
+    def test_every_mapped_markdown_has_detailed_chapter_grounding(self) -> None:
+        cells = {str(cell.get("id")): cell for cell in self.notebook["cells"]}
+        for markdown_id, entry in _chapter_math_entries().items():
+            source = "".join(cells[markdown_id].get("source", []))
+            self.assertEqual(source.count(CHAPTER_MATH_MARKER), 1, msg=markdown_id)
+            generated = source.split(CHAPTER_MATH_MARKER, 1)[1]
+            self.assertIn(f"`{CHAPTER_MATH_LABEL}`", generated, msg=markdown_id)
+            self.assertIn("**Mathematical reading.**", generated, msg=markdown_id)
+            self.assertIn("**Evidence status.**", generated, msg=markdown_id)
+            self.assertIn("**Code covered.**", generated, msg=markdown_id)
+            self.assertGreaterEqual(len(generated.split()), 55, msg=markdown_id)
+            self.assertIn("$", generated, msg=markdown_id)
+            for delimiter in (r"\(", r"\)", r"\[", r"\]"):
+                self.assertNotIn(delimiter, generated, msg=markdown_id)
+            for label in entry["chapter_labels"]:
+                self.assertIn(f"`{label}`", generated, msg=markdown_id)
+
+    def test_semantic_routes_for_matrix_tail_and_phase2_figures(self) -> None:
+        entries = _chapter_math_entries()
+
+        raw_matrix = entries["inline-helper-heading-8"]
+        self.assertEqual(raw_matrix["evidence_status"], ["certified_input_producer"])
+        self.assertNotIn("eq:numerics-safe-Bmat-rescaling", raw_matrix["chapter_labels"])
+        self.assertIn("finite_M_certified = False", raw_matrix["mathematics"])
+
+        sampled_kernel = entries["3f36d6e7"]
+        self.assertNotIn(
+            "eq:numerics-safe-chebyshev-tail",
+            sampled_kernel["chapter_labels"],
+        )
+        for label in (
+            "legEDMD:def-branch-image-Chebyshev-input-tail-kernel",
+            "eq:branch-image-Chebyshev-tail-kernel",
+            "legEDMD:rem-certified-finite-prefix-pointwise-kernel",
+        ):
+            self.assertIn(label, sampled_kernel["chapter_labels"])
+
+        certificate_array_owners = [
+            markdown_id
+            for markdown_id, entry in entries.items()
+            if "fig:numerics-phase2-certificate-array" in entry["chapter_labels"]
+        ]
+        self.assertEqual(certificate_array_owners, ["inline-helper-heading-16"])
+
+        payload = _chapter_math_payload()
+        self.assertEqual(
+            payload["direct_theory_source"],
+            "chapters/single_space_legendre_edmd.tex",
+        )
+
+    def test_markdown_preserves_sampled_vs_certified_and_cancellation_boundaries(self) -> None:
+        markdown = "\n".join(
+            "".join(cell.get("source", []))
+            for cell in self.notebook["cells"]
+            if cell.get("cell_type") == "markdown"
+        )
+        self.assertNotIn("demonstrates no cancellation gain", markdown)
+        self.assertNotIn(
+            "the certification table uses the sampled minimum",
+            markdown,
+        )
+        self.assertIn(
+            "equality of their endpoints does not prove that the unknown exact "
+            "coherent tail has no cancellation",
+            markdown,
+        )
+        self.assertIn(
+            "the sampled minimum is an upper estimate of the true moat, not a "
+            "certified lower bound",
+            markdown,
         )
 
     def test_all_current_cell_sources_match_a_fresh_output_free_build(self) -> None:
@@ -124,6 +223,35 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             for output in cell.get("outputs", [])
         )
         self.assertIn("alpha^11", output_text)
+
+    def test_provenance_png_contract_includes_the_restored_alpha11_profile(self) -> None:
+        provenance = json.loads(
+            (HERE / "notebook_cell_provenance.json").read_text(encoding="utf-8")
+        )
+        actual_png_count = sum(
+            "image/png" in output.get("data", {})
+            for cell in self.notebook["cells"]
+            for output in cell.get("outputs", [])
+        )
+        actual_visual_cells = sum(
+            cell.get("cell_type") == "code"
+            and any(
+                "image/png" in output.get("data", {})
+                for output in cell.get("outputs", [])
+            )
+            for cell in self.notebook["cells"]
+        )
+        self.assertEqual(actual_png_count, 34)
+        self.assertEqual(actual_visual_cells, 20)
+        self.assertEqual(
+            provenance["notebook"]["expected_stored_png_output_count"],
+            actual_png_count,
+        )
+        self.assertEqual(
+            provenance["notebook"]["expected_visual_cell_count"],
+            actual_visual_cells,
+        )
+        self.assertIn("alpha^11", provenance["notebook"]["stored_png_count_note"])
 
     def test_release_docs_do_not_claim_the_archive_is_still_deferred(self) -> None:
         stale_wording = "archive remains deferred"
@@ -193,6 +321,7 @@ class InlineHelperProvenanceTests(unittest.TestCase):
                 altered,
                 helper_ordinals=APPENDIX_HELPER_ORDINALS,
                 allow_notebook_provenance=True,
+                allow_chapter_math=True,
             )
 
     def test_altered_displayed_digest_is_rejected(self) -> None:
@@ -216,6 +345,7 @@ class InlineHelperProvenanceTests(unittest.TestCase):
                 altered,
                 helper_ordinals=APPENDIX_HELPER_ORDINALS,
                 allow_notebook_provenance=True,
+                allow_chapter_math=True,
             )
 
     def test_deployment_contains_no_obsolete_certification_terms(self) -> None:

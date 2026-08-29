@@ -37,6 +37,15 @@ The reproducible builder chain is:
 3. inline thesis-mathematics counterpart
    `Numerics/blaschke_deformation_certifier_thesis_math.ipynb`.
 
+The chapter-to-notebook mathematics is a source-controlled part of that third
+stage. `Numerics/numerical_certification_transfer_markdown.toml` binds all 52
+stable Markdown owners, covering all 68 code cells, to exact labels under
+`chap:numerical-certification-transfer`, an operation-specific mathematical
+explanation and an explicit evidence class. The builder applies this map after
+curation, preserving the locked 140-cell ID/type signature and all code-cell
+sources. Focused regressions reject missing chapter grounding, ownership drift
+and sampled-to-certified claim upgrades.
+
 The recorded execution uses the Conda environment `lucy`; the commands below
 assume that environment has been activated.
 

@@ -18,10 +18,12 @@ from __future__ import annotations
 import argparse
 import base64
 from copy import deepcopy
+from functools import lru_cache
 import hashlib
 import json
 from pathlib import Path
 import re
+import tomllib
 from typing import Any
 
 import nbformat as nbf
@@ -34,6 +36,42 @@ DEPENDENCY_MAP = HERE / "blaschke_deformation_notebook_dependency_map.md"
 DEPENDENCY_MAP_SVG = HERE / "blaschke_deformation_notebook_dependency_map.svg"
 DEPENDENCY_MAP_CELL_ID = "dependency-map-0m"
 DEPENDENCY_MAP_ATTACHMENT = "blaschke-deformation-dependency-map.svg"
+CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
+CHAPTER_MATH_MARKER = "<!-- NUMERICS_1_CHAPTER_MATH -->"
+CHAPTER_MATH_LABEL = "chap:numerical-certification-transfer"
+
+
+CHAPTER_MATH_STATUS = {
+    "infrastructure_only": (
+        "Execution, import, path or provenance support; this cell alone "
+        "does not certify a mathematical claim."
+    ),
+    "empirical_diagnostic": (
+        "Numerical or sampled evidence only; it is excluded from theorem gates."
+    ),
+    "presentation_only": (
+        "Presentation of retained results; it does not strengthen their proof status."
+    ),
+    "certified_input_producer": (
+        "Reconstructs theorem-facing inputs from displayed source and validated "
+        "arithmetic before downstream aggregation."
+    ),
+    "certified_component": (
+        "Validated arithmetic establishes a theorem-facing component bound, "
+        "subject to its stated upstream gates."
+    ),
+    "certified_finite_matrix": (
+        "Validated arithmetic encloses the finite Hardy-gauge matrix and its "
+        "exact-dyadic replacement."
+    ),
+    "certified_spectral_transfer": (
+        "Complete-contour finite-to-exact Riesz-rank certification."
+    ),
+    "validation_test": (
+        "Tests proof routing and fail-closed behaviour; it supports but does not "
+        "replace the certificate."
+    ),
+}
 
 
 # The insertion index is the original zero-based cell index before which the
@@ -401,6 +439,174 @@ def _checked_replace(source: str, old: str, new: str, *, label: str) -> str:
     return source.replace(old, new)
 
 
+@lru_cache(maxsize=1)
+def _chapter_math_payload() -> dict[str, Any]:
+    """Load and validate the chapter-to-notebook Markdown contract."""
+
+    if not CHAPTER_MATH_MAP.is_file():
+        raise FileNotFoundError(
+            f"Missing chapter mathematics map {CHAPTER_MATH_MAP}."
+        )
+    payload = tomllib.loads(CHAPTER_MATH_MAP.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != "1.0.0":
+        raise RuntimeError("Unsupported chapter mathematics map schema.")
+    if payload.get("chapter_label") != CHAPTER_MATH_LABEL:
+        raise RuntimeError(
+            "The Markdown map is not rooted at the numerical-certification chapter."
+        )
+    entries = payload.get("entries")
+    if not isinstance(entries, dict) or not entries:
+        raise RuntimeError("The chapter mathematics map has no entries.")
+
+    seen_code_ids: set[str] = set()
+    for markdown_id, raw_entry in entries.items():
+        if not isinstance(raw_entry, dict):
+            raise RuntimeError(f"Invalid Markdown-map entry {markdown_id!r}.")
+        code_ids = raw_entry.get("code_cell_ids")
+        labels = raw_entry.get("chapter_labels")
+        statuses = raw_entry.get("evidence_status")
+        mathematics = raw_entry.get("mathematics")
+        if not isinstance(code_ids, list) or not code_ids:
+            raise RuntimeError(f"Entry {markdown_id!r} has no code-cell IDs.")
+        if not isinstance(labels, list) or not labels:
+            raise RuntimeError(f"Entry {markdown_id!r} has no chapter labels.")
+        if not isinstance(statuses, list) or not statuses:
+            raise RuntimeError(f"Entry {markdown_id!r} has no evidence status.")
+        if any(not isinstance(value, str) or not value for value in code_ids):
+            raise RuntimeError(f"Entry {markdown_id!r} has invalid code-cell IDs.")
+        if any(not isinstance(value, str) or not value for value in labels):
+            raise RuntimeError(f"Entry {markdown_id!r} has invalid chapter labels.")
+        if any(not isinstance(value, str) or not value for value in statuses):
+            raise RuntimeError(f"Entry {markdown_id!r} has invalid evidence statuses.")
+        if not isinstance(mathematics, str) or len(mathematics.split()) < 28:
+            raise RuntimeError(
+                f"Entry {markdown_id!r} needs a detailed mathematical explanation."
+            )
+        if "$" not in mathematics:
+            raise RuntimeError(
+                f"Entry {markdown_id!r} must contain rendered Markdown mathematics."
+            )
+        if any(delimiter in mathematics for delimiter in (r"\(", r"\)", r"\[", r"\]")):
+            raise RuntimeError(
+                f"Entry {markdown_id!r} must use dollar-delimited Markdown mathematics."
+            )
+        for placeholder in (
+            "with the arguments and return contract used by this numerical stage",
+            "placeholder-style Functionality",
+        ):
+            if placeholder in mathematics:
+                raise RuntimeError(
+                    f"Entry {markdown_id!r} contains placeholder explanation prose."
+                )
+        unknown_statuses = set(statuses) - set(CHAPTER_MATH_STATUS)
+        if unknown_statuses:
+            raise RuntimeError(
+                f"Entry {markdown_id!r} has unknown statuses {unknown_statuses}."
+            )
+        duplicate_code_ids = seen_code_ids.intersection(map(str, code_ids))
+        if duplicate_code_ids:
+            raise RuntimeError(
+                f"Code cells mapped more than once: {sorted(duplicate_code_ids)}."
+            )
+        seen_code_ids.update(map(str, code_ids))
+    fidelity_replacements = payload.get("fidelity_replacements", {})
+    if not isinstance(fidelity_replacements, dict):
+        raise RuntimeError("Invalid chapter-fidelity replacement table.")
+    for markdown_id, replacement in fidelity_replacements.items():
+        if (
+            not isinstance(replacement, dict)
+            or not isinstance(replacement.get("old"), str)
+            or not isinstance(replacement.get("new"), str)
+        ):
+            raise RuntimeError(
+                f"Invalid chapter-fidelity replacement for {markdown_id!r}."
+            )
+    return payload
+
+
+def _chapter_math_entries() -> dict[str, dict[str, Any]]:
+    return _chapter_math_payload()["entries"]
+
+
+def _chapter_math_block(markdown_id: str) -> str:
+    """Render one operation-specific chapter-derived mathematical bridge."""
+
+    entry = _chapter_math_entries()[markdown_id]
+    labels = ", ".join(f"`{label}`" for label in entry["chapter_labels"])
+    code_ids = ", ".join(f"`{cell_id}`" for cell_id in entry["code_cell_ids"])
+    statuses = "  \n".join(
+        f"- `{status}`: {CHAPTER_MATH_STATUS[status]}"
+        for status in entry["evidence_status"]
+    )
+    mathematics = entry["mathematics"].strip()
+    return (
+        f"{CHAPTER_MATH_MARKER}\n\n"
+        "#### Chapter-derived mathematical bridge\n\n"
+        f"**Thesis source.** `{CHAPTER_MATH_LABEL}`; {labels}.\n\n"
+        f"**Mathematical reading.** {mathematics}\n\n"
+        f"**Evidence status.**\n\n{statuses}\n\n"
+        f"**Code covered.** Stable code-cell IDs: {code_ids}."
+    )
+
+
+def _augment_markdown_cell(cell: dict[str, Any]) -> dict[str, Any]:
+    """Apply the stable-ID chapter mathematics map to one Markdown cell."""
+
+    adapted = deepcopy(cell)
+    if adapted.get("cell_type") != "markdown":
+        return adapted
+    cell_id = str(adapted.get("id", ""))
+    source = _normalise_source(adapted.get("source", ""))
+    replacement = _chapter_math_payload().get("fidelity_replacements", {}).get(
+        cell_id
+    )
+    if replacement is not None:
+        source = _checked_replace(
+            source,
+            replacement["old"],
+            replacement["new"],
+            label=f"chapter-fidelity correction for {cell_id}",
+        )
+    entries = _chapter_math_entries()
+    if cell_id not in entries:
+        adapted["source"] = source
+        return adapted
+
+    entry = entries[cell_id]
+    heading_from = entry.get("heading_from")
+    heading_to = entry.get("heading_to")
+    if (heading_from is None) != (heading_to is None):
+        raise RuntimeError(
+            f"Entry {cell_id!r} must provide both heading replacement fields."
+        )
+    if heading_from is not None:
+        source = _checked_replace(
+            source,
+            str(heading_from),
+            str(heading_to),
+            label=f"stable heading for {cell_id}",
+        )
+    replace_old = entry.get("replace_old")
+    replace_new = entry.get("replace_new")
+    if (replace_old is None) != (replace_new is None):
+        raise RuntimeError(
+            f"Entry {cell_id!r} must provide both prose replacement fields."
+        )
+    if replace_old is not None:
+        source = _checked_replace(
+            source,
+            str(replace_old),
+            str(replace_new),
+            label=f"chapter-fidelity prose for {cell_id}",
+        )
+    if CHAPTER_MATH_MARKER in source:
+        raise RuntimeError(
+            f"Source Markdown {cell_id!r} already contains the generated bridge."
+        )
+    adapted["source"] = source.rstrip() + "\n\n" + _chapter_math_block(cell_id) + "\n"
+    return adapted
+
+
 def _adapt_original_cell(index: int, cell: dict[str, Any]) -> dict[str, Any]:
     """Point provenance and explicit reloads at the inline module copies."""
 
@@ -591,11 +797,22 @@ def _without_notebook_provenance(source: str) -> str:
     return "".join(lines[:begin_index]) + "".join(lines[end_index + 1:])
 
 
+def _without_chapter_math(source: str) -> str:
+    """Remove the generated chapter bridge before helper-provenance comparison."""
+
+    separator = "\n\n" + CHAPTER_MATH_MARKER
+    if separator not in source:
+        return source
+    prefix, _, _ = source.partition(separator)
+    return prefix.rstrip() + "\n"
+
+
 def validate_inline_helper_sync(
     counterpart: dict[str, Any],
     *,
     helper_ordinals: tuple[int, ...] | None = None,
     allow_notebook_provenance: bool = False,
+    allow_chapter_math: bool = True,
 ) -> None:
     """Require every inline source and displayed digest to match its file."""
 
@@ -631,6 +848,8 @@ def validate_inline_helper_sync(
         )
         actual_heading = _normalise_source(cells[heading_index].get("source", ""))
         actual_source = _normalise_source(cells[source_index].get("source", ""))
+        if allow_chapter_math:
+            actual_heading = _without_chapter_math(actual_heading)
         if allow_notebook_provenance:
             actual_source = _without_notebook_provenance(actual_source)
         if actual_heading != _normalise_source(expected_heading["source"]):
@@ -665,7 +884,6 @@ def validate_counterpart(counterpart: dict[str, Any]) -> None:
     if counterpart.get("metadata", {}) != original.get("metadata", {}):
         raise AssertionError("Notebook metadata or widget state changed.")
 
-    adapted_indices = {10, 126, 130}
     for index, (before, after) in enumerate(zip(original_cells, retained)):
         if before.get("cell_type") != after.get("cell_type"):
             raise AssertionError(f"Cell type changed at original index {index}.")
@@ -680,11 +898,13 @@ def validate_counterpart(counterpart: dict[str, Any]) -> None:
 
         before_source = _normalise_source(before.get("source", ""))
         after_source = _normalise_source(after.get("source", ""))
-        if index in adapted_indices:
-            if before_source == after_source:
-                raise AssertionError(f"Expected loader adaptation missing at index {index}.")
-        elif before_source != after_source:
+        expected_source = _normalise_source(
+            _adapt_original_cell(index, before).get("source", "")
+        )
+        if after_source != expected_source:
             raise AssertionError(f"Unexpected source change at original index {index}.")
+        if index in {10, 126, 130} and before_source == after_source:
+            raise AssertionError(f"Expected loader adaptation missing at index {index}.")
 
     original_png = []
     retained_png = []
@@ -731,8 +951,70 @@ def build_curated() -> tuple[dict[str, Any], dict[str, Any]]:
         helper_ordinals=CURATED_INLINE_HELPER_ORDINALS,
         allow_notebook_provenance=True,
     )
+    curated["cells"] = [
+        _augment_markdown_cell(cell)
+        if cell.get("cell_type") == "markdown"
+        else cell
+        for cell in curated["cells"]
+    ]
     curated["cells"].insert(0, dependency_map_cell())
     return curated, report
+
+
+def validate_chapter_math_coverage(counterpart: dict[str, Any]) -> None:
+    """Require one mapped mathematical owner for every retained code-cell group."""
+
+    entries = _chapter_math_entries()
+    cells = counterpart.get("cells", [])
+    actual_groups: dict[str, list[str]] = {}
+    markdown_sources: dict[str, str] = {}
+    owner: str | None = None
+    for cell in cells:
+        cell_id = str(cell.get("id", ""))
+        if cell.get("cell_type") == "markdown":
+            owner = cell_id
+            markdown_sources[cell_id] = _normalise_source(cell.get("source", ""))
+        elif cell.get("cell_type") == "code":
+            if owner is None:
+                raise AssertionError(f"Code cell {cell_id!r} has no Markdown owner.")
+            actual_groups.setdefault(owner, []).append(cell_id)
+
+    expected_groups = {
+        markdown_id: [str(value) for value in entry["code_cell_ids"]]
+        for markdown_id, entry in entries.items()
+    }
+    if len(expected_groups) != 52:
+        raise AssertionError("The final notebook must retain 52 mapped Markdown owners.")
+    if sum(map(len, expected_groups.values())) != 68:
+        raise AssertionError("The Markdown map must cover all 68 code cells.")
+    if actual_groups != expected_groups:
+        missing = sorted(set(actual_groups) - set(expected_groups))
+        stale = sorted(set(expected_groups) - set(actual_groups))
+        mismatched = sorted(
+            key
+            for key in set(actual_groups).intersection(expected_groups)
+            if actual_groups[key] != expected_groups[key]
+        )
+        raise AssertionError(
+            "Chapter mathematics ownership drifted: "
+            f"unmapped={missing}, stale={stale}, groups={mismatched}."
+        )
+
+    for markdown_id in expected_groups:
+        source = markdown_sources.get(markdown_id, "")
+        if source.count(CHAPTER_MATH_MARKER) != 1:
+            raise AssertionError(
+                f"Markdown owner {markdown_id!r} lacks exactly one generated bridge."
+            )
+        if f"`{CHAPTER_MATH_LABEL}`" not in source:
+            raise AssertionError(
+                f"Markdown owner {markdown_id!r} is not rooted at the chapter label."
+            )
+        for label in entries[markdown_id]["chapter_labels"]:
+            if f"`{label}`" not in source:
+                raise AssertionError(
+                    f"Markdown owner {markdown_id!r} lost chapter label {label!r}."
+                )
 
 
 def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
@@ -779,7 +1061,9 @@ def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
         counterpart,
         helper_ordinals=CURATED_INLINE_HELPER_ORDINALS,
         allow_notebook_provenance=True,
+        allow_chapter_math=True,
     )
+    validate_chapter_math_coverage(counterpart)
     positions = {
         str(cell.get("id", "")): index
         for index, cell in enumerate(cells)
@@ -861,7 +1145,10 @@ def _merge_preserved_execution_state(
     metadata.update(deepcopy(current.get("metadata", {})))
     metadata["source_sync_after_execution"] = {
         "date": "2026-08-29",
-        "scope": "mathematical docstrings and fail-closed Phase 2 gate propagation",
+        "scope": (
+            "chapter-derived mathematical Markdown, stable-label corrections, "
+            "and prior source synchronisation"
+        ),
         "stored_output_status": (
             "retained historical outputs; not evidence for the post-sync sources "
             "until a full clean-room replay"
