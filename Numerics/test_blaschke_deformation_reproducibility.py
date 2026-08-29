@@ -1130,6 +1130,26 @@ class ReproducibilityBundleTests(unittest.TestCase):
                 upstream_artifact_names=names,
             )
 
+    def test_exact_reaggregated_theorem_status_is_accepted(self) -> None:
+        plan = self.deployment.source_plan()
+        report = self.deployment.report()
+        report["status"] = (
+            "theorem-certified twenty-four-target Riesz-rank package; "
+            "finite moats reused and small-gain products reaggregated"
+        )
+        effective = packager.refresh_reproducibility_plan(plan, report)
+        self.assertEqual(
+            effective["precision_settings"]["contour_target_count"],
+            24,
+        )
+
+        report["status"] = str(report["status"]) + "; unreviewed suffix"
+        with self.assertRaisesRegex(
+            packager.ReproducibilityError,
+            "Unexpected spectral report status",
+        ):
+            packager.refresh_reproducibility_plan(plan, report)
+
     def test_semantic_contract_matches_current_producer_filenames(self) -> None:
         config = phase4_producer.HistoricalPhase4Config.production_n600_m610()
         producer_paths = phase4_producer._artifact_paths(

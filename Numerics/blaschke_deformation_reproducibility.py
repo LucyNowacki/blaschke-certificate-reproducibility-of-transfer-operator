@@ -128,7 +128,13 @@ EXPECTED_SCHUR_MOAT_COUNT = 17
 EXPECTED_LAURENT_MOAT_COUNT = 7
 EXPECTED_NOTEBOOK_CELLS = 140
 EXPECTED_NOTEBOOK_CODE_CELLS = 68
-EXPECTED_REPORT_STATUS = "theorem-certified twenty-four-target Riesz-rank package"
+EXPECTED_REPORT_STATUSES = frozenset({
+    "theorem-certified twenty-four-target Riesz-rank package",
+    (
+        "theorem-certified twenty-four-target Riesz-rank package; "
+        "finite moats reused and small-gain products reaggregated"
+    ),
+})
 EXPECTED_HISTORICAL_PHASE2_SCHEMA = "phase2-historical-comparisons-v1"
 EXPECTED_HISTORICAL_PHASE4_SCHEMA = "historical-wide-phase4-source-rebuild-v2"
 EXPECTED_DIAGNOSTIC_AUDIT_SCHEMA = "blaschke-deformation-diagnostic-audits-v1"
@@ -696,7 +702,7 @@ def validate_plan_and_spectral_report(
         "total_certified_algebraic_multiplicity",
         EXPECTED_MULTIPLICITY,
     )
-    if report.get("status") != EXPECTED_REPORT_STATUS:
+    if report.get("status") not in EXPECTED_REPORT_STATUSES:
         raise ReproducibilityError(
             f"Unexpected spectral report status: {report.get('status')!r}."
         )
