@@ -945,6 +945,7 @@ class TemporaryDeployment:
             "pip==26.1.2\nmpmath==1.3.0\npython-flint==0.8.0\n"
             "threadpoolctl==3.6.0\n",
         )
+        self._write_text("conda-explicit-lock.txt", TEST_CONDA_LOCK)
         builder = """CURATED_INLINE_HELPER_ORDINALS = (1,)
 
 def validate_inline_helper_sync(notebook, *, helper_ordinals, allow_notebook_provenance):
@@ -1176,6 +1177,25 @@ class ReproducibilityBundleTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.assertNotEqual(baseline, packager._semantic_ast_sha256(source_path))
+
+    def test_committed_conda_lock_must_match_live_environment(self) -> None:
+        self.deployment._write_text(
+            "conda-explicit-lock.txt",
+            TEST_CONDA_LOCK.replace("test-package-1.0", "different-package-2.0"),
+        )
+        self.deployment.refresh_and_commit("change committed Conda lock")
+        with self.package_environment(), self.assertRaisesRegex(
+            packager.ReproducibilityError,
+            "does not match the live packaging environment",
+        ):
+            plan = self.deployment.read_plan()
+            packager.build_reproducibility_bundle(
+                repo_root=self.deployment.root,
+                notebook_path=self.deployment.notebook_path,
+                output_dir=self.deployment.output_dir,
+                precision_settings=plan["precision_settings"],
+                upstream_artifact_names=plan["upstream_artifact_names"],
+            )
 
     def test_semantic_contract_matches_current_producer_filenames(self) -> None:
         config = phase4_producer.HistoricalPhase4Config.production_n600_m610()

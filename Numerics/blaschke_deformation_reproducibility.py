@@ -2238,6 +2238,22 @@ def build_reproducibility_bundle(
     selected_versions = _package_versions()
     pip_requirements = _validate_pip_requirements(repo_root, selected_versions)
     conda_lock = _conda_explicit_lock(repo_root)
+    lock_payload = conda_lock.encode("utf-8")
+    lock_entry = manifest_by_path.get(CONDA_LOCK_NAME)
+    if lock_entry is None:
+        raise ReproducibilityError(
+            "The source-controlled Conda explicit lock is absent from the manifest."
+        )
+    committed_lock_payload = (repo_root / CONDA_LOCK_NAME).read_bytes()
+    if hashlib.sha256(committed_lock_payload).hexdigest() != lock_entry.sha256:
+        raise ReproducibilityError(
+            "The source-controlled Conda explicit lock differs from the manifest."
+        )
+    if committed_lock_payload != lock_payload:
+        raise ReproducibilityError(
+            "The source-controlled Conda explicit lock does not match the live "
+            "packaging environment."
+        )
     repository_manifest_path = repo_root / SOURCE_MANIFEST_NAME
     repository_manifest_hash = sha256_file(repository_manifest_path)
     source_manifest_payload = _source_manifest_bytes(manifest_entries)
@@ -2288,6 +2304,10 @@ def build_reproducibility_bundle(
                     if entry.relative_path == source_relative
                     else "verifier-v3 compatibility alias of source-controlled plan"
                 )
+            elif source_relative == PurePosixPath(CONDA_LOCK_NAME):
+                role = "source-controlled full Conda explicit environment lock"
+            elif source_relative == PurePosixPath(PIP_LOCK_NAME):
+                role = "source-controlled exact pip-only environment lock"
             else:
                 role = "authoritative manifest-closure file"
             file_records.append(
@@ -2318,15 +2338,6 @@ def build_reproducibility_bundle(
                 payload=_replay_text().encode("utf-8"),
                 archive_path=REPLAY_NAME,
                 role="generated replay instructions",
-            )
-        )
-        lock_payload = conda_lock.encode("utf-8")
-        file_records.append(
-            _write_generated_and_record(
-                path=staging_root / CONDA_LOCK_NAME,
-                payload=lock_payload,
-                archive_path=CONDA_LOCK_NAME,
-                role="full Conda explicit environment lock",
             )
         )
         selected_versions_payload = _json_bytes(
