@@ -709,7 +709,10 @@ def _validate_notebook(notebook: Mapping[str, object]) -> dict[str, object]:
             for output in outputs
         )
     if counts != list(range(1, EXPECTED_NOTEBOOK_CODE_CELLS + 1)):
-        raise VerificationError("Notebook execution counts are not contiguous 1-63.")
+        raise VerificationError(
+            "Notebook execution counts are not contiguous "
+            f"1-{EXPECTED_NOTEBOOK_CODE_CELLS}."
+        )
     if errors:
         raise VerificationError("The executed notebook contains error outputs.")
     return {

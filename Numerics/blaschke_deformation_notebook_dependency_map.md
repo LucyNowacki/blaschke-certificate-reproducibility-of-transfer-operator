@@ -47,10 +47,11 @@ mathematical implementations are the visible standalone helpers
 directory and communicates with the next stage only through the named CSV and JSON artefacts shown
 in the diagram. No private Cell 24B state is required by Cell 24C.
 
-**Archive boundary.** Packaging is outside the notebook dependency graph. The final referee
-archive remains deferred until the deployment evidence is committed and the deployment worktree is
-clean; the packager fails closed before that release state is reached. A replay from an extracted
-archive must first run `prepare_blaschke_source_only_replay.py`, whose archive-specific inventory
-removes the generated notebook counterparts and `Numerics/outputs` evidence while hash-preserving
-all immutable source and environment records. The final Phase 2 row carries every fresh input-tail
-and response component gate; contour loading fails closed if any component gate is missing or false.
+**Archive boundary.** Packaging is outside the notebook dependency graph and is always a separate
+clean-worktree operation after the deployment evidence has been committed. For NUMERICS_1 that
+operation has completed; its external release manifest and checksum, rather than this notebook,
+authenticate the published archive. A replay from an extracted archive must first run
+`prepare_blaschke_source_only_replay.py`, whose archive-specific inventory removes the generated
+notebook counterparts and `Numerics/outputs` evidence while hash-preserving all immutable source
+and environment records. The final Phase 2 row carries every fresh input-tail and response
+component gate; contour loading fails closed if any component gate is missing or false.

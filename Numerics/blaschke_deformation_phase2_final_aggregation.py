@@ -283,7 +283,7 @@ def certify_final_phase2_aggregation(
     progress: Callable[[int, int], None] | None = None,
 ) -> Phase2FinalAggregationResult:
     '''Explanation: The deterministic operator radius combines unresolved input, resolved response, finite-matrix defect, and output leakage by the proved norm inequality. Fresh fail-closed gates ensure the reported epsilon exists only when every mathematical premise is certified.
-Functionality: Certify the unresolved tail and persist the authoritative Phase 2 row.'''
+Functionality: Aggregate the unresolved-input, resolved-response, output-leakage, and finite-matrix-defect bounds, enforce every fresh component and radius gate, and persist the authoritative Phase 2 row.'''
 
     if config.map_label != MAP_LABEL or config.mu != "0.3":
         raise ValueError(f"This producer is restricted to {MAP_LABEL}.")

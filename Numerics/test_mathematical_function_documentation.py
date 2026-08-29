@@ -137,6 +137,22 @@ class MathematicalFunctionDocumentationTests(unittest.TestCase):
                 for phrase in banned:
                     self.assertNotIn(phrase, explanation)
 
+    def test_final_phase2_functionality_names_the_complete_aggregation(self) -> None:
+        source = (HERE / "blaschke_deformation_phase2_final_aggregation.py").read_text(
+            encoding="utf-8"
+        )
+        node = _function_nodes(source)["certify_final_phase2_aggregation"]
+        doc = ast.get_docstring(node, clean=True) or ""
+        functionality = doc.split("Functionality:", 1)[1].lower()
+        for phrase in (
+            "unresolved-input",
+            "resolved-response",
+            "output-leakage",
+            "finite-matrix-defect",
+            "gate",
+        ):
+            self.assertIn(phrase, functionality)
+
     def test_inline_copies_and_displayed_digests_match_standalone_helpers(self) -> None:
         validate_inline_helper_sync(
             self.notebook,

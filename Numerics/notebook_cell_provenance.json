@@ -3,7 +3,7 @@
   "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
   "notebook": {
     "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-    "sha256_at_manifest_creation": "8951e32d004283135d674e18a445792812a265472b97b1f5154537c4e8d2424f",
+    "sha256_at_manifest_creation": "0bd0e21dafc183a611c60736190ea1d4dc3fc8f35da78f1c34242514a3617a87",
     "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
     "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
     "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 140-cell, 68-code-cell notebook, including Cell 0M and the two source-only diagnostic producers.",
@@ -2734,7 +2734,7 @@
   "source_hash_refresh": {
     "date": "2026-08-29",
     "method": "refresh_notebook_cell_provenance.py",
-    "notebook_sha256": "8951e32d004283135d674e18a445792812a265472b97b1f5154537c4e8d2424f",
+    "notebook_sha256": "0bd0e21dafc183a611c60736190ea1d4dc3fc8f35da78f1c34242514a3617a87",
     "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
     "standalone_source_count": 9,
     "standalone_source_sha256": {
@@ -2756,7 +2756,7 @@
       "blaschke_deformation_historical_comparisons.py": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
       "blaschke_deformation_historical_phase4.py": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
       "blaschke_deformation_phase1_diagnostics.py": "93dcebd2450f92df3e488fb5f5765a6ad9cb34d954e01000b29edb61613fdaf9",
-      "blaschke_deformation_phase2_final_aggregation.py": "5d16e65ba102ecfd44b28ef509606273fc3aef5ec52766b3f00dee063136f1c0",
+      "blaschke_deformation_phase2_final_aggregation.py": "064b43bcf83e4d24c49cca81c45905b780a40f681e8486ab54e5b46ece7855bb",
       "blaschke_deformation_phase2_finite_m.py": "5c1c9cd5034b0520f66a5565e60184a263958af53e1b555a725ad25103c0d86f",
       "blaschke_deformation_phase2_geometry.py": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
       "blaschke_deformation_phase2_matrix.py": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",

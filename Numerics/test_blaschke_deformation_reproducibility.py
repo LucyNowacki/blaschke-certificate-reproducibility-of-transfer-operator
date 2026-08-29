@@ -1131,6 +1131,31 @@ class ReproducibilityBundleTests(unittest.TestCase):
                 upstream_artifact_names=names,
             )
 
+    def test_legacy_verifier_reports_current_execution_contract(self) -> None:
+        notebook = {
+            "cells": [
+                {
+                    "cell_type": "code",
+                    "execution_count": count,
+                    "outputs": [],
+                }
+                for count in range(1, verifier.EXPECTED_NOTEBOOK_CODE_CELLS + 1)
+            ]
+            + [
+                {"cell_type": "markdown"}
+                for _ in range(
+                    verifier.EXPECTED_NOTEBOOK_CELLS
+                    - verifier.EXPECTED_NOTEBOOK_CODE_CELLS
+                )
+            ]
+        }
+        notebook["cells"][0]["execution_count"] = 0
+        with self.assertRaisesRegex(
+            verifier.VerificationError,
+            rf"1-{verifier.EXPECTED_NOTEBOOK_CODE_CELLS}",
+        ):
+            verifier._validate_notebook(notebook)
+
     def test_exact_reaggregated_theorem_status_is_accepted(self) -> None:
         plan = self.deployment.source_plan()
         report = self.deployment.report()

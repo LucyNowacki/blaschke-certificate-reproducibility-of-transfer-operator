@@ -22,6 +22,7 @@ from build_blaschke_deformation_thesis_math_notebook import (
 
 
 HERE = Path(__file__).resolve().parent
+README = HERE.parent / "README.md"
 NOTEBOOK = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
 TEMPLATE = HERE / "blaschke_deformation_certifier_template.ipynb"
 SOURCE = HERE / "blaschke_deformation_certifier.ipynb"
@@ -83,6 +84,15 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         actual_source = "".join(actual.get("source", []))
         self.assertEqual(actual.get("id"), DEPENDENCY_MAP_CELL_ID)
         self.assertEqual(actual_source, expected["source"])
+
+    def test_release_docs_do_not_claim_the_archive_is_still_deferred(self) -> None:
+        stale_wording = "archive remains deferred"
+        for path in (README, HERE / "blaschke_deformation_notebook_dependency_map.md"):
+            self.assertNotIn(stale_wording, path.read_text(encoding="utf-8"), msg=str(path))
+        self.assertNotIn(
+            stale_wording,
+            "".join(self.notebook["cells"][0].get("source", [])),
+        )
 
     def test_altered_cell_0m_is_rejected(self) -> None:
         altered = deepcopy(self.notebook)

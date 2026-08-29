@@ -203,11 +203,11 @@ and verifies standalone/inline digest parity:
 
 `python -B -m unittest Numerics/test_mathematical_function_documentation.py`
 
-Final archive creation remains deferred until the executed notebook and
-evidence have been committed and the deployment worktree is clean.  The
-curated thesis-mathematics notebook contains no packaging cell, so archive
-creation is always a separate clean-worktree operation.  Once that release
-gate holds, create the referee archive with:
+Archive creation is a separate clean-worktree release operation after the
+executed notebook and evidence have been committed; the curated
+thesis-mathematics notebook intentionally contains no packaging cell.  The
+NUMERICS_1 release has completed that operation.  For a new release snapshot,
+once the same clean-commit gate holds, create the referee archive with:
 
 `python -B Numerics/blaschke_deformation_reproducibility.py`
 
