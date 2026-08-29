@@ -41,10 +41,29 @@ class Phase3PlotLayoutTests(unittest.TestCase):
                 "short_source": ["old", "branch-image", "response", "wide"],
                 "fitted_base": [0.97, 0.925, 0.924, 0.932],
                 "epsilon_over_qstar_power": [4.4, 2.4, 1.9, 2.0],
+                "B_out": [2.8e-9, 2.4e-20, 2.9e-23, 1.8e-20],
+                "B_in": [7.3e-9, 3.5e-20, 3.3e-20, 1.2e-17],
+                "collocation": [8.6e-14, 1.1e-28, 1.1e-28, 7.5e-28],
                 "epsilon": [7.0e-9, 4.0e-20, 3.3e-20, 1.0e-17],
                 "qstar_power": [1.6e-9, 1.7e-20, 1.7e-20, 5.0e-18],
             }
         )
+
+    def test_certificate_component_fonts_are_four_points_larger(self) -> None:
+        result = plotting.plot_phase3_certificate_components(
+            self.rows,
+            show=False,
+        )
+        try:
+            result.figure.canvas.draw()
+            axis = result.axes
+            self.assertEqual(axis.title.get_fontsize(), 24)
+            self.assertEqual(axis.xaxis.label.get_fontsize(), 21)
+            self.assertEqual(axis.yaxis.label.get_fontsize(), 21)
+            self.assertTrue(all(label.get_fontsize() == 21 for label in axis.get_xticklabels()))
+            self.assertTrue(all(label.get_fontsize() == 21 for label in axis.get_yticklabels()))
+        finally:
+            plt.close(result.figure)
 
     def test_rate_legend_occupies_its_own_figure_margin(self) -> None:
         result = plotting.plot_phase3_rate_diagnostics(
@@ -62,6 +81,10 @@ class Phase3PlotLayoutTests(unittest.TestCase):
                 self.assertFalse(
                     legend_box.overlaps(axis.get_window_extent(renderer=renderer))
                 )
+                self.assertEqual(axis.title.get_fontsize(), 24)
+                self.assertEqual(axis.yaxis.label.get_fontsize(), 21)
+                self.assertTrue(all(label.get_fontsize() == 18 for label in axis.get_xticklabels()))
+                self.assertTrue(all(label.get_fontsize() == 19 for label in axis.get_yticklabels()))
         finally:
             plt.close(result.figure)
 
@@ -96,6 +119,19 @@ class Phase3PlotLayoutTests(unittest.TestCase):
                 list(result.axes[2].get_xticklabels()),
                 renderer,
             )
+            self.assertEqual(result.figure._suptitle.get_fontsize(), 24)
+            for axis in result.axes:
+                self.assertEqual(axis.title.get_fontsize(), 22)
+                self.assertEqual(axis.yaxis.label.get_fontsize(), 20)
+            self.assertEqual(result.axes[0].xaxis.label.get_fontsize(), 20)
+            expected_x_tick_sizes = (20, 17, 16.5)
+            for axis, expected in zip(result.axes, expected_x_tick_sizes, strict=True):
+                self.assertTrue(
+                    all(label.get_fontsize() == expected for label in axis.get_xticklabels())
+                )
+                self.assertTrue(
+                    all(label.get_fontsize() == 20 for label in axis.get_yticklabels())
+                )
         finally:
             plt.close(result.figure)
 

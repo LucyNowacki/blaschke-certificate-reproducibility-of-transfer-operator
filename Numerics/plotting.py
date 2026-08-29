@@ -1587,7 +1587,7 @@ def plot_phase3_certificate_components(
     x = np.arange(len(frame), dtype=float)
     width = 0.18
     offsets = (np.arange(len(specs)) - (len(specs) - 1) / 2.0) * width
-    fig, ax = plt.subplots(figsize=(11.2, 5.8), facecolor="white", constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(13.5, 6.8), facecolor="white", constrained_layout=True)
     values_all: list[float] = []
     for offset, (label, column) in zip(offsets, specs):
         values = pd.to_numeric(frame[column], errors="coerce").to_numpy(dtype=float)
@@ -1597,9 +1597,13 @@ def plot_phase3_certificate_components(
     ax.set_yscale("log")
     ax.set_ylim(*positive_log_limits(values_all))
     ax.set_xticks(x, row_symbols)
-    ax.set_xlabel("certificate row")
-    ax.set_ylabel("bound component")
-    ax.set_title("Deterministic certificate components after branch-image refinement")
+    ax.set_xlabel("certificate row", fontsize=21)
+    ax.set_ylabel("bound component", fontsize=21)
+    ax.set_title(
+        "Deterministic certificate components after branch-image refinement",
+        fontsize=24,
+    )
+    ax.tick_params(axis="both", which="major", labelsize=21)
     ax.grid(True, which="both", axis="y", linestyle="--", alpha=0.42)
     ax.legend(ncols=2, frameon=True, loc="upper right", fontsize=16)
     return _finish_plot(fig, ax, output_dir=output_dir, stem=stem,
@@ -1631,19 +1635,25 @@ def plot_phase3_rate_diagnostics(
     }
     row_symbols = [symbol_map.get(label.strip().lower(), label) for label in labels]
     colours = make_phase_palette(labels)
-    fig, axes = plt.subplots(1, 2, figsize=(13.8, 5.8), facecolor="white", constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(15.8, 6.8), facecolor="white", constrained_layout=True)
     x = np.arange(len(fit_frame))
     axes[0].bar(x, fit_frame["epsilon_over_qstar_power"], color=[colours[label] for label in labels], edgecolor="white")
     axes[0].set_yscale("log")
     axes[0].set_xticks(x, row_symbols)
-    axes[0].set_ylabel(r"$\widehat\varepsilon_{N,M}^{X,\mathrm{fin,best}}/q_*^N$")
-    axes[0].set_title("Dimension-normalised deterministic radius")
+    axes[0].set_ylabel(
+        r"$\widehat\varepsilon_{N,M}^{X,\mathrm{fin,best}}/q_*^N$",
+        fontsize=21,
+    )
+    axes[0].set_title("Dimension-normalised deterministic radius", fontsize=24)
     axes[0].grid(True, which="both", axis="y", linestyle="--", alpha=0.42)
     axes[1].bar(x, fit_frame["fitted_base"], color=[colours[label] for label in labels], edgecolor="white")
     axes[1].axhline(float(q_star), color=THESIS_PALETTE["ref"], ls="--", lw=1.8, label=r"$q_*$")
     axes[1].set_xticks(x, row_symbols)
-    axes[1].set_ylabel(r"$(\widehat\varepsilon_{N,M}^{X,\mathrm{fin,best}})^{1/N}$")
-    axes[1].set_title(r"Effective finite-$N$ base")
+    axes[1].set_ylabel(
+        r"$(\widehat\varepsilon_{N,M}^{X,\mathrm{fin,best}})^{1/N}$",
+        fontsize=21,
+    )
+    axes[1].set_title(r"Effective finite-$N$ base", fontsize=24)
     axes[1].grid(True, which="major", axis="y", linestyle="--", alpha=0.42)
     row_handles = [
         Line2D((0,), (0,), marker="s", linestyle="", markersize=9,
@@ -1659,8 +1669,8 @@ def plot_phase3_rate_diagnostics(
         ncols=len(row_handles) + 1,
     )
     for axis in axes:
-        axis.tick_params(axis="x", labelsize=14, pad=6)
-        axis.tick_params(axis="y", labelsize=15)
+        axis.tick_params(axis="x", labelsize=18, pad=6)
+        axis.tick_params(axis="y", labelsize=19)
     return _finish_plot(fig, axes, output_dir=output_dir, stem=stem,
                         dpi=230, show=show, tight=False)
 
@@ -1693,8 +1703,8 @@ def plot_phase3_empirical_deterministic_bridge(
     for target in ("mu^1", "mu^2"):
         if target in colours:
             colours[target] = THESIS_EXTRA_PALETTE["green"]
-    fig = plt.figure(figsize=(20.5, 6.5), facecolor="white", constrained_layout=True)
-    grid = fig.add_gridspec(1, 3, width_ratios=(1.48, 1.18, 1.34))
+    fig = plt.figure(figsize=(24.0, 7.6), facecolor="white", constrained_layout=True)
+    grid = fig.add_gridspec(1, 3, width_ratios=(1.45, 1.20, 1.50))
     axes = np.asarray([fig.add_subplot(grid[0, index]) for index in range(3)], dtype=object)
     for target in target_names:
         subset = raw_curves.loc[raw_curves["name"].astype(str) == str(target)].sort_values("N")
@@ -1711,9 +1721,9 @@ def plot_phase3_empirical_deterministic_bridge(
     )
     axes[0].axhline(qstar_reference, color=THESIS_PALETTE["ref"],
                     ls="--", lw=1.8, label=r"$q_*^N$")
-    axes[0].set_title(r"Raw spectra versus branch-image $X$-bound", fontsize=18)
-    axes[0].set_xlabel(r"Legendre dimension $N$", fontsize=16)
-    axes[0].set_ylabel("raw cluster error and certified scale", fontsize=16)
+    axes[0].set_title(r"Raw spectra versus branch-image $X$-bound", fontsize=22)
+    axes[0].set_xlabel(r"Legendre dimension $N$", fontsize=20)
+    axes[0].set_ylabel("raw cluster error and certified scale", fontsize=20)
     axes[0].grid(True, which="both", linestyle="--", alpha=0.5)
     axes[0].legend(fontsize=15.5, ncol=2, frameon=True, loc="lower left")
     if not certificate_rows.empty:
@@ -1751,9 +1761,9 @@ def plot_phase3_empirical_deterministic_bridge(
         ))
         axes[1].grid(True, which="both", axis="y", linestyle="--", alpha=0.45)
         axes[1].legend(frameon=True, fontsize=15, loc="upper right")
-    axes[1].set_title("Certified rows at N=600", fontsize=18)
+    axes[1].set_title("Certified rows at N=600", fontsize=22)
     axes[1].set_ylabel(r"$\widehat\varepsilon_{N,M}^{X,\mathrm{fin,best}}$ scale",
-                       fontsize=16)
+                       fontsize=20)
     component_keys = list(components)
     component_label_map = {
         "output leakage": r"$\mathcal{B}_{N,\mathrm{out}}^X$",
@@ -1776,21 +1786,21 @@ def plot_phase3_empirical_deterministic_bridge(
         pad_decades=0.45,
     ))
     axes[2].set_xticks(np.arange(len(component_labels)), component_labels)
-    axes[2].set_ylabel("component size", fontsize=16)
-    axes[2].set_title("Promoted branch-image row", fontsize=18)
+    axes[2].set_ylabel("component size", fontsize=20)
+    axes[2].set_title("Promoted branch-image row", fontsize=22)
     axes[2].grid(True, which="both", axis="y", linestyle="--", alpha=0.45)
     axes[2].legend(frameon=True, fontsize=15, loc="center right")
-    axes[0].tick_params(axis="both", which="major", labelsize=16)
-    axes[0].tick_params(axis="both", which="minor", labelsize=14)
-    axes[1].tick_params(axis="x", which="major", labelsize=13, pad=6)
-    axes[1].tick_params(axis="y", which="major", labelsize=16)
-    axes[1].tick_params(axis="y", which="minor", labelsize=14)
-    axes[2].tick_params(axis="x", which="major", labelsize=12.5, pad=7)
-    axes[2].tick_params(axis="y", which="major", labelsize=16)
-    axes[2].tick_params(axis="y", which="minor", labelsize=14)
-    plt.setp(axes[2].get_xticklabels(), rotation=12, ha="right", rotation_mode="anchor")
+    axes[0].tick_params(axis="both", which="major", labelsize=20)
+    axes[0].tick_params(axis="both", which="minor", labelsize=18)
+    axes[1].tick_params(axis="x", which="major", labelsize=17, pad=6)
+    axes[1].tick_params(axis="y", which="major", labelsize=20)
+    axes[1].tick_params(axis="y", which="minor", labelsize=18)
+    axes[2].tick_params(axis="x", which="major", labelsize=16.5, pad=7)
+    axes[2].tick_params(axis="y", which="major", labelsize=20)
+    axes[2].tick_params(axis="y", which="minor", labelsize=18)
+    plt.setp(axes[2].get_xticklabels(), rotation=18, ha="right", rotation_mode="anchor")
     fig.suptitle("Phase 3 bridge: raw spectral diagnostics and deterministic certificate structure",
-                 fontsize=20)
+                 fontsize=24)
     return _finish_plot(fig, axes, output_dir=output_dir, stem=stem,
                         dpi=230, show=show, tight=False)
 

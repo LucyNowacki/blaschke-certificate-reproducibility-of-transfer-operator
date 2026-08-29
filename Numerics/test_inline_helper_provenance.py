@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -96,6 +97,33 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             self.assertNotIn(delimiter, source)
         self.assertIn("$\\tau_b$", source)
         self.assertGreaterEqual(source.count("$$"), 4)
+
+    def test_cell_80n_embeds_the_alpha11_sampled_profile(self) -> None:
+        cell = next(
+            cell for cell in self.notebook["cells"]
+            if cell.get("id") == "32961420"
+        )
+        alpha11_path = (
+            HERE
+            / "outputs"
+            / "blaschke_deformation_certifier"
+            / "figures"
+            / "branch_image_wide_candidate_sampled_hardy_moat_profile_alpha11_N600_M610.png"
+        )
+        embedded_pngs = [
+            base64.b64decode(output["data"]["image/png"])
+            for output in cell.get("outputs", [])
+            if "image/png" in output.get("data", {})
+        ]
+        self.assertEqual(len(embedded_pngs), 2)
+        self.assertIn(alpha11_path.read_bytes(), embedded_pngs)
+        output_text = "".join(
+            str(output.get("text", ""))
+            + str(output.get("data", {}).get("text/plain", ""))
+            + str(output.get("data", {}).get("text/html", ""))
+            for output in cell.get("outputs", [])
+        )
+        self.assertIn("alpha^11", output_text)
 
     def test_release_docs_do_not_claim_the_archive_is_still_deferred(self) -> None:
         stale_wording = "archive remains deferred"
