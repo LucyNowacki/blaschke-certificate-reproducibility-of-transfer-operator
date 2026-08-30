@@ -9,7 +9,7 @@
   "inline_helper_count": 18,
   "notebook_cell_count": 141,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "990646b5634f0c91f37adb2a29decfc61f4fa907526b7c2c1feb45612ea8a469",
+  "notebook_sha256": "93367a08e5358fc637d2fbc514592c2d8ded56650b8689f225e6ad5d0ae1986f",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",
@@ -21,7 +21,7 @@
     "blaschke_deformation_phase2_matrix.py": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
     "blaschke_deformation_phase2_pipeline.py": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
     "blaschke_deformation_historical_comparisons.py": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
-    "hardy_moat_surface_worker.py": "fe2614db853182a5e7ed73da3e4e2746e719308ab0b71d85474c564102cc9b46",
+    "hardy_moat_surface_worker.py": "463a3190357fb5650a9ac28bd92c06436dd8da6e340a471a5840090d44fd6b01",
     "blaschke_deformation_historical_phase4.py": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
     "blaschke_deformation_diagnostic_audits.py": "d1d63f19ec117b5d1c913847ed984902a5db55a01f3541a9f027353e42867e70",
     "blaschke_deformation_phase2_finite_m.py": "5c1c9cd5034b0520f66a5565e60184a263958af53e1b555a725ad25103c0d86f",
@@ -2113,14 +2113,14 @@
       "source": "hardy_moat_surface_worker.py",
       "qualname": "initialise_surface_worker",
       "classification": "infrastructure",
-      "line": 28
+      "line": 30
     },
     {
       "scope": "inline_helper",
       "source": "hardy_moat_surface_worker.py",
       "qualname": "sample_surface_row_block",
       "classification": "mathematical",
-      "line": 36
+      "line": 57
     },
     {
       "scope": "inline_helper",
@@ -2756,7 +2756,7 @@
       "cell_id": "6a823024",
       "qualname": "phase1_gradient_palette",
       "classification": "plotting",
-      "line": 39
+      "line": 44
     },
     {
       "scope": "notebook_cell",
@@ -2764,7 +2764,7 @@
       "cell_id": "6a823024",
       "qualname": "gradient_colours",
       "classification": "plotting",
-      "line": 40
+      "line": 45
     },
     {
       "scope": "notebook_cell",
@@ -2772,7 +2772,7 @@
       "cell_id": "6a823024",
       "qualname": "display",
       "classification": "plotting",
-      "line": 41
+      "line": 46
     },
     {
       "scope": "notebook_cell",

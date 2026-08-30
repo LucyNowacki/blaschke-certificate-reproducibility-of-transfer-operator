@@ -1431,29 +1431,6 @@ def _merge_preserved_execution_state(
     )
     metadata = deepcopy(preserved.get("metadata", {}))
     metadata.update(deepcopy(current.get("metadata", {})))
-    metadata["source_sync_after_execution"] = {
-        "date": "2026-08-29",
-        "scope": (
-            "research-thesis locator and Cell 110M exposition refresh only"
-        ),
-        "arithmetic_baseline_commit": (
-            "5ad612aed00e667f46bb176e7e09e3a51cb11676"
-        ),
-        "release_statement": (
-            "This release preserves the validated NUMERICS_1 arithmetic from commit "
-            "5ad612aed00e667f46bb176e7e09e3a51cb11676 and changes only "
-            "research-thesis locators and explanatory Markdown."
-        ),
-        "replay_status": (
-            "No notebook cell, Phase 2, Hardy, Schur, Laurent, contour, or other "
-            "numerical producer was executed for this source synchronisation."
-        ),
-        "stored_output_status": (
-            "All code-cell sources, metadata, execution counts and stored outputs "
-            "are retained byte-for-byte from the authenticated arithmetic baseline; "
-            "Cell 107N remains the compute authority and Cell 110M adds no theorem gate."
-        ),
-    }
     merged["metadata"] = metadata
     return merged
 

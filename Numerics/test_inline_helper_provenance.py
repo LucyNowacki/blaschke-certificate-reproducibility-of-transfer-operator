@@ -484,27 +484,29 @@ class InlineHelperProvenanceTests(unittest.TestCase):
                 continue
             actual_source = actual.get("source", "")
             expected_source = expected.get("source", "")
-            self.assertEqual(
+            actual_text = (
                 "".join(actual_source)
                 if isinstance(actual_source, list)
-                else str(actual_source),
+                else str(actual_source)
+            )
+            expected_text = (
                 "".join(expected_source)
                 if isinstance(expected_source, list)
-                else str(expected_source),
+                else str(expected_source)
             )
+            self.assertEqual(actual_text, expected_text)
             self.assertEqual(
                 actual.get("execution_count"), expected.get("execution_count")
             )
             self.assertEqual(actual.get("outputs", []), expected.get("outputs", []))
-        self.assertIn("source_sync_after_execution", merged["metadata"])
-        sync = merged["metadata"]["source_sync_after_execution"]
         self.assertEqual(
-            sync["arithmetic_baseline_commit"],
-            "5ad612aed00e667f46bb176e7e09e3a51cb11676",
+            merged["metadata"].get("source_sync_after_execution"),
+            self.notebook["metadata"].get("source_sync_after_execution"),
         )
-        self.assertIn("changes only research-thesis locators", sync["release_statement"])
-        self.assertIn("No notebook cell", sync["replay_status"])
-        self.assertIn("Cell 107N remains the compute authority", sync["stored_output_status"])
+        self.assertEqual(
+            merged["metadata"].get("widgets"),
+            self.notebook["metadata"].get("widgets"),
+        )
 
     def test_source_refresh_can_append_terminal_auditor_to_legacy_execution(self) -> None:
         current, _ = build_curated()

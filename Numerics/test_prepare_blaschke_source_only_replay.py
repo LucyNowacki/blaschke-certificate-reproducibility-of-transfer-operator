@@ -156,6 +156,103 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                 "source-only replay and published comparison complete",
             )
 
+    def test_compute_only_stops_before_normalization_and_writes_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="source-only-compute-test-") as temp:
+            root = Path(temp) / preparation.BUNDLE_ROOT_NAME
+            numerics = root / "Numerics"
+            numerics.mkdir(parents=True)
+            (root / "source-only-replay-preparation.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+            plan = numerics / "blaschke_deformation_reproducibility_plan.json"
+            plan.write_text("{}\n", encoding="utf-8")
+            commands: list[list[str]] = []
+
+            def record(
+                command: list[str], *, root: Path, environment: dict[str, str]
+            ) -> dict[str, object]:
+                commands.append(command)
+                return {
+                    "command": command,
+                    "elapsed_seconds": 0.0,
+                    "returncode": 0,
+                }
+
+            with mock.patch.object(
+                replay,
+                "check_prepared_bundle",
+                return_value={"status": "source-only replay root prepared"},
+            ), mock.patch.object(replay, "_run", side_effect=record):
+                result = run_replay(
+                    bundle_root=root,
+                    kernel_name="fixture-kernel",
+                    assembly_workers=2,
+                    surface_workers=2,
+                    prepare_only=False,
+                    published_archive=None,
+                    compute_only=True,
+                )
+
+            self.assertEqual(
+                result["status"], "compute-only source reconstruction complete"
+            )
+            self.assertEqual(result["stage"], "compute-only")
+            self.assertFalse(result["normalization_run"])
+            self.assertFalse(result["provenance_refresh_run"])
+            self.assertFalse(result["published_comparison_run"])
+            self.assertEqual(
+                result["reproducibility_plan_alias"],
+                "Numerics/outputs/blaschke_deformation_certifier/reports/"
+                "blaschke_deformation_reproducibility_plan.json",
+            )
+            self.assertFalse(
+                any(
+                    "Numerics/normalize_blaschke_publication.py" in command
+                    for command in commands
+                )
+            )
+            self.assertFalse(
+                any(
+                    "Numerics/verify_blaschke_deformation_reproducibility.py"
+                    in command
+                    for command in commands
+                )
+            )
+            self.assertTrue(
+                (root / "Numerics/outputs/blaschke_deformation_certifier/reports/"
+                 "blaschke_deformation_reproducibility_plan.json").is_file()
+            )
+            receipt_path = root / result["compute_receipt"]
+            self.assertTrue(receipt_path.is_file())
+            self.assertEqual(
+                json.loads(receipt_path.read_text(encoding="utf-8")), result
+            )
+
+    def test_compute_only_rejects_published_comparison(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="source-only-compute-guard-") as temp:
+            root = Path(temp) / preparation.BUNDLE_ROOT_NAME
+            root.mkdir()
+            (root / "source-only-replay-preparation.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+            archive = Path(temp) / "published.tar.gz"
+            archive.write_bytes(b"fixture")
+            with mock.patch.object(
+                replay,
+                "check_prepared_bundle",
+                return_value={"status": "source-only replay root prepared"},
+            ):
+                with self.assertRaisesRegex(ValueError, "cannot compare"):
+                    run_replay(
+                        bundle_root=root,
+                        kernel_name="fixture-kernel",
+                        assembly_workers=2,
+                        surface_workers=2,
+                        prepare_only=False,
+                        published_archive=archive,
+                        compute_only=True,
+                    )
+
     def test_inventory_drift_is_rejected_before_deletion(self) -> None:
         with tempfile.TemporaryDirectory(prefix="source-only-drift-test-") as temp:
             root = self._bundle(Path(temp))

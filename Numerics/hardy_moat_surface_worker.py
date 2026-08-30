@@ -20,15 +20,36 @@ os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
 
 import numpy as np
 import scipy.linalg as spla
+from threadpoolctl import threadpool_info, threadpool_limits
 
 _A = None
 _I = None
+_BLAS_LIMITER = None
 
 
 def initialise_surface_worker(matrix_path: str) -> None:
     """Load the Hardy-gauge matrix once per worker process."""
 
-    global _A, _I
+    global _A, _I, _BLAS_LIMITER
+    # The parent may have imported NumPy before forking.  Environment variables
+    # cannot resize an already-loaded BLAS runtime, so retain the controller for
+    # the worker lifetime and verify the live runtime before loading any data.
+    _BLAS_LIMITER = threadpool_limits(limits=1, user_api="blas")
+    blas_records = [
+        record
+        for record in threadpool_info()
+        if record.get("user_api") == "blas"
+    ]
+    invalid = [
+        record
+        for record in blas_records
+        if int(record.get("num_threads") or 0) != 1
+    ]
+    if not blas_records or invalid:
+        raise RuntimeError(
+            "Surface workers require every loaded BLAS runtime to use exactly "
+            f"one thread; observed {blas_records!r}."
+        )
     _A = np.load(matrix_path, mmap_mode="r")
     _I = np.eye(_A.shape[0], dtype=np.complex128)
 
