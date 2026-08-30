@@ -3,8 +3,8 @@
   "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
   "notebook": {
     "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-    "sha256_at_manifest_creation": "7c38f380b6d2101b2bdf8ba88fd08ccf96f9ff5ff6470fd8efd51cc464ee059e",
-    "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
+    "sha256_at_manifest_creation": "baee0327cd23d8e6c98798df5211335d438f53caea3276d5da341aa0b76ae970",
+    "transformation_source_sha256": "78a03b96db5439fa2f914b3a38020d0c9606db45755e724e4164351a8fe9d0d5",
     "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
     "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 141-cell, 68-code-cell notebook, including Cell 0M, the two source-only diagnostic producers and final auditor Markdown Cell 110M.",
     "expected_retained_cell_count": 141,
@@ -2737,8 +2737,8 @@
   "source_hash_refresh": {
     "date": "2026-08-29",
     "method": "refresh_notebook_cell_provenance.py",
-    "notebook_sha256": "7c38f380b6d2101b2bdf8ba88fd08ccf96f9ff5ff6470fd8efd51cc464ee059e",
-    "transformation_source_sha256": "2cd6b9f4b5cdc8b3bca0568cc137c2670ff1f3944576522f2332d33a81969911",
+    "notebook_sha256": "baee0327cd23d8e6c98798df5211335d438f53caea3276d5da341aa0b76ae970",
+    "transformation_source_sha256": "78a03b96db5439fa2f914b3a38020d0c9606db45755e724e4164351a8fe9d0d5",
     "thesis_math_builder_sha256": "6379883a48a5680c1f90a4cd4bfb15d3b2a26738ca3bc4d8004c68722490e68d",
     "chapter_math_map_sha256": "dd99f0b4fe7eab87f334d324e1859d98082439f26c0d1142d9f9aac99cd5fab6",
     "visual_cell_count": 20,
