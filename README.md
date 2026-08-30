@@ -82,11 +82,14 @@ The recorded execution uses the Conda environment `lucy`; the commands below
 assume that environment has been activated.
 
 The clean-room archive carries both `conda-explicit-lock.txt` and the exact
-pip-only pins in `pip-requirements-lock.txt`.  After recreating the Conda
+pip override pins in `pip-requirements-lock.txt`.  After recreating the Conda
 prefix, bootstrap the bundled installer with `python -m ensurepip --upgrade`,
-then install the exact pip, mpmath, python-flint and threadpoolctl wheels with
-`python -m pip install --no-deps --only-binary=:all: --requirement
-pip-requirements-lock.txt` before running the builders.
+then install the seven exact, hash-locked pip overrides with `python -m pip
+install --no-deps --only-binary=:all: --require-hashes --requirement
+pip-requirements-lock.txt` before running the builders.  The override set
+records pip, jupyter-server, mpmath, python-flint and threadpoolctl together
+with the pandas 2.3.3 and pyarrow 24.0.0 wheels installed above the
+Conda-explicit base.
 
 An extracted release archive is not source-only merely because its notebook
 builders emit output-free notebooks: the archive also carries the published

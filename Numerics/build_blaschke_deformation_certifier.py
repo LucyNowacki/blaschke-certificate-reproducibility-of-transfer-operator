@@ -26,7 +26,7 @@ TARGET = HERE / "blaschke_deformation_certifier.ipynb"
 # Updated after the deployment template is refreshed deliberately with
 # ``--refresh-template``. Ordinary builds refuse unreviewed template drift.
 LOCKED_TEMPLATE_SHA256 = (
-    "85efb8203a6d3f0477c7cee2df99e8d684428b814f1bd142366de46bf0f615c9"
+    "0a25b2c126f989b6ecf48e4d92b369ee2e1994e48921aeead1a240f2da64c15f"
 )
 
 

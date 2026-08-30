@@ -31,7 +31,15 @@ PIP_LOCK_NAME = "pip-requirements-lock.txt"
 SELECTED_VERSIONS_NAME = "selected-package-versions.json"
 EFFECTIVE_PLAN_NAME = "effective-reproducibility-plan.json"
 SOURCE_ONLY_INVENTORY_NAME = "source-only-replay-inventory.json"
-PIP_LOCK_PACKAGES = ("mpmath", "pip", "python-flint", "threadpoolctl")
+PIP_LOCK_PACKAGES = (
+    "jupyter-server",
+    "mpmath",
+    "pandas",
+    "pip",
+    "pyarrow",
+    "python-flint",
+    "threadpoolctl",
+)
 
 OUTPUT_RELATIVE = PurePosixPath("Numerics/outputs/blaschke_deformation_certifier")
 NOTEBOOK_RELATIVE = PurePosixPath(
@@ -474,30 +482,44 @@ def _json_object(payload: bytes, *, label: str) -> dict[str, object]:
     return value
 
 
-def _exact_pip_pins(payload: bytes) -> dict[str, str]:
+def _exact_hashed_pip_requirements(
+    payload: bytes,
+) -> tuple[dict[str, str], dict[str, str]]:
     try:
         lines = payload.decode("utf-8").splitlines()
     except UnicodeDecodeError as exc:
         raise VerificationError(f"{PIP_LOCK_NAME} is not UTF-8.") from exc
     pins: dict[str, str] = {}
+    hashes: dict[str, str] = {}
     for raw_line in lines:
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
-        match = re.fullmatch(r"([A-Za-z0-9_.-]+)==([A-Za-z0-9_.+!-]+)", line)
+        match = re.fullmatch(
+            r"([A-Za-z0-9_.-]+)==([A-Za-z0-9_.+!-]+)\s+"
+            r"--hash=sha256:([0-9a-f]{64})",
+            line,
+        )
         if match is None:
             raise VerificationError(
-                f"A pip requirement is not exactly pinned: {line!r}."
+                "A pip requirement is not an exact version pin followed by one "
+                f"SHA-256 wheel hash: {line!r}."
             )
         name = match.group(1).lower().replace("_", "-")
         if name in pins:
             raise VerificationError(f"Duplicate pip requirement for {name}.")
         pins[name] = match.group(2)
+        hashes[name] = match.group(3)
     if set(pins) != set(PIP_LOCK_PACKAGES):
         raise VerificationError(
             "The pip requirements do not contain the required exact package set."
         )
-    return dict(sorted(pins.items()))
+    return dict(sorted(pins.items())), dict(sorted(hashes.items()))
+
+
+def _exact_pip_pins(payload: bytes) -> dict[str, str]:
+    pins, _ = _exact_hashed_pip_requirements(payload)
+    return pins
 
 
 def _read_json_object(path: Path, *, label: str) -> dict[str, object]:
@@ -2695,9 +2717,13 @@ def verify_bundle(
     versions = _json_object(
         files[SELECTED_VERSIONS_NAME], label="selected package versions"
     )
-    if versions.get("schema_version") != 1 or versions.get(
-        "packages"
-    ) != environment.get("selected_package_versions"):
+    if (
+        versions.get("schema_version") != 2
+        or versions.get("environment_model")
+        != "conda-explicit-base-plus-hashed-pip-overrides"
+        or versions.get("packages")
+        != environment.get("selected_package_versions")
+    ):
         raise VerificationError("Selected package version metadata mismatch.")
     requirements_payload = files.get(PIP_LOCK_NAME)
     if requirements_payload is None:
@@ -2708,9 +2734,21 @@ def verify_bundle(
         requirements_payload
     ):
         raise VerificationError("Pip requirements hash metadata mismatch.")
-    pip_pins = _exact_pip_pins(requirements_payload)
+    pip_pins, pip_hashes = _exact_hashed_pip_requirements(requirements_payload)
     if environment.get("pip_requirements") != pip_pins:
         raise VerificationError("Pip requirements metadata mismatch.")
+    if environment.get("pip_requirement_hashes") != pip_hashes:
+        raise VerificationError("Pip requirement hash metadata mismatch.")
+    if environment.get("pip_install_requires_hashes") is not True:
+        raise VerificationError("Pip installation is not declared fail-closed on hashes.")
+    if environment.get("environment_model") != (
+        "conda-explicit-base-plus-hashed-pip-overrides"
+    ):
+        raise VerificationError("Environment-model metadata mismatch.")
+    if versions.get("pip_overrides") != pip_pins:
+        raise VerificationError("Selected-version pip overrides mismatch.")
+    if versions.get("pip_override_hashes") != pip_hashes:
+        raise VerificationError("Selected-version pip override hashes mismatch.")
     selected_packages = environment.get("selected_package_versions")
     if not isinstance(selected_packages, dict):
         raise VerificationError("Selected package versions are not a mapping.")

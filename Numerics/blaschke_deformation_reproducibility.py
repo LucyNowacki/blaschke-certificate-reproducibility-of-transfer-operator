@@ -43,9 +43,18 @@ PACKAGE_NAMES = (
     "nbformat",
     "nbclient",
     "jupyter",
+    "jupyter-server",
     "ipykernel",
 )
-PIP_LOCK_PACKAGES = ("mpmath", "pip", "python-flint", "threadpoolctl")
+PIP_LOCK_PACKAGES = (
+    "jupyter-server",
+    "mpmath",
+    "pandas",
+    "pip",
+    "pyarrow",
+    "python-flint",
+    "threadpoolctl",
+)
 
 BUNDLE_ROOT = "blaschke_deformation_certifier_reproducibility"
 ARCHIVE_NAME = f"{BUNDLE_ROOT}.tar.gz"
@@ -577,10 +586,10 @@ def _package_versions() -> dict[str, str | None]:
     return versions
 
 
-def _validate_pip_requirements(
-    repo_root: Path, selected_versions: Mapping[str, str | None]
-) -> dict[str, str]:
-    """Require exact pins for packages omitted by ``conda list --explicit``."""
+def _parse_hashed_pip_requirements(
+    repo_root: Path,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Read exact pip overrides and their platform-wheel SHA-256 hashes."""
 
     path = repo_root / PIP_LOCK_NAME
     try:
@@ -588,31 +597,54 @@ def _validate_pip_requirements(
     except (OSError, UnicodeDecodeError) as exc:
         raise ReproducibilityError(f"Cannot read exact pip requirements: {exc}") from exc
     pins: dict[str, str] = {}
+    hashes: dict[str, str] = {}
     for raw_line in lines:
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
-        match = re.fullmatch(r"([A-Za-z0-9_.-]+)==([A-Za-z0-9_.+!-]+)", line)
+        match = re.fullmatch(
+            r"([A-Za-z0-9_.-]+)==([A-Za-z0-9_.+!-]+)\s+"
+            r"--hash=sha256:([0-9a-f]{64})",
+            line,
+        )
         if match is None:
             raise ReproducibilityError(
-                f"Every pip requirement must be an exact pin, observed {line!r}."
+                "Every pip requirement must be an exact version pin followed by "
+                f"one SHA-256 wheel hash, observed {line!r}."
             )
         name = match.group(1).lower().replace("_", "-")
         if name in pins:
             raise ReproducibilityError(f"Duplicate pip requirement for {name}.")
         pins[name] = match.group(2)
+        hashes[name] = match.group(3)
     if set(pins) != set(PIP_LOCK_PACKAGES):
         raise ReproducibilityError(
             "The exact pip requirements must contain precisely "
             f"{PIP_LOCK_PACKAGES!r}, observed {tuple(sorted(pins))!r}."
         )
+    return dict(sorted(pins.items())), dict(sorted(hashes.items()))
+
+
+def _validate_pip_requirements(
+    repo_root: Path, selected_versions: Mapping[str, str | None]
+) -> dict[str, str]:
+    """Require hashed exact pins for packages overlaid on the Conda base."""
+
+    pins, _ = _parse_hashed_pip_requirements(repo_root)
     for name, version in pins.items():
         if selected_versions.get(name) != version:
             raise ReproducibilityError(
                 f"The installed {name} version {selected_versions.get(name)!r} "
                 f"does not match the exact pip pin {version!r}."
             )
-    return dict(sorted(pins.items()))
+    return pins
+
+
+def _pip_requirement_hashes(repo_root: Path) -> dict[str, str]:
+    """Return the checked pip-override wheel hashes for release metadata."""
+
+    _, hashes = _parse_hashed_pip_requirements(repo_root)
+    return hashes
 
 
 def _load_json_object(path: Path, *, label: str) -> dict[str, object]:
@@ -1973,8 +2005,9 @@ file records the archive-specific replay sequence.
 1. Recreate the recorded environment with `conda create --name blaschke-replay
    --file conda-explicit-lock.txt` and activate it. Install the exact pip-only
    installer with `python -m ensurepip --upgrade`, then install the exact
-   pip-only lock with `python -m pip install --no-deps --only-binary=:all:
-   --requirement pip-requirements-lock.txt`. Register its interpreter with
+   hashed pip-override lock with `python -m pip install --no-deps
+   --only-binary=:all: --require-hashes --requirement
+   pip-requirements-lock.txt`. Register its interpreter with
    `python -m ipykernel install --user --name blaschke-replay
    --display-name "Python (blaschke-replay)"`.
 2. Before running any producer, remove only inventory-declared generated
@@ -2237,6 +2270,7 @@ def build_reproducibility_bundle(
 
     selected_versions = _package_versions()
     pip_requirements = _validate_pip_requirements(repo_root, selected_versions)
+    pip_requirement_hashes = _pip_requirement_hashes(repo_root)
     conda_lock = _conda_explicit_lock(repo_root)
     lock_payload = conda_lock.encode("utf-8")
     lock_entry = manifest_by_path.get(CONDA_LOCK_NAME)
@@ -2340,9 +2374,13 @@ def build_reproducibility_bundle(
                 role="generated replay instructions",
             )
         )
-        selected_versions_payload = _json_bytes(
-            {"schema_version": 1, "packages": selected_versions}
-        )
+        selected_versions_payload = _json_bytes({
+            "schema_version": 2,
+            "environment_model": "conda-explicit-base-plus-hashed-pip-overrides",
+            "packages": selected_versions,
+            "pip_overrides": pip_requirements,
+            "pip_override_hashes": pip_requirement_hashes,
+        })
         file_records.append(
             _write_generated_and_record(
                 path=staging_root / SELECTED_VERSIONS_NAME,
@@ -2448,6 +2486,9 @@ def build_reproducibility_bundle(
             "precision_settings": effective_precision,
             "upstream_artifacts": upstream_artifacts,
             "environment": {
+                "environment_model": (
+                    "conda-explicit-base-plus-hashed-pip-overrides"
+                ),
                 "python_version": sys.version,
                 "python_implementation": platform.python_implementation(),
                 "platform": platform.platform(),
@@ -2457,6 +2498,8 @@ def build_reproducibility_bundle(
                 "selected_package_versions": selected_versions,
                 "pip_requirements_path": PIP_LOCK_NAME,
                 "pip_requirements": pip_requirements,
+                "pip_requirement_hashes": pip_requirement_hashes,
+                "pip_install_requires_hashes": True,
                 "pip_requirements_sha256": sha256_file(
                     repo_root / PIP_LOCK_NAME
                 ),

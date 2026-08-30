@@ -37,6 +37,15 @@ TEST_CONDA_LOCK = """# platform: linux-64
 https://example.invalid/conda/test-package-1.0-0.conda
 """
 
+TEST_PIP_LOCK = """jupyter-server==2.20.0 --hash=sha256:7777777777777777777777777777777777777777777777777777777777777777
+mpmath==1.3.0 --hash=sha256:1111111111111111111111111111111111111111111111111111111111111111
+pandas==2.3.3 --hash=sha256:2222222222222222222222222222222222222222222222222222222222222222
+pip==26.1.2 --hash=sha256:3333333333333333333333333333333333333333333333333333333333333333
+pyarrow==24.0.0 --hash=sha256:4444444444444444444444444444444444444444444444444444444444444444
+python-flint==0.8.0 --hash=sha256:5555555555555555555555555555555555555555555555555555555555555555
+threadpoolctl==3.6.0 --hash=sha256:6666666666666666666666666666666666666666666666666666666666666666
+"""
+
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -942,8 +951,7 @@ class TemporaryDeployment:
         )
         self._write_text(
             "pip-requirements-lock.txt",
-            "pip==26.1.2\nmpmath==1.3.0\npython-flint==0.8.0\n"
-            "threadpoolctl==3.6.0\n",
+            TEST_PIP_LOCK,
         )
         self._write_text("conda-explicit-lock.txt", TEST_CONDA_LOCK)
         builder = """CURATED_INLINE_HELPER_ORDINALS = (1,)
@@ -1105,8 +1113,11 @@ class ReproducibilityBundleTests(unittest.TestCase):
         versions = {name: "test-version" for name in packager.PACKAGE_NAMES}
         versions.update(
             {
+                "jupyter-server": "2.20.0",
                 "pip": "26.1.2",
                 "mpmath": "1.3.0",
+                "pandas": "2.3.3",
+                "pyarrow": "24.0.0",
                 "python-flint": "0.8.0",
                 "threadpoolctl": "3.6.0",
             }
@@ -1287,36 +1298,77 @@ class ReproducibilityBundleTests(unittest.TestCase):
         pins = packager._validate_pip_requirements(
             self.deployment.root,
             {
+                "jupyter-server": "2.20.0",
                 "pip": "26.1.2",
                 "mpmath": "1.3.0",
+                "pandas": "2.3.3",
                 "python-flint": "0.8.0",
+                "pyarrow": "24.0.0",
                 "threadpoolctl": "3.6.0",
             },
         )
         self.assertEqual(
             pins,
             {
+                "jupyter-server": "2.20.0",
                 "mpmath": "1.3.0",
+                "pandas": "2.3.3",
                 "pip": "26.1.2",
+                "pyarrow": "24.0.0",
                 "python-flint": "0.8.0",
                 "threadpoolctl": "3.6.0",
             },
         )
 
+        hashes = packager._pip_requirement_hashes(self.deployment.root)
+        self.assertEqual(set(hashes), set(packager.PIP_LOCK_PACKAGES))
+        self.assertTrue(all(len(value) == 64 for value in hashes.values()))
+
     def test_non_exact_pip_requirement_is_rejected(self) -> None:
         self.deployment._write_text(
             "pip-requirements-lock.txt",
-            "pip==26.1.2\npython-flint==0.8.0\n"
-            "threadpoolctl==3.6.0\nmpmath>=1.3,<2\n",
+            TEST_PIP_LOCK.replace(
+                "mpmath==1.3.0",
+                "mpmath>=1.3,<2",
+            ),
         )
         with self.assertRaisesRegex(
-            packager.ReproducibilityError, "must be an exact pin"
+            packager.ReproducibilityError,
+            "exact version pin followed by one SHA-256 wheel hash",
         ):
             packager._validate_pip_requirements(
                 self.deployment.root,
                 {
+                    "jupyter-server": "2.20.0",
                     "pip": "26.1.2",
                     "mpmath": "1.3.0",
+                    "pandas": "2.3.3",
+                    "pyarrow": "24.0.0",
+                    "python-flint": "0.8.0",
+                    "threadpoolctl": "3.6.0",
+                },
+            )
+
+    def test_pip_override_without_hash_is_rejected(self) -> None:
+        self.deployment._write_text(
+            "pip-requirements-lock.txt",
+            TEST_PIP_LOCK.replace(
+                " --hash=sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                "",
+            ),
+        )
+        with self.assertRaisesRegex(
+            packager.ReproducibilityError,
+            "exact version pin followed by one SHA-256 wheel hash",
+        ):
+            packager._validate_pip_requirements(
+                self.deployment.root,
+                {
+                    "jupyter-server": "2.20.0",
+                    "pip": "26.1.2",
+                    "mpmath": "1.3.0",
+                    "pandas": "2.3.3",
+                    "pyarrow": "24.0.0",
                     "python-flint": "0.8.0",
                     "threadpoolctl": "3.6.0",
                 },

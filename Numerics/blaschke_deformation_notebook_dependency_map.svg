@@ -63,10 +63,13 @@
   <text class="dep-label" x="438" y="151">Builder and curation contracts</text>
   <text class="dep-small" x="438" y="176">build_*_thesis_math_notebook.py</text>
   <text class="dep-small" x="438" y="198">dependency-map source, provenance and plotting maps</text>
-  <rect class="dep-data" x="890" y="125" width="300" height="92" rx="6"/>
-  <text class="dep-label" x="908" y="151">Executed final notebook</text>
-  <text class="dep-small" x="908" y="176">Cell 0M, inherited Cells 1M--109N, final Cell 110M</text>
-  <text class="dep-small" x="908" y="198">141 cells; 68 code cells; 18 inline helpers</text>
+  <g id="executed-final-notebook" aria-label="Executed final notebook: Cell 0M, inherited Cells 1M through 109N, final Cell 110M, 141 total cells, 68 code cells and 18 inline helpers">
+    <rect id="executed-final-notebook-box" class="dep-data" x="890" y="125" width="300" height="100" rx="6"/>
+    <text class="dep-label" x="908" y="151">Executed final notebook</text>
+    <text class="dep-small" x="908" y="174">Cell 0M; inherited Cells 1M--109N</text>
+    <text class="dep-small" x="908" y="195">final Cell 110M; 141 total cells</text>
+    <text class="dep-small" x="908" y="216">68 code cells; 18 inline helpers</text>
+  </g>
   <rect class="dep-data" x="1240" y="125" width="295" height="92" rx="6"/>
   <text class="dep-label" x="1258" y="151">Locks and verification</text>
   <text class="dep-small" x="1258" y="176">conda and pip locks; focused tests</text>
@@ -86,7 +89,7 @@
   <rect class="dep-cell" x="1000" y="318" width="535" height="72" rx="5"/>
   <text class="dep-label" x="1018" y="344">Executable inline-module bootstrap</text>
   <text class="dep-small" x="1018" y="368">Cells 11M--12N install visible helper source by SHA-256</text>
-  <path class="dep-provenance-arrow" d="M1040 217 V265"/>
+  <path id="executed-notebook-to-setup-provenance" class="dep-provenance-arrow" d="M1040 225 V265"/>
 
   <rect class="dep-phase1" x="40" y="445" width="1515" height="220" rx="7"/>
   <text class="dep-section dep-blue" x="60" y="478">Phase 1: raw Legendre--Gauss transfer spectra, Cells 13M--35N</text>
@@ -102,14 +105,16 @@
   <text class="dep-small" x="473" y="574">24N--30N: N and M sweeps, matching and heatmaps</text>
   <text class="dep-small" x="473" y="598">30AN helper; 30BN recreates retained Phase 1 data</text>
   <text class="dep-micro" x="473" y="620">31N--35N present diagnostics, selected row and gauges.</text>
-  <rect class="dep-data" x="1050" y="498" width="485" height="130" rx="6"/>
-  <text class="dep-label" x="1068" y="524">Persisted Phase 1 datasets</text>
-  <text class="dep-small" x="1068" y="550">raw_spectrum_square_N_sweep*.csv and parquet</text>
-  <text class="dep-small" x="1068" y="574">phase1_eigencloud_*.csv and parquet</text>
-  <text class="dep-small" x="1068" y="598">phase1_raw_NM_heatmap_data_near_square.*</text>
-  <text class="dep-micro" x="1068" y="620">plus Phase 1 figures under outputs/.../figures</text>
+  <g id="phase1-retained-diagnostic-branch" aria-label="Retained Phase 1 producer outputs are diagnostic only and do not enter theorem gates">
+    <rect id="phase1-retained-diagnostic-datasets" class="dep-diagnostic" x="1050" y="498" width="485" height="130" rx="6"/>
+    <text class="dep-label dep-amber" x="1068" y="524">Persisted Phase 1 diagnostics</text>
+    <text class="dep-small" x="1068" y="550">raw_spectrum_square_N_sweep*.csv and parquet</text>
+    <text class="dep-small" x="1068" y="574">phase1_eigencloud_*.csv and parquet</text>
+    <text class="dep-small" x="1068" y="598">phase1_raw_NM_heatmap_data_near_square.*</text>
+    <text class="dep-micro dep-amber" x="1068" y="620">diagnostic datasets and figures; never theorem inputs</text>
+    <path id="phase1-retained-diagnostic-input" class="dep-diagnostic-arrow" d="M1010 563 H1045"/>
+  </g>
   <path class="dep-solid" d="M415 563 H450"/>
-  <path class="dep-solid" d="M1010 563 H1045"/>
   <path class="dep-solid" d="M760 415 V440"/>
 
   <rect class="dep-phase2" x="40" y="695" width="1515" height="470" rx="7"/>
@@ -209,7 +214,7 @@
   <text class="dep-micro" x="78" y="1681">Writes diagnostic datasets, figures and rebuild reports.</text>
   <text class="dep-micro dep-amber" x="78" y="1713">No sampled value enters a theorem gate.</text>
 
-  <rect class="dep-theorem" x="610" y="1470" width="925" height="270" rx="7"/>
+  <rect id="phase4-certified-branch" class="dep-theorem" x="610" y="1470" width="925" height="270" rx="7"/>
   <text class="dep-label dep-purple" x="628" y="1498">Certified branch, Cells 98M--107N</text>
   <rect class="dep-cell" x="630" y="1520" width="245" height="86" rx="5"/>
   <text class="dep-small" x="648" y="1545">100N spectral helper</text>
@@ -236,7 +241,6 @@
   <path class="dep-theorem-arrow" d="M1355 1606 V1627"/>
   <path class="dep-diagnostic-arrow" d="M760 1385 C520 1400 320 1420 300 1465"/>
   <path class="dep-theorem-arrow" d="M1320 1080 C1500 1190 1510 1370 1390 1465"/>
-  <path class="dep-theorem-arrow" d="M1290 628 C1540 750 1545 1310 1280 1465"/>
 
   <rect class="dep-result" x="180" y="1802" width="1240" height="56" rx="7"/>
   <text class="dep-label dep-magenta" x="210" y="1836">Certified conclusion: N=600, M=610; 24 nontrivial Riesz packets; algebraic multiplicity 30</text>
