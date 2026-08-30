@@ -126,6 +126,10 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                 replay,
                 "check_prepared_bundle",
                 return_value={"status": "source-only replay root prepared"},
+            ), mock.patch.object(
+                replay,
+                "_verify_generated_closure",
+                return_value={"status": "declared generated output closure complete"},
             ), mock.patch.object(replay, "_run", side_effect=record):
                 result = run_replay(
                     bundle_root=root,
@@ -182,6 +186,10 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                 replay,
                 "check_prepared_bundle",
                 return_value={"status": "source-only replay root prepared"},
+            ), mock.patch.object(
+                replay,
+                "_verify_generated_closure",
+                return_value={"status": "declared generated output closure complete"},
             ), mock.patch.object(replay, "_run", side_effect=record):
                 result = run_replay(
                     bundle_root=root,

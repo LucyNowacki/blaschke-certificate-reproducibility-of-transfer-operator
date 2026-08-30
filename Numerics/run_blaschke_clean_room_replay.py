@@ -3,18 +3,28 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import shutil
+import stat
 import subprocess
 import sys
 import time
 
 from prepare_blaschke_source_only_replay import (
     BUNDLE_ROOT_NAME,
+    GENERATED_CLASSES,
+    IMMUTABLE_CLASSES,
+    INTERNAL_MANIFEST_NAME,
+    INVENTORY_NAME,
+    POLICY_RELATIVE,
+    RECEIPT_NAME,
+    SourceOnlyReplayError,
     check_prepared_bundle,
     prepare_bundle,
+    sha256_file,
 )
 
 
@@ -60,6 +70,283 @@ def _run(command: list[str], *, root: Path, environment: dict[str, str]) -> dict
         "command": command,
         "elapsed_seconds": time.time() - started,
         "returncode": 0,
+    }
+
+
+def _load_json_object(path: Path, *, label: str) -> dict[str, object]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SourceOnlyReplayError(f"Cannot read {label} at {path}: {exc}") from exc
+    if not isinstance(value, dict):
+        raise SourceOnlyReplayError(f"{label} must be a JSON object.")
+    return value
+
+
+def _canonical_relative_path(value: object, *, label: str) -> PurePosixPath:
+    if not isinstance(value, str) or not value or "\x00" in value:
+        raise SourceOnlyReplayError(f"{label} must be a non-empty path string.")
+    relative = PurePosixPath(value)
+    if (
+        relative.is_absolute()
+        or relative.as_posix() != value
+        or value in {".", ".."}
+        or any(part in {"", ".", ".."} for part in relative.parts)
+    ):
+        raise SourceOnlyReplayError(f"Unsafe {label}: {value!r}.")
+    return relative
+
+
+def _regular_bundle_file(
+    root: Path,
+    relative: PurePosixPath,
+    *,
+    label: str,
+    allow_missing: bool = False,
+) -> Path | None:
+    """Return a regular in-bundle file without following a symlink component."""
+
+    candidate = root
+    for index, part in enumerate(relative.parts):
+        candidate = candidate / part
+        if candidate.is_symlink():
+            raise SourceOnlyReplayError(
+                f"Symlinks are forbidden for {label}: {relative.as_posix()}."
+            )
+        if not candidate.exists():
+            if allow_missing:
+                return None
+            raise SourceOnlyReplayError(
+                f"Missing {label}: {relative.as_posix()}."
+            )
+        if index < len(relative.parts) - 1 and not candidate.is_dir():
+            raise SourceOnlyReplayError(
+                f"Non-directory path component for {label}: {relative.as_posix()}."
+            )
+    try:
+        mode = candidate.lstat().st_mode
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError) as exc:
+        raise SourceOnlyReplayError(
+            f"{label} escapes or cannot be resolved inside the bundle: "
+            f"{relative.as_posix()}."
+        ) from exc
+    if not stat.S_ISREG(mode):
+        raise SourceOnlyReplayError(
+            f"{label} is not a regular file: {relative.as_posix()}."
+        )
+    return candidate
+
+
+def _is_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and value == value.lower()
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _verify_generated_closure(
+    *,
+    root: Path,
+    preparation: dict[str, object],
+) -> dict[str, object]:
+    """Require every archive-declared generated member before finalization."""
+
+    inventory_relative = PurePosixPath(INVENTORY_NAME)
+    receipt_relative = PurePosixPath(RECEIPT_NAME)
+    manifest_relative = PurePosixPath(INTERNAL_MANIFEST_NAME)
+    inventory_path = _regular_bundle_file(
+        root, inventory_relative, label="source-only replay inventory"
+    )
+    receipt_path = _regular_bundle_file(
+        root, receipt_relative, label="source-only preparation receipt"
+    )
+    manifest_path = _regular_bundle_file(
+        root, manifest_relative, label="internal reproducibility manifest"
+    )
+    policy_path = _regular_bundle_file(
+        root, POLICY_RELATIVE, label="source-only replay policy"
+    )
+    assert inventory_path is not None
+    assert receipt_path is not None
+    assert manifest_path is not None
+    assert policy_path is not None
+
+    on_disk_receipt = _load_json_object(
+        receipt_path, label="source-only preparation receipt"
+    )
+    if on_disk_receipt != preparation:
+        raise SourceOnlyReplayError(
+            "The in-memory and on-disk source-only preparation receipts differ."
+        )
+    inventory = _load_json_object(
+        inventory_path, label="source-only replay inventory"
+    )
+
+    if (
+        type(inventory.get("schema_version")) is not int
+        or inventory.get("schema_version") != 1
+        or inventory.get("bundle_root_name") != BUNDLE_ROOT_NAME
+        or inventory.get("policy_path") != POLICY_RELATIVE.as_posix()
+        or inventory.get("complete_file_set_excludes")
+        != [INVENTORY_NAME, INTERNAL_MANIFEST_NAME]
+    ):
+        raise SourceOnlyReplayError(
+            "The source-only replay inventory schema is invalid."
+        )
+    if inventory.get("policy_sha256") != sha256_file(policy_path):
+        raise SourceOnlyReplayError(
+            "The source-only replay policy hash has drifted."
+        )
+
+    rows = inventory.get("files")
+    if not isinstance(rows, list) or not rows:
+        raise SourceOnlyReplayError(
+            "The source-only replay inventory has no file records."
+        )
+    classifications = GENERATED_CLASSES | IMMUTABLE_CLASSES
+    seen: set[PurePosixPath] = set()
+    generated: list[PurePosixPath] = []
+    observed_counts = {
+        classification: 0 for classification in sorted(classifications)
+    }
+    for row in rows:
+        if not isinstance(row, dict):
+            raise SourceOnlyReplayError("Malformed source-only replay record.")
+        relative = _canonical_relative_path(
+            row.get("path"), label="source-only inventory path"
+        )
+        if relative in seen:
+            raise SourceOnlyReplayError(
+                f"Duplicate source-only inventory path: {relative.as_posix()}."
+            )
+        seen.add(relative)
+        classification = row.get("classification")
+        if (
+            not isinstance(classification, str)
+            or classification not in classifications
+        ):
+            raise SourceOnlyReplayError(
+                f"Unknown source-only classification for {relative.as_posix()}."
+            )
+        size = row.get("bytes")
+        if (
+            not _is_sha256(row.get("sha256"))
+            or type(size) is not int
+            or size < 0
+        ):
+            raise SourceOnlyReplayError(
+                f"Malformed hash or size for {relative.as_posix()}."
+            )
+        observed_counts[classification] += 1
+        if classification in GENERATED_CLASSES:
+            generated.append(relative)
+
+    counts = inventory.get("counts")
+    if (
+        not isinstance(counts, dict)
+        or set(counts) != classifications
+        or any(type(value) is not int or value < 0 for value in counts.values())
+        or counts != observed_counts
+    ):
+        raise SourceOnlyReplayError(
+            "The source-only replay inventory counts are malformed or inconsistent."
+        )
+    generated_paths = sorted(relative.as_posix() for relative in generated)
+    if not generated_paths:
+        raise SourceOnlyReplayError(
+            "The source-only replay inventory declares no generated members."
+        )
+
+    if (
+        type(on_disk_receipt.get("schema_version")) is not int
+        or on_disk_receipt.get("schema_version") != 1
+        or on_disk_receipt.get("status") != "source-only replay root prepared"
+        or on_disk_receipt.get("bundle_root_name") != BUNDLE_ROOT_NAME
+        or on_disk_receipt.get("removed_paths") != generated_paths
+        or type(on_disk_receipt.get("removed_file_count")) is not int
+        or on_disk_receipt.get("removed_file_count") != len(generated_paths)
+        or type(on_disk_receipt.get("immutable_external_input_count")) is not int
+        or on_disk_receipt.get("immutable_external_input_count")
+        != observed_counts["immutable_external_input"]
+    ):
+        raise SourceOnlyReplayError(
+            "The source-only preparation receipt does not match the inventory."
+        )
+    inventory_sha256 = sha256_file(inventory_path)
+    if (
+        not _is_sha256(on_disk_receipt.get("inventory_sha256"))
+        or on_disk_receipt.get("inventory_sha256") != inventory_sha256
+    ):
+        raise SourceOnlyReplayError(
+            "The source-only preparation receipt does not authenticate the inventory."
+        )
+
+    manifest = _load_json_object(
+        manifest_path, label="internal reproducibility manifest"
+    )
+    manifest_rows = manifest.get("files")
+    inventory_bindings = [
+        row
+        for row in manifest_rows
+        if isinstance(row, dict) and row.get("archive_path") == INVENTORY_NAME
+    ] if isinstance(manifest_rows, list) else []
+    if (
+        manifest.get("bundle_format")
+        != "blaschke-deformation-certifier-reproducibility-v3"
+        or len(inventory_bindings) != 1
+        or inventory_bindings[0].get("sha256") != inventory_sha256
+    ):
+        raise SourceOnlyReplayError(
+            "The internal manifest does not authenticate the replay inventory."
+        )
+
+    missing: list[str] = []
+    for value in generated_paths:
+        relative = PurePosixPath(value)
+        if _regular_bundle_file(
+            root,
+            relative,
+            label="declared generated member",
+            allow_missing=True,
+        ) is None:
+            missing.append(value)
+    if missing:
+        raise SourceOnlyReplayError(
+            f"Generated output closure is incomplete; missing={missing}."
+        )
+
+    fingerprint_payload = {
+        "count": len(generated_paths),
+        "paths": generated_paths,
+    }
+    fingerprint_bytes = json.dumps(
+        fingerprint_payload,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    fingerprint = hashlib.sha256(fingerprint_bytes).hexdigest()
+    return {
+        "closure_schema": "blaschke-declared-generated-closure-v1",
+        "status": "declared generated output closure complete",
+        "inventory_sha256": inventory_sha256,
+        "preparation_receipt_sha256": sha256_file(receipt_path),
+        "generated_path_count": len(generated_paths),
+        "generated_paths": generated_paths,
+        "generated_paths_sha256": fingerprint,
+        "fingerprint_serialization": (
+            "UTF-8 JSON object with count and paths; ensure_ascii=true; "
+            "separators=(',',':'); sort_keys=true"
+        ),
+        "missing": [],
+        "undeclared_file_policy": (
+            "Undeclared transient row-block and cache files are not closure members; "
+            "this gate neither enumerates them nor counts them as declared output."
+        ),
     }
 
 
@@ -127,6 +414,10 @@ def run_replay(
     )
     plan_alias.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(plan_source, plan_alias)
+    generated_closure = _verify_generated_closure(
+        root=root,
+        preparation=preparation,
+    )
     forced_environment = {
         key: environment[key]
         for key in (
@@ -152,6 +443,7 @@ def run_replay(
             "forced_rebuild_environment": forced_environment,
             "commands": command_records,
             "reproducibility_plan_alias": plan_alias.relative_to(root).as_posix(),
+            "generated_closure": generated_closure,
             "compute_receipt": receipt_path.name,
         }
         temporary_receipt = receipt_path.with_suffix(receipt_path.suffix + ".tmp")
@@ -195,6 +487,7 @@ def run_replay(
         "kernel_name": kernel_name,
         "forced_rebuild_environment": forced_environment,
         "commands": command_records,
+        "generated_closure": generated_closure,
     }
     evidence_path = root / "clean-room-replay-evidence.json"
     evidence_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
