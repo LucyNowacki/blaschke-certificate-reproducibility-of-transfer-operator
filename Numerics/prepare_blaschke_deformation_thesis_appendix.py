@@ -666,7 +666,28 @@ phase1_heatmap_excess_result = plot_phase1_absolute_m_heatmaps(
 )
 '''
     ast.parse(completed)
-    return completed
+    ast.parse(source)
+    required_exports = (
+        "phase1_eigencloud_leading_interval_comparison_points",
+        "phase1_N20_M20_to_M30_cloud_displacements",
+        "phase1_N12_M12_to_M24_visible_cloud_displacements",
+        "save_dataframe",
+    )
+    missing_exports = tuple(token for token in required_exports if token not in source)
+    if missing_exports:
+        raise AppendixPreparationError(
+            "The reviewed Cell 15 derivative exports are incomplete: "
+            f"{missing_exports}."
+        )
+    forbidden_reads = tuple(
+        token for token in ("pd.read_csv", ".exists()") if token in source
+    )
+    if forbidden_reads:
+        raise AppendixPreparationError(
+            "Cell 15 must persist only source-regenerated frames; destination-file "
+            f"fallbacks remain: {forbidden_reads}."
+        )
+    return source
 
 
 # Source is hidden while outputs remain visible. These are infrastructure or
