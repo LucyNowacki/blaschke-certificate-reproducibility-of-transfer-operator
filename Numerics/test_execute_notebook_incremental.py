@@ -25,8 +25,8 @@ class IncrementalExecutorTests(unittest.TestCase):
         notebook = nbformat.v4.new_notebook(
             metadata={
                 "kernelspec": {
-                    "name": "lucy",
-                    "display_name": "Python (lucy)",
+                    "name": "private-kernel",
+                    "display_name": "Python (private-kernel)",
                     "language": "python",
                 }
             }
@@ -49,8 +49,8 @@ class IncrementalExecutorTests(unittest.TestCase):
         notebook = nbformat.v4.new_notebook(
             metadata={
                 "kernelspec": {
-                    "name": "lucy",
-                    "display_name": "Python (lucy)",
+                    "name": "private-kernel",
+                    "display_name": "Python (private-kernel)",
                     "language": "python",
                 }
             }
