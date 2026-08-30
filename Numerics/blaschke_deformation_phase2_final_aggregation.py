@@ -249,30 +249,6 @@ def _summary_rows(
         }
     )
 
-    wide_path = data_dir / "branch_image_wide_candidate_single_space_row_N600_M610.csv"
-    if wide_path.is_file():
-        wide = _read_one(wide_path)
-        wide_b_out = _b_out(wide)
-        wide_b_in = mp.mpf(str(wide["B_in_branch_image_interval_u"]))
-        wide_collocation = mp.mpf(str(wide["kappa_Bmat_star"]))
-        rows.append(
-            {
-                "source": "wide branch-image candidate",
-                "N": int(wide["N"]),
-                "M": int(wide["M"]),
-                "rho": float(wide["rho"]),
-                "r": float(wide["r"]),
-                "r_tau": float(wide["r_tau_interval_u"]),
-                "q_star": float(wide["q_star"]),
-                "B_out": float(wide_b_out),
-                "B_in": float(wide_b_in),
-                "collocation": float(wide_collocation),
-                "epsilon": float(
-                    mp.sqrt(wide_b_out**2 + wide_b_in**2) + wide_collocation
-                ),
-                "status": str(wide["status"]),
-            }
-        )
     return rows
 
 

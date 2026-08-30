@@ -340,9 +340,7 @@
       "cell_index": 5,
       "helper_functions": {},
       "helper_symbols": {},
-      "file_sources": [
-        "LEGACY_OUTPUT_DIR/data/branch_image_phase1_raw_eigs_N600_M610.csv"
-      ],
+      "file_sources": [],
       "prior_result_sources": [
         "Cell 3::OUTPUT_DIR"
       ],
@@ -350,7 +348,7 @@
         "kind": "output_tree_bootstrap",
         "parallelism": "configures exactly 24 process workers",
         "arithmetic": "none",
-        "cache_policy": "copy retained non-Phase-2 diagnostic artifacts only when the dedicated target is absent"
+        "cache_policy": "copy only retained historical diagnostic artifacts when the dedicated target is absent; retired seed-only aliases are forbidden"
       },
       "products": {
         "prior_results": [
@@ -2071,14 +2069,10 @@
         ]
       },
       "file_sources": [
-        "DATA_DIR/branch_image_wide_candidate_A_X_from_mp_scaled_N600_M610_r2p225974769705636.npz, selected matrix source in the executed cell",
-        "DATA_DIR/phase4_hp_A_X_N600_M610.npz, conditional matrix fallback",
-        "DATA_DIR/phase4_diag_A_X_N600_M610.npz, conditional matrix fallback",
+        "DATA_DIR/branch_image_wide_candidate_A_X_from_mp_scaled_N600_M610_r2p225974769705636.npz, authoritative source-rebuilt historical matrix",
         "DATA_DIR/branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv",
         "DATA_DIR/branch_image_wide_candidate_first15_contour_profiles_N600_M610_J128.csv",
-        "DATA_DIR/branch_image_phase1_raw_eigs_N600_M610.csv, first optional eigenvalue source",
-        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv, second optional eigenvalue source",
-        "DATA_DIR/phase4_diag_hardy_gauge_eigenvalues_N600_M610.csv, third optional eigenvalue source",
+        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv, source-rebuilt historical eigenvalue table",
         "DATA_DIR/branch_image_wide_candidate_mu2_hardy_moat_surface_N600_M610_grid25.npz, conditional sampled-surface cache"
       ],
       "prior_result_sources": [
@@ -2162,9 +2156,7 @@
       },
       "file_sources": [
         "Final Deployment/Numerics/hardy_moat_surface_worker.py",
-        "DATA_DIR/branch_image_phase1_raw_eigs_N600_M610.csv, first optional eigenvalue source",
-        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv, second optional eigenvalue source",
-        "DATA_DIR/phase4_diag_hardy_gauge_eigenvalues_N600_M610.csv, third optional eigenvalue source",
+        "DATA_DIR/phase4_hp_hardy_gauge_eigenvalues_N600_M610.csv, source-rebuilt historical eigenvalue table",
         "DATA_DIR/branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45.npz, conditional global cache",
         "DATA_DIR/branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161.npz, conditional zoom cache",
         "DATA_DIR/branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201.npz, conditional deep-zoom cache",

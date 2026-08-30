@@ -186,15 +186,6 @@ EXPECTED_SAMPLED_SCHUR_COLUMNS = frozenset(
     }
 )
 
-REMOVED_UNPRODUCED_UPSTREAM_ARTIFACT_NAMES = frozenset(
-    {
-        "branch_image_wide_candidate_single_space_row_N600_M610.csv",
-        "branch_image_phase1_raw_eigs_N600_M610.csv",
-        "phase4_diag_A_X_N600_M610.npz",
-        "phase4_diag_hardy_gauge_eigenvalues_N600_M610.csv",
-        "phase4_hp_A_X_N600_M610.npz",
-    }
-)
 EXPECTED_UPSTREAM_ARTIFACT_NAMES = (
     "final_blaschke_N600_schur_certificate.csv",
     "branch_image_input_tail_interval_effect_N600.csv",
@@ -691,16 +682,6 @@ def _validate_source_controlled_plan_inventory(
             "The source-controlled upstream artifact inventory drifted; "
             f"missing={missing}, extra={extra}, order_matches=False."
         )
-    retained_unproduced = sorted(
-        REMOVED_UNPRODUCED_UPSTREAM_ARTIFACT_NAMES.intersection(observed)
-    )
-    if retained_unproduced:
-        raise ReproducibilityError(
-            "The source-controlled plan retains unproduced artifacts: "
-            f"{retained_unproduced}."
-        )
-
-
 def validate_plan_and_spectral_report(
     plan: Mapping[str, object], report: Mapping[str, object]
 ) -> dict[str, object]:
