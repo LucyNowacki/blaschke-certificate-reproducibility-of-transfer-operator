@@ -34,6 +34,19 @@ class PublicationPortabilityTests(unittest.TestCase):
     def test_canonical_plain_and_compressed_closure_is_portable(self) -> None:
         portability.assert_publication_portable(ROOT)
 
+    def test_diagnostic_audit_tracks_normalized_source_notebook(self) -> None:
+        report = json.loads(
+            (
+                ROOT
+                / "Numerics/outputs/blaschke_deformation_certifier/reports/"
+                "blaschke_deformation_diagnostic_audits_rebuild.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            report["source_extraction"]["notebook"]["sha256"],
+            _sha256(ROOT / "Numerics/blaschke_deformation_certifier.ipynb"),
+        )
+
     def test_normalizer_is_idempotent_on_canonical_closure(self) -> None:
         before = {
             relative: _sha256(ROOT / relative)
