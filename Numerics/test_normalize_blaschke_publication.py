@@ -427,11 +427,11 @@ class PublicationPortabilityTests(unittest.TestCase):
     def test_kernel_visual_assets_remain_exact(self) -> None:
         self.assertEqual(
             _sha256(HERE / "blaschke_deformation_notebook_dependency_map.svg"),
-            "9248d5609302629b15215b44cb0550c4b54be6bbe04e32f1534340eb395b89d1",
+            "73350903855419daff396bb341d978d4f685f109d31a9ca9924b4fa20a0d73a7",
         )
         self.assertEqual(
             _sha256(HERE / "test_notebook_dependency_map.py"),
-            "155748516da9ba39d5cb827996ae0fee066a8e98caac1f1da23c2843a5b23b97",
+            "11ec47d4ee8b6d8b1bf312dad0e30d90af66ce557c70fb711a4799332b1b0b07",
         )
 
 

@@ -46,12 +46,12 @@
 
   <rect class="dep-frame" x="15" y="15" width="1570" height="1870" rx="10"/>
   <text class="dep-title" x="45" y="53">Effective cell, helper and dataset dependency graph</text>
-  <line class="dep-solid" x1="760" y1="47" x2="820" y2="47"/>
-  <text class="dep-small" x="830" y="52">theorem or data</text>
-  <line class="dep-diagnostic-arrow" x1="1030" y1="47" x2="1090" y2="47"/>
-  <text class="dep-small" x="1100" y="52">diagnostic only</text>
-  <line class="dep-provenance-arrow" x1="1300" y1="47" x2="1360" y2="47"/>
-  <text class="dep-small" x="1370" y="52">build or provenance</text>
+  <line class="dep-solid" x1="680" y1="47" x2="730" y2="47"/>
+  <text class="dep-small" x="740" y="52">theorem-facing data dependencies</text>
+  <line class="dep-diagnostic-arrow" x1="1005" y1="47" x2="1055" y2="47"/>
+  <text class="dep-small" x="1065" y="52">diagnostic only</text>
+  <line class="dep-provenance-arrow" x1="1265" y1="47" x2="1315" y2="47"/>
+  <text class="dep-small" x="1325" y="52">build or provenance</text>
 
   <rect class="dep-band" x="40" y="78" width="1515" height="165" rx="8"/>
   <text class="dep-section" x="60" y="108">Reproducibility envelope</text>

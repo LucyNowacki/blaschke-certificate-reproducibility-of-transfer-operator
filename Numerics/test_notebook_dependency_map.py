@@ -101,6 +101,33 @@ class NotebookDependencyMapTests(unittest.TestCase):
         ):
             _by_id(self.root, marker)
 
+    def test_visible_legend_matches_markdown_dependency_contract(self) -> None:
+        legend_text = [
+            "".join(element.itertext())
+            for element in self.root.findall("svg:text", NS)
+            if element.get("y") == "52"
+        ]
+        self.assertEqual(
+            legend_text,
+            [
+                "theorem-facing data dependencies",
+                "diagnostic only",
+                "build or provenance",
+            ],
+        )
+        self.assertIn(
+            "solid arrows are theorem-facing data dependencies",
+            self.markdown.lower(),
+        )
+        self.assertIn(
+            "dashed amber arrows are diagnostic-only dependencies",
+            self.markdown.lower(),
+        )
+        self.assertIn(
+            "dotted grey arrows are build or provenance dependencies",
+            self.markdown.lower(),
+        )
+
     def test_phase1_retained_producer_branch_is_diagnostic_only(self) -> None:
         self.assertIn(
             "both producer branches have diagnostic-only (dashed amber) semantics",
