@@ -292,11 +292,9 @@ def _replace_cell19_seed_block(source: str) -> str:
     stop = next(
         index
         for index, line in enumerate(lines[start:], start=start)
-        if "wide_df" in line and "load_csv_optional" in line
+        if "for label" in line and "path" in line and "df" in line
     )
-    replacement = CELL19_REPLACEMENT
-    if not replacement.endswith("\n"):
-        replacement += "\n"
+    replacement = CELL19_REPLACEMENT.rstrip("\n") + "\n\n"
     updated = "".join(lines[:start]) + replacement + "".join(lines[stop:])
     updated = updated.replace(
         'mp .sqrt (phase2_mpf (row ["B_out_interval_u"])**2 +phase2_mpf (row ["B_in_branch_image_interval_u"])**2 )',

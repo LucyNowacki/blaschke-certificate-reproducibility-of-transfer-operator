@@ -9,7 +9,7 @@
   "inline_helper_count": 18,
   "notebook_cell_count": 141,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "93367a08e5358fc637d2fbc514592c2d8ded56650b8689f225e6ad5d0ae1986f",
+  "notebook_sha256": "4150a374540a96d7a7fb4a40eebbde0e9bbc9490a9ac730f3c13ee0ff97fbf3a",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",
@@ -26,14 +26,14 @@
     "blaschke_deformation_diagnostic_audits.py": "d1d63f19ec117b5d1c913847ed984902a5db55a01f3541a9f027353e42867e70",
     "blaschke_deformation_phase2_finite_m.py": "5c1c9cd5034b0520f66a5565e60184a263958af53e1b555a725ad25103c0d86f",
     "blaschke_deformation_phase2_resolved_response.py": "3047063eba4c36e27dc2824e62e76b9a8b070f3ab3e6334b59c99027fb7a238e",
-    "blaschke_deformation_phase2_final_aggregation.py": "064b43bcf83e4d24c49cca81c45905b780a40f681e8486ab54e5b46ece7855bb",
+    "blaschke_deformation_phase2_final_aggregation.py": "aba945190bf7306688b8c64f0a236b6e6b48f83df235a6f67692683bb0c0ea25",
     "blaschke_deformation_phase1_diagnostics.py": "93dcebd2450f92df3e488fb5f5765a6ad9cb34d954e01000b29edb61613fdaf9",
     "blaschke_deformation_sampled_schur_diagnostics.py": "15f3cc33ed067043f3845493aa11c2230e94876d2d8993fe1fdf63f178fe2eea"
   },
   "counts": {
     "mathematical": 154,
-    "infrastructure": 240,
-    "plotting": 20
+    "infrastructure": 245,
+    "plotting": 21
   },
   "functions": [
     {
@@ -1301,7 +1301,7 @@
       "source": "blaschke_deformation_phase2_final_aggregation.py",
       "qualname": "certify_final_phase2_aggregation",
       "classification": "mathematical",
-      "line": 279
+      "line": 255
     },
     {
       "scope": "inline_helper",
@@ -2468,7 +2468,7 @@
       "cell_id": "0e01d379",
       "qualname": "mp_to_numpy_matrix",
       "classification": "infrastructure",
-      "line": 15
+      "line": 17
     },
     {
       "scope": "notebook_cell",
@@ -2476,7 +2476,7 @@
       "cell_id": "0e01d379",
       "qualname": "frobenius_mp",
       "classification": "mathematical",
-      "line": 17
+      "line": 19
     },
     {
       "scope": "notebook_cell",
@@ -2484,7 +2484,7 @@
       "cell_id": "0e01d379",
       "qualname": "mp_str",
       "classification": "infrastructure",
-      "line": 21
+      "line": 23
     },
     {
       "scope": "notebook_cell",
@@ -2492,7 +2492,23 @@
       "cell_id": "0e01d379",
       "qualname": "transfer_lab_slug",
       "classification": "infrastructure",
-      "line": 22
+      "line": 24
+    },
+    {
+      "scope": "notebook_cell",
+      "source": "blaschke_deformation_certifier_thesis_math.ipynb",
+      "cell_id": "0e01d379",
+      "qualname": "_atomic_dataframe_write",
+      "classification": "infrastructure",
+      "line": 26
+    },
+    {
+      "scope": "notebook_cell",
+      "source": "blaschke_deformation_certifier_thesis_math.ipynb",
+      "cell_id": "0e01d379",
+      "qualname": "save_csv_dataframe",
+      "classification": "infrastructure",
+      "line": 47
     },
     {
       "scope": "notebook_cell",
@@ -2500,7 +2516,7 @@
       "cell_id": "0e01d379",
       "qualname": "save_dataframe",
       "classification": "infrastructure",
-      "line": 23
+      "line": 50
     },
     {
       "scope": "notebook_cell",
@@ -2508,7 +2524,7 @@
       "cell_id": "0e01d379",
       "qualname": "phase_status_table",
       "classification": "infrastructure",
-      "line": 25
+      "line": 55
     },
     {
       "scope": "notebook_cell",
@@ -2516,7 +2532,7 @@
       "cell_id": "0e01d379",
       "qualname": "transfer_lab_clean_label",
       "classification": "infrastructure",
-      "line": 28
+      "line": 58
     },
     {
       "scope": "notebook_cell",
@@ -2524,7 +2540,7 @@
       "cell_id": "0e01d379",
       "qualname": "transfer_lab_plot_status_summary",
       "classification": "plotting",
-      "line": 29
+      "line": 59
     },
     {
       "scope": "notebook_cell",
@@ -2532,7 +2548,7 @@
       "cell_id": "0e01d379",
       "qualname": "transfer_lab_plot_phase3_diagnostic",
       "classification": "plotting",
-      "line": 33
+      "line": 63
     },
     {
       "scope": "notebook_cell",
@@ -2540,7 +2556,7 @@
       "cell_id": "0e01d379",
       "qualname": "transfer_lab_plot_phase4_diagnostic",
       "classification": "plotting",
-      "line": 45
+      "line": 75
     },
     {
       "scope": "notebook_cell",
@@ -2548,7 +2564,7 @@
       "cell_id": "0e01d379",
       "qualname": "transfer_lab_execute_selected_map_cell",
       "classification": "infrastructure",
-      "line": 51
+      "line": 81
     },
     {
       "scope": "notebook_cell",
@@ -2601,6 +2617,22 @@
     {
       "scope": "notebook_cell",
       "source": "blaschke_deformation_certifier_thesis_math.ipynb",
+      "cell_id": "3410c676",
+      "qualname": "phase3_cluster_order_key",
+      "classification": "infrastructure",
+      "line": 14
+    },
+    {
+      "scope": "notebook_cell",
+      "source": "blaschke_deformation_certifier_thesis_math.ipynb",
+      "cell_id": "3410c676",
+      "qualname": "phase3_cluster_table_label",
+      "classification": "infrastructure",
+      "line": 22
+    },
+    {
+      "scope": "notebook_cell",
+      "source": "blaschke_deformation_certifier_thesis_math.ipynb",
       "cell_id": "44cb0b52",
       "qualname": "sample_branch_boundary_profile",
       "classification": "mathematical",
@@ -2613,6 +2645,14 @@
       "qualname": "_phase4_restored_data_dir",
       "classification": "plotting",
       "line": 37
+    },
+    {
+      "scope": "notebook_cell",
+      "source": "blaschke_deformation_certifier_thesis_math.ipynb",
+      "cell_id": "5cb2c38a",
+      "qualname": "phase3_certificate_row_symbol",
+      "classification": "infrastructure",
+      "line": 14
     },
     {
       "scope": "notebook_cell",
@@ -2708,7 +2748,7 @@
       "cell_id": "6451c7fe",
       "qualname": "phase2_bool",
       "classification": "infrastructure",
-      "line": 168
+      "line": 166
     },
     {
       "scope": "notebook_cell",
@@ -2716,7 +2756,7 @@
       "cell_id": "6451c7fe",
       "qualname": "phase2_B_out_from_legacy_row",
       "classification": "infrastructure",
-      "line": 174
+      "line": 172
     },
     {
       "scope": "notebook_cell",
@@ -2724,7 +2764,7 @@
       "cell_id": "6451c7fe",
       "qualname": "phase2_best_matrix_from_row",
       "classification": "mathematical",
-      "line": 179
+      "line": 177
     },
     {
       "scope": "notebook_cell",
@@ -2732,7 +2772,7 @@
       "cell_id": "6451c7fe",
       "qualname": "phase2_B_out_from_row",
       "classification": "mathematical",
-      "line": 188
+      "line": 186
     },
     {
       "scope": "notebook_cell",
@@ -2740,7 +2780,7 @@
       "cell_id": "6451c7fe",
       "qualname": "phase2_build_summary_rows",
       "classification": "mathematical",
-      "line": 198
+      "line": 196
     },
     {
       "scope": "notebook_cell",
@@ -2748,7 +2788,7 @@
       "cell_id": "6451c7fe",
       "qualname": "phase2_promoted_certificate",
       "classification": "mathematical",
-      "line": 278
+      "line": 260
     },
     {
       "scope": "notebook_cell",
@@ -2916,7 +2956,7 @@
       "cell_id": "cc338a81",
       "qualname": "_phase1_cloud_block",
       "classification": "plotting",
-      "line": 22
+      "line": 21
     },
     {
       "scope": "notebook_cell",
@@ -2924,7 +2964,15 @@
       "cell_id": "cc338a81",
       "qualname": "_phase1_generated_cloud",
       "classification": "plotting",
-      "line": 62
+      "line": 61
+    },
+    {
+      "scope": "notebook_cell",
+      "source": "blaschke_deformation_certifier_thesis_math.ipynb",
+      "cell_id": "cc338a81",
+      "qualname": "_phase1_displacement_frame",
+      "classification": "plotting",
+      "line": 72
     },
     {
       "scope": "notebook_cell",
