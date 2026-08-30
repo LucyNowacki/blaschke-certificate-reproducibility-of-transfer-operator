@@ -68,18 +68,22 @@ python -B Numerics/verify_integrated_thesis_source_references.py \
 This is a manuscript-integration gate, not a numerical input or a substitute
 for the source-only numerical replay.
 
-The current locator/exposition-only release preserves the executed arithmetic
+The current corrective public release preserves the executed arithmetic
 from immutable NUMERICS_1 baseline commit
-`5ad612aed00e667f46bb176e7e09e3a51cb11676` byte-for-byte.  It changes only
-the research-thesis locator registry, builder-owned explanatory Markdown and
-their static provenance/tests; no notebook cell or numerical producer was
-executed.  Cell `107N` remains the compute authority and terminal Markdown
-Cell `110M` adds no theorem gate.  A new commit-keyed archive authenticates
-this refreshed release itself; the earlier `5ad612...` archive authenticates
-the arithmetic baseline, not the later notebook file.
+`5ad612aed00e667f46bb176e7e09e3a51cb11676`.  It retains every code-cell
+source, execution count, mathematical or numerical stored output and theorem
+gate, while normalizing environment-specific path displays, executable
+artifact references and notebook runtime metadata for the public bundle.  No
+notebook cell or numerical producer was executed for this normalization.  Cell
+`107N` remains the compute authority and terminal Markdown Cell `110M` adds no
+theorem gate.  A new commit-keyed archive authenticates this refreshed release
+itself; the earlier `5ad612...` archive authenticates the arithmetic baseline,
+not the later notebook file.
 
-The recorded execution uses the Conda environment `lucy`; the commands below
-assume that environment has been activated.
+The authenticated arithmetic was recorded with the private Conda environment
+name removed from the public notebook metadata.  The public kernelspec records
+the locked replay interpreter truthfully as Python 3.13.2; the commands below
+assume the recreated locked environment has been activated.
 
 The clean-room archive carries both `conda-explicit-lock.txt` and the exact
 pip override pins in `pip-requirements-lock.txt`.  After recreating the Conda
@@ -91,10 +95,17 @@ records pip, jupyter-server, mpmath, python-flint and threadpoolctl together
 with the pandas 2.3.3 and pyarrow 24.0.0 wheels installed above the
 Conda-explicit base.
 
-An extracted release archive is not source-only merely because its notebook
-builders emit output-free notebooks: the archive also carries the published
-numerical evidence for comparison.  Before any producer is run, prepare the
-exact extracted bundle with:
+Before extracting a release archive or importing any bundled Python, verify
+its byte hash against the separately published checksum and external manifest,
+then run `verify_blaschke_deformation_reproducibility.py` from the authenticated
+source commit with the archive, external-manifest and checksum arguments.
+Never load a retained pickle cache before those archive and manifest checks
+pass.
+
+An extracted, verified release archive is not source-only merely because its
+notebook builders emit output-free notebooks: the archive also carries the
+published numerical evidence for comparison.  Before any producer is run,
+prepare the exact extracted bundle with:
 
 `python -B Numerics/prepare_blaschke_source_only_replay.py --bundle-root .`
 
@@ -235,8 +246,10 @@ working tree:
 
 This command runs preparation before either builder, forces the historical
 Phase 4, 1024/2048-bit Hardy-matrix and contour producers, and optionally runs
-the replay-versus-published verifier.  The uncached N=600 replay is expected to
-take substantially longer than ten minutes.
+the replay-versus-published verifier.  After execution it deterministically
+normalizes retained path/provenance fields and rejects any manifest member that
+still contains host-local paths or stale runtime metadata.  The uncached N=600
+replay is expected to take substantially longer than ten minutes.
 
 The exact documentation scope for directly mathematical functions is recorded
 in `Numerics/mathematical_function_inventory.json`.  Its focused AST test
@@ -256,11 +269,11 @@ once the same clean-commit gate holds, create the referee archive with:
 `python -B Numerics/blaschke_deformation_reproducibility.py`
 
 That command rejects a missing or dirty Git worktree, validates the inline
-helper provenance, executed-notebook state, source manifest and theorem-facing
-machine records again.  It derives the current reproducibility settings from
-those records rather than trusting a stale notebook plan, captures a complete
-Conda explicit lock, and writes the generated archive, checksum and external
-manifest under
+helper provenance, executed-notebook state, publication portability, source
+manifest and theorem-facing machine records again.  It derives the current
+reproducibility settings from those records rather than trusting a stale
+notebook plan, captures a complete Conda explicit lock, and writes the
+generated archive, checksum and external manifest under
 `Numerics/outputs/blaschke_deformation_certifier/reproducibility`.  This
 generated directory is ignored so packaging does not dirty the clean source
 commit recorded by the archive.
@@ -278,7 +291,9 @@ variation such as wall-clock timings, temporary paths and container metadata.
 
 The validated data, reports and figures are stored under
 `Numerics/outputs/blaschke_deformation_certifier`.  Refresh and verify the
-working deployment checksum manifest with:
+portable retained fields and working deployment checksum manifest with:
+
+`python -B Numerics/normalize_blaschke_publication.py --root .`
 
 `python -B Numerics/refresh_deployment_manifest.py`
 

@@ -112,7 +112,7 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
     if len(inline_helper_hashes) != 18:
         raise RuntimeError("Expected exactly eighteen inline helper sources.")
     payload["source_hash_refresh"] = {
-        "date": "2026-08-29",
+        "date": "2026-08-30",
         "method": "refresh_notebook_cell_provenance.py",
         "notebook_sha256": notebook["sha256_at_manifest_creation"],
         "transformation_source_sha256": notebook["transformation_source_sha256"],
@@ -126,16 +126,19 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
         "inline_helper_sha256": dict(sorted(inline_helper_hashes.items())),
         "arithmetic_baseline_commit": ARITHMETIC_BASELINE_COMMIT,
         "source_sync_scope": (
-            "research-thesis locators and Cell 110M explanatory Markdown only"
+            "research-thesis locators and Cell 110M explanatory Markdown plus "
+            "public portability metadata and path-display normalization"
         ),
         "replay_status": (
-            "No notebook cell or numerical producer was executed for this "
-            "source synchronisation."
+            "No notebook cell or numerical producer was executed for this source "
+            "synchronisation or public portability normalization."
         ),
         "stored_output_status": (
-            "All code-cell sources, metadata, execution counts and stored outputs "
-            "are retained byte-for-byte from the authenticated arithmetic baseline; "
-            "Cell 107N remains the compute authority and Cell 110M adds no theorem gate."
+            "All code-cell sources, execution counts, and mathematical or numerical "
+            "stored outputs are retained from the authenticated arithmetic baseline; "
+            "environment-specific display paths and runtime metadata are normalized "
+            "for the public bundle; Cell 107N remains the compute authority and Cell "
+            "110M adds no theorem gate."
         ),
     }
     return payload

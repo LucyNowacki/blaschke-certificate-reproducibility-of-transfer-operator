@@ -8,9 +8,12 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 
 import prepare_blaschke_source_only_replay as preparation
-from run_blaschke_clean_room_replay import run_replay
+import run_blaschke_clean_room_replay as replay
+
+run_replay = replay.run_replay
 
 
 HERE = Path(__file__).resolve().parent
@@ -98,6 +101,60 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                 self.assertEqual(preparation.sha256_file(path), digest)
             checked = preparation.check_prepared_bundle(root)
             self.assertEqual(checked["status"], "source-only replay root prepared")
+
+    def test_full_replay_normalizes_before_published_root_verification(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="source-only-order-test-") as temp:
+            root = Path(temp) / preparation.BUNDLE_ROOT_NAME
+            numerics = root / "Numerics"
+            numerics.mkdir(parents=True)
+            (root / "source-only-replay-preparation.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+            plan = numerics / "blaschke_deformation_reproducibility_plan.json"
+            plan.write_text("{}\n", encoding="utf-8")
+            archive = Path(temp) / "published.tar.gz"
+            archive.write_bytes(b"fixture")
+            commands: list[list[str]] = []
+
+            def record(
+                command: list[str], *, root: Path, environment: dict[str, str]
+            ) -> dict[str, object]:
+                commands.append(command)
+                return {"command": command, "elapsed_seconds": 0.0, "returncode": 0}
+
+            with mock.patch.object(
+                replay,
+                "check_prepared_bundle",
+                return_value={"status": "source-only replay root prepared"},
+            ), mock.patch.object(replay, "_run", side_effect=record):
+                result = run_replay(
+                    bundle_root=root,
+                    kernel_name="fixture-kernel",
+                    assembly_workers=24,
+                    surface_workers=6,
+                    prepare_only=False,
+                    published_archive=archive,
+                )
+
+            normalizer_index = next(
+                index
+                for index, command in enumerate(commands)
+                if "Numerics/normalize_blaschke_publication.py" in command
+            )
+            verifier_index = next(
+                index
+                for index, command in enumerate(commands)
+                if "Numerics/verify_blaschke_deformation_reproducibility.py"
+                in command
+            )
+            self.assertLess(normalizer_index, verifier_index)
+            self.assertEqual(
+                commands[normalizer_index][-2:], ["--root", "."]
+            )
+            self.assertEqual(
+                result["status"],
+                "source-only replay and published comparison complete",
+            )
 
     def test_inventory_drift_is_rejected_before_deletion(self) -> None:
         with tempfile.TemporaryDirectory(prefix="source-only-drift-test-") as temp:

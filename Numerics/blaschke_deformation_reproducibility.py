@@ -24,8 +24,10 @@ from typing import Callable, Iterable, Mapping, Sequence
 
 try:
     from .prepare_blaschke_source_only_replay import make_archive_inventory
+    from .normalize_blaschke_publication import assert_publication_portable
 except ImportError:
     from prepare_blaschke_source_only_replay import make_archive_inventory
+    from normalize_blaschke_publication import assert_publication_portable
 
 
 PACKAGE_NAMES = (
@@ -2002,15 +2004,22 @@ def _replay_text() -> str:
 `README.md` is the unchanged deployment README from the source commit. This
 file records the archive-specific replay sequence.
 
-1. Recreate the recorded environment with `conda create --name blaschke-replay
+1. Before extracting the archive or importing any bundled Python, verify the
+   archive byte hash against its separately published `.sha256` file and
+   external manifest, then run
+   `python -B Numerics/verify_blaschke_deformation_reproducibility.py ARCHIVE
+   --external-manifest EXTERNAL_MANIFEST --checksum CHECKSUM` from the
+   authenticated source commit. Do not load a retained pickle cache before
+   these archive and manifest checks pass.
+2. Recreate the recorded environment with `conda create --name blaschke-replay
    --file conda-explicit-lock.txt` and activate it. Install the exact pip-only
    installer with `python -m ensurepip --upgrade`, then install the exact
    hashed pip-override lock with `python -m pip install --no-deps
    --only-binary=:all: --require-hashes --requirement
    pip-requirements-lock.txt`. Register its interpreter with
    `python -m ipykernel install --user --name blaschke-replay
-   --display-name "Python (blaschke-replay)"`.
-2. Before running any producer, remove only inventory-declared generated
+   --display-name "Python 3.13.2 (reproducibility)"`.
+3. Before running any producer, remove only inventory-declared generated
    evidence and generated notebook counterparts with `python -B
    Numerics/prepare_blaschke_source_only_replay.py --bundle-root .`. This
    command verifies the exact extracted bundle layout, hashes every immutable
@@ -2018,13 +2027,13 @@ file records the archive-specific replay sequence.
    `source-only-replay-preparation.json`. For this benchmark there are no
    external numerical input files: map data and exact targets are encoded in
    immutable sources, while every file below `Numerics/outputs` is generated.
-3. Rebuild the output-free notebooks with `python -B
+4. Rebuild the output-free notebooks with `python -B
    Numerics/build_blaschke_deformation_certifier.py` and `python -B
    Numerics/build_blaschke_deformation_thesis_math_notebook.py`.
-4. Rebuild the retained historical Phase 4 diagnostics from source with
+5. Rebuild the retained historical Phase 4 diagnostics from source with
    `python -u -B Numerics/blaschke_deformation_historical_phase4.py
    --production --assembly-workers 24 --surface-workers 6 --force`.
-5. Execute `BLASCHKE_FORCE_HARDY_MATRIX=1 BLASCHKE_FORCE_CONTOURS=1 python -u -B
+6. Execute `BLASCHKE_FORCE_HARDY_MATRIX=1 BLASCHKE_FORCE_CONTOURS=1 python -u -B
    Numerics/execute_notebook_incremental.py
    Numerics/blaschke_deformation_certifier_thesis_math.ipynb
    --kernel-name blaschke-replay`. The rebuilt Hardy-matrix digest invalidates
@@ -2032,11 +2041,15 @@ file records the archive-specific replay sequence.
    Laurent contour certificates. The source-only Phase 1 and sampled-Schur
    diagnostic producer cells must also regenerate their reports and every
    mandatory Phase 1 CSV/Parquet pair.
-6. Restore the verifier-v3 compatibility alias with `cp
+7. Restore the verifier-v3 compatibility alias with `cp
    Numerics/blaschke_deformation_reproducibility_plan.json
    Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_reproducibility_plan.json`.
    The source-controlled file is the authoritative plan.
-7. Compare the forced executed replay with the published archive using
+8. Normalize retained path/provenance fields and assert that the complete
+   manifest closure is portable with `python -B
+   Numerics/normalize_blaschke_publication.py --root .`. This step preserves
+   cell sources, execution counts and mathematical or numerical values.
+9. Compare the forced executed replay with the published archive using
    `python -B Numerics/verify_blaschke_deformation_reproducibility.py ARCHIVE
    --compare-executed-replay-root .`. The verifier requires exact immutable
    source identity and semantic equality of the theorem-facing and retained
@@ -2209,6 +2222,13 @@ def build_reproducibility_bundle(
         notebook_path=notebook_path,
         output_dir=output_dir,
     )
+    try:
+        assert_publication_portable(repo_root)
+    except Exception as exc:
+        raise ReproducibilityError(
+            "Publication portability preflight failed. Run the authoritative "
+            "normalizer and refresh the source manifest before packaging."
+        ) from exc
 
     source_plan_relative = _select_source_plan_relative(repo_root)
     repository_manifest_entries = _validate_source_manifest(repo_root)

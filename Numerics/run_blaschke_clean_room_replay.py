@@ -84,6 +84,19 @@ def run_replay(
     )
     plan_alias.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(plan_source, plan_alias)
+    command_records.append(
+        _run(
+            [
+                python,
+                "-B",
+                "Numerics/normalize_blaschke_publication.py",
+                "--root",
+                ".",
+            ],
+            root=root,
+            environment=environment,
+        )
+    )
 
     if published_archive is not None:
         archive = Path(published_archive).resolve(strict=True)

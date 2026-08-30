@@ -1036,6 +1036,7 @@ def validate_curated_counterpart(notebook):
         )
         for name in (
             "blaschke_source_only_replay_policy.json",
+            "normalize_blaschke_publication.py",
             "prepare_blaschke_source_only_replay.py",
             "run_blaschke_clean_room_replay.py",
         ):
@@ -1124,7 +1125,18 @@ class ReproducibilityBundleTests(unittest.TestCase):
         )
         with mock.patch.object(
             packager, "_conda_explicit_lock", return_value=TEST_CONDA_LOCK
-        ), mock.patch.object(packager, "_package_versions", return_value=versions):
+        ), mock.patch.object(
+            packager, "_package_versions", return_value=versions
+        ), mock.patch.object(
+            packager,
+            "assert_publication_portable",
+            return_value=None,
+        ):
+            # This legacy packager fixture intentionally uses tiny placeholder
+            # containers and reports rather than the canonical evidence schema.
+            # Publication portability is exercised against the real closure in
+            # test_normalize_blaschke_publication.py; here it is isolated so the
+            # unrelated packaging failure-mode tests retain their exact gates.
             yield
 
     def build(self) -> dict[str, object]:
@@ -1791,6 +1803,25 @@ class ReproducibilityBundleTests(unittest.TestCase):
                 self.deployment.output_dir / "reproducibility" / packager.ARCHIVE_NAME
             ).exists()
         )
+
+    def test_publication_portability_preflight_is_fail_closed(self) -> None:
+        plan = self.deployment.read_plan()
+        with self.package_environment(), mock.patch.object(
+            packager,
+            "assert_publication_portable",
+            side_effect=RuntimeError("simulated local-path leak"),
+        ) as portability_check, self.assertRaisesRegex(
+            packager.ReproducibilityError,
+            "Publication portability preflight failed",
+        ):
+            packager.build_reproducibility_bundle(
+                repo_root=self.deployment.root,
+                notebook_path=self.deployment.notebook_path,
+                output_dir=self.deployment.output_dir,
+                precision_settings=plan["precision_settings"],
+                upstream_artifact_names=plan["upstream_artifact_names"],
+            )
+        portability_check.assert_called_once_with(self.deployment.root.resolve())
 
     def test_subdirectory_is_not_accepted_as_repository_root(self) -> None:
         plan = self.deployment.read_plan()

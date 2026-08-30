@@ -64,6 +64,26 @@ class IncrementalExecutorTests(unittest.TestCase):
 
         self.assertEqual(ctor.call_args.kwargs["kernel_name"], "fresh-env")
 
+    def test_portable_stored_kernel_is_fail_closed_fallback(self) -> None:
+        notebook = nbformat.v4.new_notebook(
+            metadata={
+                "kernelspec": {
+                    "name": "blaschke-replay",
+                    "display_name": "Python 3.13.2 (reproducibility)",
+                    "language": "python",
+                }
+            }
+        )
+        client = mock.Mock()
+        with mock.patch.dict(os.environ, {}, clear=True), \
+             mock.patch.object(executor.nbformat, "read", return_value=notebook), \
+             mock.patch.object(executor.nbformat, "write"), \
+             mock.patch.object(executor, "NotebookClient", return_value=client) as ctor:
+            executor.execute(Path("certificate.ipynb"))
+
+        self.assertEqual(ctor.call_args.kwargs["kernel_name"], "blaschke-replay")
+        client.execute.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

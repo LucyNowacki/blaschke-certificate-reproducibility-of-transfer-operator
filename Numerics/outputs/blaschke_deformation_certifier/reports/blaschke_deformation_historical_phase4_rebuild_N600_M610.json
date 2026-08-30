@@ -56,25 +56,25 @@
     "schema": "historical-phase4-docstring-only-source-refresh-v1",
     "sources": {
       "hardy_surface_worker": {
-        "current_sha256": "fe2614db853182a5e7ed73da3e4e2746e719308ab0b71d85474c564102cc9b46",
         "current_semantic_ast_sha256": "127cd3531e43d593c90ecbd85e1c68aedfba05501fbaa63f535dbc824c312960",
+        "current_sha256": "fe2614db853182a5e7ed73da3e4e2746e719308ab0b71d85474c564102cc9b46",
         "path": "Numerics/hardy_moat_surface_worker.py",
-        "previous_sha256": "40e82bc898f01dde300eba6409c5a60184cea7283d341c0894270eeb368b7ade",
-        "previous_semantic_ast_sha256": "127cd3531e43d593c90ecbd85e1c68aedfba05501fbaa63f535dbc824c312960"
+        "previous_semantic_ast_sha256": "127cd3531e43d593c90ecbd85e1c68aedfba05501fbaa63f535dbc824c312960",
+        "previous_sha256": "40e82bc898f01dde300eba6409c5a60184cea7283d341c0894270eeb368b7ade"
       },
       "historical_phase4_producer": {
-        "current_sha256": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
         "current_semantic_ast_sha256": "f893626609cc9286800a64e6bf44df11c702476bb63a96146fbab54cb0c3374d",
+        "current_sha256": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
         "path": "Numerics/blaschke_deformation_historical_phase4.py",
-        "previous_sha256": "f7f01a4db874a96c00e992989871e49eebfa7daf0d9957a5dc0e615e378d3e44",
-        "previous_semantic_ast_sha256": "f893626609cc9286800a64e6bf44df11c702476bb63a96146fbab54cb0c3374d"
+        "previous_semantic_ast_sha256": "f893626609cc9286800a64e6bf44df11c702476bb63a96146fbab54cb0c3374d",
+        "previous_sha256": "f7f01a4db874a96c00e992989871e49eebfa7daf0d9957a5dc0e615e378d3e44"
       },
       "mpmath_row_worker": {
-        "current_sha256": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
         "current_semantic_ast_sha256": "ab647a3c455b4bca2d4b63dfb7aa7877b670ad6f9f10475e0f34acbfa0ebbeb7",
+        "current_sha256": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
         "path": "Numerics/mpmath_pf_raw.py",
-        "previous_sha256": "ab0f82c9928888d243660af3ae472a1b839b014a74c54ae1450c02e4f356461b",
-        "previous_semantic_ast_sha256": "ab647a3c455b4bca2d4b63dfb7aa7877b670ad6f9f10475e0f34acbfa0ebbeb7"
+        "previous_semantic_ast_sha256": "ab647a3c455b4bca2d4b63dfb7aa7877b670ad6f9f10475e0f34acbfa0ebbeb7",
+        "previous_sha256": "ab0f82c9928888d243660af3ae472a1b839b014a74c54ae1450c02e4f356461b"
       }
     },
     "verification_method": "Python AST equality after removing module, class, function, and async-function docstrings and ignoring source-location attributes"
@@ -107,7 +107,7 @@
     "deep_zoom_surface": {
       "diagnostic_status": "diagnostic_only_not_theorem_gate",
       "path": "branch_image_wide_candidate_first15_deep_zoom_hardy_moat_surface_N600_M610_grid201.npz",
-      "sha256": "c5e8af3da4edd5e2b90ca6e4eded30f057f2f9f81d603e391237eb4f33db91e0"
+      "sha256": "369d62c2c8e20088a63ef840e81ff1e19376194c47a56b0ccc05abe59625a354"
     },
     "eigenvalues": {
       "diagnostic_status": "diagnostic_only_not_theorem_gate",
@@ -137,7 +137,7 @@
     "global_surface": {
       "diagnostic_status": "diagnostic_only_not_theorem_gate",
       "path": "branch_image_wide_candidate_first15_global_hardy_moat_surface_N600_M610_grid45.npz",
-      "sha256": "47252250c9ff5e0a8ce8d66dc4f2e2b610f8de113950e9e5300cf4010bc5cffa"
+      "sha256": "53a28ee101596b0b6d6e6334b44ed1f3150ea77655b81826b4023e819d0b425b"
     },
     "global_surface_csv": {
       "diagnostic_status": "diagnostic_only_not_theorem_gate",
@@ -152,7 +152,7 @@
     "local_surface": {
       "diagnostic_status": "diagnostic_only_not_theorem_gate",
       "path": "branch_image_wide_candidate_mu2_hardy_moat_surface_N600_M610_grid25.npz",
-      "sha256": "3297b583f5dba9cf7f5253b52204184f7bfd106e5311e2c04e0192f585ac327b"
+      "sha256": "01154a11a82a5583c2636d9b1e84653647bd1ef589c8750f008eb8ca9f3694ca"
     },
     "local_surface_csv": {
       "diagnostic_status": "diagnostic_only_not_theorem_gate",
@@ -197,7 +197,7 @@
     "zoom_surface": {
       "diagnostic_status": "diagnostic_only_not_theorem_gate",
       "path": "branch_image_wide_candidate_first15_zoom_hardy_moat_surface_N600_M610_grid161.npz",
-      "sha256": "06e43e55dffe97e6eb2dd59709592760ad9c94564deb468d4ed3dbd0ad40013a"
+      "sha256": "43a2970a1ac41ed691b903c373932d0dc20cede2f2161d6ae112c770e8c87b95"
     }
   },
   "process_execution": {

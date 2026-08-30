@@ -3,8 +3,8 @@
   "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
   "notebook": {
     "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-    "sha256_at_manifest_creation": "baee0327cd23d8e6c98798df5211335d438f53caea3276d5da341aa0b76ae970",
-    "transformation_source_sha256": "78a03b96db5439fa2f914b3a38020d0c9606db45755e724e4164351a8fe9d0d5",
+    "sha256_at_manifest_creation": "c4d95078e26b264e57faa1ea92929d4fa7458f4aab091c46cc5dd07bae793728",
+    "transformation_source_sha256": "c854850df88b257b54c982e504155867882d04fb691d62d134c7a5ce1fcbf6de",
     "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
     "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 141-cell, 68-code-cell notebook, including Cell 0M, the two source-only diagnostic producers and final auditor Markdown Cell 110M.",
     "expected_retained_cell_count": 141,
@@ -2735,10 +2735,10 @@
   },
   "unresolved_provenance": {},
   "source_hash_refresh": {
-    "date": "2026-08-29",
+    "date": "2026-08-30",
     "method": "refresh_notebook_cell_provenance.py",
-    "notebook_sha256": "baee0327cd23d8e6c98798df5211335d438f53caea3276d5da341aa0b76ae970",
-    "transformation_source_sha256": "78a03b96db5439fa2f914b3a38020d0c9606db45755e724e4164351a8fe9d0d5",
+    "notebook_sha256": "c4d95078e26b264e57faa1ea92929d4fa7458f4aab091c46cc5dd07bae793728",
+    "transformation_source_sha256": "c854850df88b257b54c982e504155867882d04fb691d62d134c7a5ce1fcbf6de",
     "thesis_math_builder_sha256": "6379883a48a5680c1f90a4cd4bfb15d3b2a26738ca3bc4d8004c68722490e68d",
     "chapter_math_map_sha256": "dd99f0b4fe7eab87f334d324e1859d98082439f26c0d1142d9f9aac99cd5fab6",
     "visual_cell_count": 20,
@@ -2777,8 +2777,8 @@
       "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a"
     },
     "arithmetic_baseline_commit": "5ad612aed00e667f46bb176e7e09e3a51cb11676",
-    "source_sync_scope": "research-thesis locators and Cell 110M explanatory Markdown only",
-    "replay_status": "No notebook cell or numerical producer was executed for this source synchronisation.",
-    "stored_output_status": "All code-cell sources, metadata, execution counts and stored outputs are retained byte-for-byte from the authenticated arithmetic baseline; Cell 107N remains the compute authority and Cell 110M adds no theorem gate."
+    "source_sync_scope": "research-thesis locators and Cell 110M explanatory Markdown plus public portability metadata and path-display normalization",
+    "replay_status": "No notebook cell or numerical producer was executed for this source synchronisation or public portability normalization.",
+    "stored_output_status": "All code-cell sources, execution counts, and mathematical or numerical stored outputs are retained from the authenticated arithmetic baseline; environment-specific display paths and runtime metadata are normalized for the public bundle; Cell 107N remains the compute authority and Cell 110M adds no theorem gate."
   }
 }
