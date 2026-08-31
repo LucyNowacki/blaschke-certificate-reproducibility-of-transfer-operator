@@ -5,8 +5,11 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -21,6 +24,105 @@ POLICY = HERE / "blaschke_source_only_replay_policy.json"
 
 
 class GeneratedClosureTests(unittest.TestCase):
+    def test_cell106_contour_harness_is_source_only_and_provenance_is_exact(
+        self,
+    ) -> None:
+        provenance = json.loads(
+            (HERE / "notebook_cell_provenance.json").read_text(encoding="utf-8")
+        )
+        record = provenance["entries"]["structural Phase 4 provenance tests"]
+        self.assertEqual(
+            record["helper_functions"][
+                "test_blaschke_deformation_contour_certification."
+                "CountAndMoatProvenanceTests"
+            ],
+            [
+                "test_checkpoint_requires_all_seven_reconstruction_records",
+                "test_epsilon_loading_requires_every_fresh_phase2_gate",
+                "test_failed_laurent_residual_preserves_count_provenance",
+                "test_failed_schur_homotopy_blocks_count_transport",
+                "test_fixed_flint_precision_restores_after_failure",
+                "test_laurent_candidate_generation_is_repeatable",
+                "test_laurent_proposal_table_has_recorded_reference_digests",
+                "test_logical_source_hashes_ignore_temporary_parent_paths",
+                "test_repeated_diagonal_count_survives_nonnormality",
+                "test_small_gain_precision_roles_match_legacy_and_explicit_256",
+                "test_small_gain_reaggregation_preserves_finite_geometry",
+                "test_wrong_expected_multiplicity_does_not_invalidate_count",
+                "test_zero_complement_requires_strict_exclusion",
+            ],
+        )
+        self.assertEqual(
+            record["file_sources"],
+            [
+                "Final Deployment/Numerics/"
+                "test_blaschke_deformation_contour_certification.py",
+                "Final Deployment/Numerics/"
+                "blaschke_deformation_contour_certification.py",
+                "Final Deployment/Numerics/"
+                "blaschke_deformation_spectral_certification.py",
+            ],
+        )
+        self.assertEqual(
+            record["prior_result_sources"],
+            [
+                "inline contour and spectral helper modules",
+                "test-owned immutable authenticated 5c0 epsilon/moat/product "
+                "constants embedded in "
+                "test_blaschke_deformation_contour_certification.py",
+            ],
+        )
+        self.assertEqual(
+            record["execution_mode"]["cache_policy"],
+            "source-resident fixtures only; no Numerics/outputs reads",
+        )
+
+        source_names = (
+            "test_blaschke_deformation_contour_certification.py",
+            "blaschke_deformation_contour_certification.py",
+            "blaschke_deformation_spectral_certification.py",
+        )
+        with tempfile.TemporaryDirectory(
+            prefix="detached-contour-test-harness-"
+        ) as temporary:
+            numerics = Path(temporary) / "Numerics"
+            numerics.mkdir()
+            for name in source_names:
+                shutil.copyfile(HERE / name, numerics / name)
+
+            outputs = numerics / "outputs"
+            self.assertFalse(outputs.exists())
+            environment = os.environ.copy()
+            environment.pop("PYTHONPATH", None)
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+            environment["PYTHONNOUSERSITE"] = "1"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    "-m",
+                    "unittest",
+                    "-q",
+                    "test_blaschke_deformation_contour_certification",
+                ],
+                cwd=numerics,
+                env=environment,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=120,
+                check=False,
+            )
+
+            self.assertEqual(
+                completed.returncode,
+                0,
+                msg=f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}",
+            )
+            self.assertIn("Ran 13 tests", completed.stderr)
+            self.assertIn("OK", completed.stderr)
+            self.assertFalse(outputs.exists())
+
     def _archive_bundle(self, parent: Path) -> Path:
         root = parent / preparation.BUNDLE_ROOT_NAME
         numerics = root / "Numerics"

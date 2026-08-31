@@ -2604,13 +2604,19 @@
       "cell_index": 163,
       "helper_functions": {
         "test_blaschke_deformation_contour_certification.CountAndMoatProvenanceTests": [
-          "test_repeated_diagonal_count_survives_nonnormality",
-          "test_wrong_expected_multiplicity_does_not_invalidate_count",
-          "test_failed_schur_homotopy_blocks_count_transport",
+          "test_checkpoint_requires_all_seven_reconstruction_records",
+          "test_epsilon_loading_requires_every_fresh_phase2_gate",
           "test_failed_laurent_residual_preserves_count_provenance",
-          "test_zero_complement_requires_strict_exclusion",
+          "test_failed_schur_homotopy_blocks_count_transport",
+          "test_fixed_flint_precision_restores_after_failure",
+          "test_laurent_candidate_generation_is_repeatable",
+          "test_laurent_proposal_table_has_recorded_reference_digests",
           "test_logical_source_hashes_ignore_temporary_parent_paths",
-          "test_small_gain_reaggregation_preserves_finite_geometry"
+          "test_repeated_diagonal_count_survives_nonnormality",
+          "test_small_gain_precision_roles_match_legacy_and_explicit_256",
+          "test_small_gain_reaggregation_preserves_finite_geometry",
+          "test_wrong_expected_multiplicity_does_not_invalidate_count",
+          "test_zero_complement_requires_strict_exclusion"
         ]
       },
       "helper_symbols": {
@@ -2624,13 +2630,14 @@
         "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py"
       ],
       "prior_result_sources": [
-        "inline contour and spectral helper modules"
+        "inline contour and spectral helper modules",
+        "test-owned immutable authenticated 5c0 epsilon/moat/product constants embedded in test_blaschke_deformation_contour_certification.py"
       ],
       "execution_mode": {
         "kind": "unittest_failure_mode_suite",
         "parallelism": "single process",
-        "arithmetic": "small exact and validated structural cases",
-        "cache_policy": "none"
+        "arithmetic": "small exact and validated structural cases; fixed-256 theorem and fixed-53 legacy-compatibility reaggregation",
+        "cache_policy": "source-resident fixtures only; no Numerics/outputs reads"
       },
       "products": {
         "prior_results": [
@@ -2640,7 +2647,7 @@
       },
       "proof_status": {
         "class": "validation_test",
-        "claim": "Tests count provenance, nonnormality, homotopy failure, Laurent failure, zero-complement exclusion, source-hash stability and epsilon-only reaggregation."
+        "claim": "Tests count provenance, nonnormality, fresh epsilon-gate completeness, homotopy failure, Laurent reconstruction and failure, zero-complement exclusion, source-hash stability, epsilon-only reaggregation, configured-precision theorem values, non-gating fixed-53 legacy compatibility and FLINT precision restoration."
       },
       "unresolved_provenance": []
     },
