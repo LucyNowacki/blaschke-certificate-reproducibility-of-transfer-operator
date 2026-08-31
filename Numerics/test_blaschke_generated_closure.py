@@ -106,6 +106,13 @@ class GeneratedClosureTests(unittest.TestCase):
         )
         return root.joinpath(*Path(value).parts)
 
+    def _mutated_inventory_payload(self, root: Path, mutation) -> tuple[bytes, str]:
+        path = root / preparation.INVENTORY_NAME
+        inventory = json.loads(path.read_text(encoding="utf-8"))
+        mutation(inventory)
+        payload = (json.dumps(inventory, indent=2) + "\n").encode("utf-8")
+        return payload, hashlib.sha256(payload).hexdigest()
+
     def _run_mocked_compute(
         self,
         root: Path,
@@ -113,6 +120,7 @@ class GeneratedClosureTests(unittest.TestCase):
         *,
         mutate_after_compute=None,
         compute_only: bool = True,
+        expected_inventory_sha256: str | None = None,
     ) -> tuple[dict[str, object] | None, list[list[str]], Exception | None]:
         commands: list[list[str]] = []
 
@@ -140,6 +148,11 @@ class GeneratedClosureTests(unittest.TestCase):
                     prepare_only=False,
                     published_archive=None,
                     compute_only=compute_only,
+                    expected_inventory_sha256=(
+                        expected_inventory_sha256
+                        if expected_inventory_sha256 is not None
+                        else str(receipt["inventory_sha256"])
+                    ),
                 )
         except Exception as exc:  # returned for concise failure-mode assertions
             return None, commands, exc
@@ -151,11 +164,14 @@ class GeneratedClosureTests(unittest.TestCase):
         receipt: dict[str, object],
         mutation,
         pattern: str,
+        *,
+        expected_inventory_sha256: str | None = None,
     ) -> None:
         result, commands, error = self._run_mocked_compute(
             root,
             receipt,
             mutate_after_compute=mutation,
+            expected_inventory_sha256=expected_inventory_sha256,
         )
         self.assertIsNone(result)
         self.assertIsInstance(error, preparation.SourceOnlyReplayError)
@@ -205,6 +221,10 @@ class GeneratedClosureTests(unittest.TestCase):
             self.assertEqual(closure["generated_paths"], expected_paths)
             self.assertEqual(closure["generated_path_count"], len(expected_paths))
             self.assertEqual(closure["missing"], [])
+            self.assertEqual(
+                closure["expected_inventory_sha256"],
+                receipt["inventory_sha256"],
+            )
             payload = json.dumps(
                 {"count": len(expected_paths), "paths": expected_paths},
                 ensure_ascii=True,
@@ -272,42 +292,213 @@ class GeneratedClosureTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="generated-closure-escape-") as temp:
             root, receipt = self._prepared_bundle(Path(temp))
 
-            def inject_escape(bundle: Path, unused: dict[str, object]) -> None:
-                path = bundle / preparation.INVENTORY_NAME
-                inventory = json.loads(path.read_text(encoding="utf-8"))
+            def mutate(inventory: dict[str, object]) -> None:
                 inventory["files"][0]["path"] = "../outside.txt"
-                path.write_text(
-                    json.dumps(inventory, indent=2) + "\n", encoding="utf-8"
-                )
+
+            payload, forged_sha256 = self._mutated_inventory_payload(root, mutate)
+
+            def inject_escape(bundle: Path, unused: dict[str, object]) -> None:
+                (bundle / preparation.INVENTORY_NAME).write_bytes(payload)
 
             self._assert_compute_receipt_blocked(
-                root, receipt, inject_escape, r"Unsafe source-only inventory path"
+                root,
+                receipt,
+                inject_escape,
+                r"Unsafe source-only inventory path",
+                expected_inventory_sha256=forged_sha256,
             )
 
     def test_malformed_inventory_blocks_compute_receipt(self) -> None:
         with tempfile.TemporaryDirectory(prefix="generated-closure-malformed-") as temp:
             root, receipt = self._prepared_bundle(Path(temp))
 
-            def inject_malformed(bundle: Path, unused: dict[str, object]) -> None:
-                path = bundle / preparation.INVENTORY_NAME
-                inventory = json.loads(path.read_text(encoding="utf-8"))
+            def mutate(inventory: dict[str, object]) -> None:
                 inventory["files"][0] = "not-a-record"
-                path.write_text(
-                    json.dumps(inventory, indent=2) + "\n", encoding="utf-8"
-                )
+
+            payload, forged_sha256 = self._mutated_inventory_payload(root, mutate)
+
+            def inject_malformed(bundle: Path, unused: dict[str, object]) -> None:
+                (bundle / preparation.INVENTORY_NAME).write_bytes(payload)
 
             self._assert_compute_receipt_blocked(
-                root, receipt, inject_malformed, r"Malformed source-only replay record"
+                root,
+                receipt,
+                inject_malformed,
+                r"Malformed source-only replay record",
+                expected_inventory_sha256=forged_sha256,
             )
 
     def test_duplicate_inventory_path_blocks_compute_receipt(self) -> None:
         with tempfile.TemporaryDirectory(prefix="generated-closure-duplicate-") as temp:
             root, receipt = self._prepared_bundle(Path(temp))
 
+            def mutate(inventory: dict[str, object]) -> None:
+                inventory["files"].append(dict(inventory["files"][0]))
+
+            payload, forged_sha256 = self._mutated_inventory_payload(root, mutate)
+
             def inject_duplicate(bundle: Path, unused: dict[str, object]) -> None:
+                (bundle / preparation.INVENTORY_NAME).write_bytes(payload)
+
+            self._assert_compute_receipt_blocked(
+                root,
+                receipt,
+                inject_duplicate,
+                r"Duplicate source-only inventory path",
+                expected_inventory_sha256=forged_sha256,
+            )
+
+    def test_missing_expected_inventory_authority_blocks_before_compute(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-no-authority-") as temp:
+            root, unused_receipt = self._prepared_bundle(Path(temp))
+            calls: list[list[str]] = []
+            with mock.patch.object(
+                replay,
+                "_run",
+                side_effect=lambda command, **unused: calls.append(command),
+            ):
+                with self.assertRaisesRegex(
+                    ValueError, r"expected-inventory-sha256"
+                ):
+                    replay.run_replay(
+                        bundle_root=root,
+                        kernel_name="fixture-kernel",
+                        assembly_workers=2,
+                        surface_workers=2,
+                        prepare_only=False,
+                        published_archive=None,
+                        compute_only=True,
+                        expected_inventory_sha256=None,
+                    )
+            self.assertEqual(calls, [])
+            self.assertFalse(
+                (root / "clean-room-compute-only-evidence.json").exists()
+            )
+
+    def test_invalid_expected_inventory_authority_blocks_before_compute(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-bad-authority-") as temp:
+            root, unused_receipt = self._prepared_bundle(Path(temp))
+            with mock.patch.object(replay, "_run") as runner:
+                with self.assertRaisesRegex(
+                    ValueError, r"expected-inventory-sha256"
+                ):
+                    replay.run_replay(
+                        bundle_root=root,
+                        kernel_name="fixture-kernel",
+                        assembly_workers=2,
+                        surface_workers=2,
+                        prepare_only=False,
+                        published_archive=None,
+                        compute_only=True,
+                        expected_inventory_sha256="not-a-sha256",
+                    )
+            runner.assert_not_called()
+
+    def test_expected_inventory_digest_mismatch_blocks_compute_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-wrong-digest-") as temp:
+            root, receipt = self._prepared_bundle(Path(temp))
+            result, commands, error = self._run_mocked_compute(
+                root,
+                receipt,
+                expected_inventory_sha256="0" * 64,
+            )
+            self.assertIsNone(result)
+            self.assertIsInstance(error, preparation.SourceOnlyReplayError)
+            self.assertRegex(str(error), r"externally authenticated expected SHA-256")
+            self.assertEqual(len(commands), 5)
+            self.assertFalse(
+                (root / "clean-room-compute-only-evidence.json").exists()
+            )
+
+    def test_forged_receipt_count_blocks_compute_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-receipt-count-") as temp:
+            root, receipt = self._prepared_bundle(Path(temp))
+            receipt["removed_file_count"] = int(receipt["removed_file_count"]) + 1
+            (root / preparation.RECEIPT_NAME).write_text(
+                json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
+            )
+            self._assert_compute_receipt_blocked(
+                root,
+                receipt,
+                lambda bundle, current: None,
+                r"receipt does not match the inventory",
+            )
+
+    def test_forged_receipt_inventory_hash_blocks_compute_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-receipt-hash-") as temp:
+            root, receipt = self._prepared_bundle(Path(temp))
+            authenticated_sha256 = str(receipt["inventory_sha256"])
+            receipt["inventory_sha256"] = "0" * 64
+            (root / preparation.RECEIPT_NAME).write_text(
+                json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
+            )
+            self._assert_compute_receipt_blocked(
+                root,
+                receipt,
+                lambda bundle, current: None,
+                r"receipt does not authenticate the inventory",
+                expected_inventory_sha256=authenticated_sha256,
+            )
+
+    def test_inventory_count_drift_blocks_compute_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-count-drift-") as temp:
+            root, receipt = self._prepared_bundle(Path(temp))
+
+            def mutate(inventory: dict[str, object]) -> None:
+                inventory["counts"]["generated_evidence"] += 1
+
+            payload, forged_sha256 = self._mutated_inventory_payload(root, mutate)
+
+            def inject_count_drift(bundle: Path, unused: dict[str, object]) -> None:
+                (bundle / preparation.INVENTORY_NAME).write_bytes(payload)
+
+            self._assert_compute_receipt_blocked(
+                root,
+                receipt,
+                inject_count_drift,
+                r"inventory counts are malformed or inconsistent",
+                expected_inventory_sha256=forged_sha256,
+            )
+
+    def test_internal_manifest_binding_drift_blocks_compute_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-manifest-drift-") as temp:
+            root, receipt = self._prepared_bundle(Path(temp))
+
+            def inject_manifest_drift(
+                bundle: Path, unused: dict[str, object]
+            ) -> None:
+                path = bundle / preparation.INTERNAL_MANIFEST_NAME
+                manifest = json.loads(path.read_text(encoding="utf-8"))
+                binding = next(
+                    row
+                    for row in manifest["files"]
+                    if row.get("archive_path") == preparation.INVENTORY_NAME
+                )
+                binding["sha256"] = "0" * 64
+                path.write_text(
+                    json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+                )
+
+            self._assert_compute_receipt_blocked(
+                root,
+                receipt,
+                inject_manifest_drift,
+                r"internal manifest does not authenticate",
+            )
+
+    def test_expected_path_fingerprint_drift_blocks_compute_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-path-drift-") as temp:
+            root, receipt = self._prepared_bundle(Path(temp))
+
+            def inject_path_drift(bundle: Path, unused: dict[str, object]) -> None:
                 path = bundle / preparation.INVENTORY_NAME
                 inventory = json.loads(path.read_text(encoding="utf-8"))
-                inventory["files"].append(dict(inventory["files"][0]))
+                row = next(
+                    row
+                    for row in inventory["files"]
+                    if row.get("classification") in preparation.GENERATED_CLASSES
+                )
+                row["path"] = str(row["path"]) + ".drift"
                 path.write_text(
                     json.dumps(inventory, indent=2) + "\n", encoding="utf-8"
                 )
@@ -315,8 +506,58 @@ class GeneratedClosureTests(unittest.TestCase):
             self._assert_compute_receipt_blocked(
                 root,
                 receipt,
-                inject_duplicate,
-                r"Duplicate source-only inventory path",
+                inject_path_drift,
+                r"externally authenticated expected SHA-256",
+            )
+
+    def test_full_composite_metadata_rewrite_cannot_forge_closure(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-composite-") as temp:
+            root, receipt = self._prepared_bundle(Path(temp))
+
+            def rewrite_all_local_authorities(
+                bundle: Path, unused: dict[str, object]
+            ) -> None:
+                inventory_path = bundle / preparation.INVENTORY_NAME
+                inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+                row_index = next(
+                    index
+                    for index, row in enumerate(inventory["files"])
+                    if row.get("classification") in preparation.GENERATED_CLASSES
+                )
+                removed_row = inventory["files"].pop(row_index)
+                classification = removed_row["classification"]
+                inventory["counts"][classification] -= 1
+                inventory_path.write_text(
+                    json.dumps(inventory, indent=2) + "\n", encoding="utf-8"
+                )
+                forged_inventory_sha256 = preparation.sha256_file(inventory_path)
+
+                receipt_path = bundle / preparation.RECEIPT_NAME
+                forged_receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                forged_receipt["inventory_sha256"] = forged_inventory_sha256
+                forged_receipt["removed_paths"].remove(removed_row["path"])
+                forged_receipt["removed_file_count"] -= 1
+                receipt_path.write_text(
+                    json.dumps(forged_receipt, indent=2) + "\n", encoding="utf-8"
+                )
+
+                manifest_path = bundle / preparation.INTERNAL_MANIFEST_NAME
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                binding = next(
+                    row
+                    for row in manifest["files"]
+                    if row.get("archive_path") == preparation.INVENTORY_NAME
+                )
+                binding["sha256"] = forged_inventory_sha256
+                manifest_path.write_text(
+                    json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+                )
+
+            self._assert_compute_receipt_blocked(
+                root,
+                receipt,
+                rewrite_all_local_authorities,
+                r"externally authenticated expected SHA-256",
             )
 
     def test_missing_member_blocks_full_replay_before_normalizer(self) -> None:

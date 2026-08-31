@@ -152,6 +152,7 @@ def _verify_generated_closure(
     *,
     root: Path,
     preparation: dict[str, object],
+    expected_inventory_sha256: str,
 ) -> dict[str, object]:
     """Require every archive-declared generated member before finalization."""
 
@@ -175,16 +176,48 @@ def _verify_generated_closure(
     assert manifest_path is not None
     assert policy_path is not None
 
-    on_disk_receipt = _load_json_object(
-        receipt_path, label="source-only preparation receipt"
-    )
+    if not _is_sha256(expected_inventory_sha256):
+        raise SourceOnlyReplayError(
+            "The externally authenticated expected inventory SHA-256 is invalid."
+        )
+    try:
+        inventory_payload = inventory_path.read_bytes()
+    except OSError as exc:
+        raise SourceOnlyReplayError(
+            f"Cannot read source-only replay inventory at {inventory_path}: {exc}"
+        ) from exc
+    inventory_sha256 = hashlib.sha256(inventory_payload).hexdigest()
+    if inventory_sha256 != expected_inventory_sha256:
+        raise SourceOnlyReplayError(
+            "The replay inventory does not match the externally authenticated "
+            "expected SHA-256."
+        )
+
+    try:
+        receipt_payload = receipt_path.read_bytes()
+        on_disk_receipt = json.loads(receipt_payload)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SourceOnlyReplayError(
+            f"Cannot read source-only preparation receipt at {receipt_path}: {exc}"
+        ) from exc
+    if not isinstance(on_disk_receipt, dict):
+        raise SourceOnlyReplayError(
+            "The source-only preparation receipt must be a JSON object."
+        )
     if on_disk_receipt != preparation:
         raise SourceOnlyReplayError(
             "The in-memory and on-disk source-only preparation receipts differ."
         )
-    inventory = _load_json_object(
-        inventory_path, label="source-only replay inventory"
-    )
+    try:
+        inventory = json.loads(inventory_payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SourceOnlyReplayError(
+            f"Cannot decode source-only replay inventory at {inventory_path}: {exc}"
+        ) from exc
+    if not isinstance(inventory, dict):
+        raise SourceOnlyReplayError(
+            "The source-only replay inventory must be a JSON object."
+        )
 
     if (
         type(inventory.get("schema_version")) is not int
@@ -276,7 +309,6 @@ def _verify_generated_closure(
         raise SourceOnlyReplayError(
             "The source-only preparation receipt does not match the inventory."
         )
-    inventory_sha256 = sha256_file(inventory_path)
     if (
         not _is_sha256(on_disk_receipt.get("inventory_sha256"))
         or on_disk_receipt.get("inventory_sha256") != inventory_sha256
@@ -333,8 +365,13 @@ def _verify_generated_closure(
     return {
         "closure_schema": "blaschke-declared-generated-closure-v1",
         "status": "declared generated output closure complete",
+        "expected_inventory_authority": (
+            "caller-supplied from authenticated external release manifest or "
+            "externally recorded prelaunch preparation"
+        ),
+        "expected_inventory_sha256": expected_inventory_sha256,
         "inventory_sha256": inventory_sha256,
-        "preparation_receipt_sha256": sha256_file(receipt_path),
+        "preparation_receipt_sha256": hashlib.sha256(receipt_payload).hexdigest(),
         "generated_path_count": len(generated_paths),
         "generated_paths": generated_paths,
         "generated_paths_sha256": fingerprint,
@@ -359,6 +396,7 @@ def run_replay(
     prepare_only: bool,
     published_archive: Path | None,
     compute_only: bool = False,
+    expected_inventory_sha256: str | None = None,
 ) -> dict[str, object]:
     root = Path(bundle_root).resolve(strict=True)
     if root.name != BUNDLE_ROOT_NAME or (root / ".git").exists():
@@ -376,6 +414,12 @@ def run_replay(
             "Compute-only replay cannot compare a published archive before "
             "normalization and provenance refresh."
         )
+    if not _is_sha256(expected_inventory_sha256):
+        raise ValueError(
+            "A lowercase 64-hex --expected-inventory-sha256 from an "
+            "authenticated external authority is required for compute/full replay."
+        )
+    assert expected_inventory_sha256 is not None
 
     if assembly_workers < 1 or surface_workers < 1:
         raise ValueError("Worker counts must be positive.")
@@ -417,6 +461,7 @@ def run_replay(
     generated_closure = _verify_generated_closure(
         root=root,
         preparation=preparation,
+        expected_inventory_sha256=expected_inventory_sha256,
     )
     forced_environment = {
         key: environment[key]
@@ -511,6 +556,13 @@ def main() -> None:
         ),
     )
     parser.add_argument("--published-archive", type=Path)
+    parser.add_argument(
+        "--expected-inventory-sha256",
+        help=(
+            "Exact source-only inventory digest from the authenticated external "
+            "release manifest, or from an externally recorded prepare-only launch."
+        ),
+    )
     args = parser.parse_args()
     result = run_replay(
         bundle_root=args.bundle_root,
@@ -520,6 +572,7 @@ def main() -> None:
         prepare_only=args.prepare_only,
         published_archive=args.published_archive,
         compute_only=args.compute_only,
+        expected_inventory_sha256=args.expected_inventory_sha256,
     )
     print(json.dumps(result, indent=2))
 

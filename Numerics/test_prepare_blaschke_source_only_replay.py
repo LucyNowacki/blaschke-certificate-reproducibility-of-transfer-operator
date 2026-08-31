@@ -138,6 +138,7 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                     surface_workers=6,
                     prepare_only=False,
                     published_archive=archive,
+                    expected_inventory_sha256="0" * 64,
                 )
 
             normalizer_index = next(
@@ -199,6 +200,7 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                     prepare_only=False,
                     published_archive=None,
                     compute_only=True,
+                    expected_inventory_sha256="0" * 64,
                 )
 
             self.assertEqual(
@@ -259,6 +261,7 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                         prepare_only=False,
                         published_archive=archive,
                         compute_only=True,
+                        expected_inventory_sha256="0" * 64,
                     )
 
     def test_inventory_drift_is_rejected_before_deletion(self) -> None:

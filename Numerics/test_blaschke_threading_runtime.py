@@ -65,6 +65,7 @@ class ReplayThreadEnvironmentTests(unittest.TestCase):
                     surface_workers=2,
                     prepare_only=False,
                     published_archive=None,
+                    expected_inventory_sha256="0" * 64,
                 )
 
             self.assertTrue(calls)
