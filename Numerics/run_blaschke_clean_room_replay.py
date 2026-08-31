@@ -148,6 +148,39 @@ def _is_sha256(value: object) -> bool:
     )
 
 
+def _authenticate_inventory_before_preparation(
+    *,
+    root: Path,
+    expected_inventory_sha256: object,
+) -> str:
+    """Authenticate untouched inventory bytes before any preparation mutation."""
+
+    if not _is_sha256(expected_inventory_sha256):
+        raise ValueError(
+            "A lowercase 64-hex --expected-inventory-sha256 from an "
+            "authenticated external authority is required for compute/full replay."
+        )
+    inventory_path = _regular_bundle_file(
+        root,
+        PurePosixPath(INVENTORY_NAME),
+        label="untouched source-only replay inventory",
+    )
+    assert inventory_path is not None
+    try:
+        inventory_payload = inventory_path.read_bytes()
+    except OSError as exc:
+        raise SourceOnlyReplayError(
+            f"Cannot read untouched replay inventory at {inventory_path}: {exc}"
+        ) from exc
+    observed = hashlib.sha256(inventory_payload).hexdigest()
+    if observed != expected_inventory_sha256:
+        raise SourceOnlyReplayError(
+            "The untouched replay inventory does not match the externally "
+            "authenticated expected SHA-256; refusing source-only preparation."
+        )
+    return expected_inventory_sha256
+
+
 def _verify_generated_closure(
     *,
     root: Path,
@@ -403,22 +436,22 @@ def run_replay(
         raise RuntimeError(
             "The replay root must be the exact extracted scratch bundle, never a Git working tree."
         )
+    if compute_only and published_archive is not None:
+        raise ValueError(
+            "Compute-only replay cannot compare a published archive before "
+            "normalization and provenance refresh."
+        )
+    if not prepare_only:
+        expected_inventory_sha256 = _authenticate_inventory_before_preparation(
+            root=root,
+            expected_inventory_sha256=expected_inventory_sha256,
+        )
     receipt_path = root / "source-only-replay-preparation.json"
     preparation = (
         check_prepared_bundle(root) if receipt_path.is_file() else prepare_bundle(root)
     )
     if prepare_only:
         return {"status": "prepared", "preparation": preparation, "commands": []}
-    if compute_only and published_archive is not None:
-        raise ValueError(
-            "Compute-only replay cannot compare a published archive before "
-            "normalization and provenance refresh."
-        )
-    if not _is_sha256(expected_inventory_sha256):
-        raise ValueError(
-            "A lowercase 64-hex --expected-inventory-sha256 from an "
-            "authenticated external authority is required for compute/full replay."
-        )
     assert expected_inventory_sha256 is not None
 
     if assembly_workers < 1 or surface_workers < 1:

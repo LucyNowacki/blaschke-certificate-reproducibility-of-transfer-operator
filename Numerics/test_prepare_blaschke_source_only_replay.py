@@ -124,6 +124,10 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
 
             with mock.patch.object(
                 replay,
+                "_authenticate_inventory_before_preparation",
+                return_value="0" * 64,
+            ), mock.patch.object(
+                replay,
                 "check_prepared_bundle",
                 return_value={"status": "source-only replay root prepared"},
             ), mock.patch.object(
@@ -184,6 +188,10 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                 }
 
             with mock.patch.object(
+                replay,
+                "_authenticate_inventory_before_preparation",
+                return_value="0" * 64,
+            ), mock.patch.object(
                 replay,
                 "check_prepared_bundle",
                 return_value={"status": "source-only replay root prepared"},

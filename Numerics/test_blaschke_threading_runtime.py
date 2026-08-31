@@ -51,6 +51,10 @@ class ReplayThreadEnvironmentTests(unittest.TestCase):
             inherited = {key: "8" for key in replay.BLAS_THREAD_ENVIRONMENT}
             with mock.patch.dict(os.environ, inherited, clear=False), mock.patch.object(
                 replay,
+                "_authenticate_inventory_before_preparation",
+                return_value="0" * 64,
+            ), mock.patch.object(
+                replay,
                 "check_prepared_bundle",
                 return_value={"status": "source-only replay root prepared"},
             ), mock.patch.object(

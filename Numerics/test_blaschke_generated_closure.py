@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 from pathlib import Path
@@ -113,6 +114,52 @@ class GeneratedClosureTests(unittest.TestCase):
         payload = (json.dumps(inventory, indent=2) + "\n").encode("utf-8")
         return payload, hashlib.sha256(payload).hexdigest()
 
+    def _assert_unprepared_authority_failure(
+        self,
+        root: Path,
+        *,
+        expected_inventory_sha256: str | None,
+        error_type,
+        pattern: str,
+    ) -> None:
+        inventory = json.loads(
+            (root / preparation.INVENTORY_NAME).read_text(encoding="utf-8")
+        )
+        generated = {
+            row["path"]: preparation.sha256_file(
+                root.joinpath(*Path(row["path"]).parts)
+            )
+            for row in inventory["files"]
+            if row["classification"] in preparation.GENERATED_CLASSES
+        }
+        self.assertTrue(generated)
+        self.assertFalse((root / preparation.RECEIPT_NAME).exists())
+        with mock.patch.object(
+            replay, "prepare_bundle", wraps=replay.prepare_bundle
+        ) as prepare_call, mock.patch.object(
+            replay, "check_prepared_bundle", wraps=replay.check_prepared_bundle
+        ) as check_call, mock.patch.object(replay, "_run") as producer:
+            with self.assertRaisesRegex(error_type, pattern):
+                replay.run_replay(
+                    bundle_root=root,
+                    kernel_name="fixture-kernel",
+                    assembly_workers=2,
+                    surface_workers=2,
+                    prepare_only=False,
+                    published_archive=None,
+                    compute_only=True,
+                    expected_inventory_sha256=expected_inventory_sha256,
+                )
+        prepare_call.assert_not_called()
+        check_call.assert_not_called()
+        producer.assert_not_called()
+        self.assertFalse((root / preparation.RECEIPT_NAME).exists())
+        self.assertFalse((root / "clean-room-compute-only-evidence.json").exists())
+        for value, digest in generated.items():
+            path = root.joinpath(*Path(value).parts)
+            self.assertTrue(path.is_file())
+            self.assertEqual(preparation.sha256_file(path), digest)
+
     def _run_mocked_compute(
         self,
         root: Path,
@@ -121,6 +168,7 @@ class GeneratedClosureTests(unittest.TestCase):
         mutate_after_compute=None,
         compute_only: bool = True,
         expected_inventory_sha256: str | None = None,
+        bypass_preparation_authority_preflight: bool = False,
     ) -> tuple[dict[str, object] | None, list[list[str]], Exception | None]:
         commands: list[list[str]] = []
 
@@ -138,8 +186,23 @@ class GeneratedClosureTests(unittest.TestCase):
                 "returncode": 0,
             }
 
+        # Structural post-compute tests can isolate the terminal gate after the
+        # real external-authority preflight has been covered independently.
+        preflight = (
+            mock.patch.object(
+                replay,
+                "_authenticate_inventory_before_preparation",
+                return_value=(
+                    expected_inventory_sha256
+                    if expected_inventory_sha256 is not None
+                    else str(receipt["inventory_sha256"])
+                ),
+            )
+            if bypass_preparation_authority_preflight
+            else contextlib.nullcontext()
+        )
         try:
-            with mock.patch.object(replay, "_run", side_effect=record):
+            with preflight, mock.patch.object(replay, "_run", side_effect=record):
                 result = replay.run_replay(
                     bundle_root=root,
                     kernel_name="fixture-kernel",
@@ -166,12 +229,16 @@ class GeneratedClosureTests(unittest.TestCase):
         pattern: str,
         *,
         expected_inventory_sha256: str | None = None,
+        bypass_preparation_authority_preflight: bool = False,
     ) -> None:
         result, commands, error = self._run_mocked_compute(
             root,
             receipt,
             mutate_after_compute=mutation,
             expected_inventory_sha256=expected_inventory_sha256,
+            bypass_preparation_authority_preflight=(
+                bypass_preparation_authority_preflight
+            ),
         )
         self.assertIsNone(result)
         self.assertIsInstance(error, preparation.SourceOnlyReplayError)
@@ -306,6 +373,7 @@ class GeneratedClosureTests(unittest.TestCase):
                 inject_escape,
                 r"Unsafe source-only inventory path",
                 expected_inventory_sha256=forged_sha256,
+                bypass_preparation_authority_preflight=True,
             )
 
     def test_malformed_inventory_blocks_compute_receipt(self) -> None:
@@ -326,6 +394,7 @@ class GeneratedClosureTests(unittest.TestCase):
                 inject_malformed,
                 r"Malformed source-only replay record",
                 expected_inventory_sha256=forged_sha256,
+                bypass_preparation_authority_preflight=True,
             )
 
     def test_duplicate_inventory_path_blocks_compute_receipt(self) -> None:
@@ -346,68 +415,37 @@ class GeneratedClosureTests(unittest.TestCase):
                 inject_duplicate,
                 r"Duplicate source-only inventory path",
                 expected_inventory_sha256=forged_sha256,
+                bypass_preparation_authority_preflight=True,
             )
 
     def test_missing_expected_inventory_authority_blocks_before_compute(self) -> None:
         with tempfile.TemporaryDirectory(prefix="generated-closure-no-authority-") as temp:
-            root, unused_receipt = self._prepared_bundle(Path(temp))
-            calls: list[list[str]] = []
-            with mock.patch.object(
-                replay,
-                "_run",
-                side_effect=lambda command, **unused: calls.append(command),
-            ):
-                with self.assertRaisesRegex(
-                    ValueError, r"expected-inventory-sha256"
-                ):
-                    replay.run_replay(
-                        bundle_root=root,
-                        kernel_name="fixture-kernel",
-                        assembly_workers=2,
-                        surface_workers=2,
-                        prepare_only=False,
-                        published_archive=None,
-                        compute_only=True,
-                        expected_inventory_sha256=None,
-                    )
-            self.assertEqual(calls, [])
-            self.assertFalse(
-                (root / "clean-room-compute-only-evidence.json").exists()
+            root = self._archive_bundle(Path(temp))
+            self._assert_unprepared_authority_failure(
+                root,
+                expected_inventory_sha256=None,
+                error_type=ValueError,
+                pattern=r"expected-inventory-sha256",
             )
 
     def test_invalid_expected_inventory_authority_blocks_before_compute(self) -> None:
         with tempfile.TemporaryDirectory(prefix="generated-closure-bad-authority-") as temp:
-            root, unused_receipt = self._prepared_bundle(Path(temp))
-            with mock.patch.object(replay, "_run") as runner:
-                with self.assertRaisesRegex(
-                    ValueError, r"expected-inventory-sha256"
-                ):
-                    replay.run_replay(
-                        bundle_root=root,
-                        kernel_name="fixture-kernel",
-                        assembly_workers=2,
-                        surface_workers=2,
-                        prepare_only=False,
-                        published_archive=None,
-                        compute_only=True,
-                        expected_inventory_sha256="not-a-sha256",
-                    )
-            runner.assert_not_called()
-
-    def test_expected_inventory_digest_mismatch_blocks_compute_receipt(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="generated-closure-wrong-digest-") as temp:
-            root, receipt = self._prepared_bundle(Path(temp))
-            result, commands, error = self._run_mocked_compute(
+            root = self._archive_bundle(Path(temp))
+            self._assert_unprepared_authority_failure(
                 root,
-                receipt,
-                expected_inventory_sha256="0" * 64,
+                expected_inventory_sha256="not-a-sha256",
+                error_type=ValueError,
+                pattern=r"expected-inventory-sha256",
             )
-            self.assertIsNone(result)
-            self.assertIsInstance(error, preparation.SourceOnlyReplayError)
-            self.assertRegex(str(error), r"externally authenticated expected SHA-256")
-            self.assertEqual(len(commands), 5)
-            self.assertFalse(
-                (root / "clean-room-compute-only-evidence.json").exists()
+
+    def test_expected_inventory_digest_mismatch_blocks_before_preparation(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="generated-closure-wrong-digest-") as temp:
+            root = self._archive_bundle(Path(temp))
+            self._assert_unprepared_authority_failure(
+                root,
+                expected_inventory_sha256="0" * 64,
+                error_type=preparation.SourceOnlyReplayError,
+                pattern=r"refusing source-only preparation",
             )
 
     def test_forged_receipt_count_blocks_compute_receipt(self) -> None:
@@ -458,6 +496,7 @@ class GeneratedClosureTests(unittest.TestCase):
                 inject_count_drift,
                 r"inventory counts are malformed or inconsistent",
                 expected_inventory_sha256=forged_sha256,
+                bypass_preparation_authority_preflight=True,
             )
 
     def test_internal_manifest_binding_drift_blocks_compute_receipt(self) -> None:
