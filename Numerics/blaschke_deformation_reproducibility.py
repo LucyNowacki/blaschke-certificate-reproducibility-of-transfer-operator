@@ -1991,7 +1991,10 @@ file records the archive-specific replay sequence.
    `python -B Numerics/verify_blaschke_deformation_reproducibility.py ARCHIVE
    --external-manifest EXTERNAL_MANIFEST --checksum CHECKSUM` from the
    authenticated source commit. Do not load a retained pickle cache before
-   these archive and manifest checks pass.
+   these archive and manifest checks pass. Record the exact lowercase digest at
+   `bundle.source_only_replay.inventory_sha256` in that verified external
+   manifest as `EXPECTED_INVENTORY_SHA256`; never substitute a value read from
+   the extracted inventory, preparation receipt or internal manifest.
 2. Recreate the recorded environment with `conda create --name blaschke-replay
    --file conda-explicit-lock.txt` and activate it. Install the exact pip-only
    installer with `python -m ensurepip --upgrade`, then install the exact
@@ -2000,42 +2003,36 @@ file records the archive-specific replay sequence.
    pip-requirements-lock.txt`. Register its interpreter with
    `python -m ipykernel install --user --name blaschke-replay
    --display-name "Python 3.13.2 (reproducibility)"`.
-3. Before running any producer, remove only inventory-declared generated
-   evidence and generated notebook counterparts with `python -B
-   Numerics/prepare_blaschke_source_only_replay.py --bundle-root .`. This
-   command verifies the exact extracted bundle layout, hashes every immutable
-   source/input record, rejects inventory drift or traversal, and writes
+3. From the exact extracted bundle, run the authenticated orchestration route:
+   `python -B Numerics/run_blaschke_clean_room_replay.py --bundle-root .
+   --kernel-name blaschke-replay --assembly-workers 24 --surface-workers 6
+   --expected-inventory-sha256 EXPECTED_INVENTORY_SHA256
+   --published-archive ARCHIVE`. The digest argument is mandatory for compute
+   and full replay and must be the literal 64-hex value recorded in step 1.
+4. The orchestrator first invokes
+   `Numerics/prepare_blaschke_source_only_replay.py`, which verifies the exact
+   extracted layout, hashes every immutable source/input record, rejects
+   inventory drift or traversal, removes only inventory-declared generated
+   evidence and notebook counterparts, and writes
    `source-only-replay-preparation.json`. For this benchmark there are no
    external numerical input files: map data and exact targets are encoded in
    immutable sources, while every file below `Numerics/outputs` is generated.
-4. Rebuild the output-free notebooks with `python -B
-   Numerics/build_blaschke_deformation_certifier.py` and `python -B
-   Numerics/build_blaschke_deformation_thesis_math_notebook.py`.
-5. Rebuild the retained historical Phase 4 diagnostics from source with
-   `python -u -B Numerics/blaschke_deformation_historical_phase4.py
-   --production --assembly-workers 24 --surface-workers 6 --force`.
-6. Execute `BLASCHKE_FORCE_HARDY_MATRIX=1 BLASCHKE_FORCE_CONTOURS=1 python -u -B
-   Numerics/execute_notebook_incremental.py
-   Numerics/blaschke_deformation_certifier_thesis_math.ipynb
-   --kernel-name blaschke-replay`. The rebuilt Hardy-matrix digest invalidates
-   the dependent contour cache, so this pass also rebuilds the Schur and
-   Laurent contour certificates. The source-only Phase 1 and sampled-Schur
-   diagnostic producer cells must also regenerate their reports and every
-   mandatory Phase 1 CSV/Parquet pair.
-7. Restore the verifier-v3 compatibility alias with `cp
-   Numerics/blaschke_deformation_reproducibility_plan.json
-   Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_reproducibility_plan.json`.
-   The source-controlled file is the authoritative plan.
-8. Normalize retained path/provenance fields and assert that the complete
-   manifest closure is portable with `python -B
-   Numerics/normalize_blaschke_publication.py --root .`. This step preserves
-   cell sources, execution counts and mathematical or numerical values.
-9. Compare the forced executed replay with the published archive using
-   `python -B Numerics/verify_blaschke_deformation_reproducibility.py ARCHIVE
-   --compare-executed-replay-root .`. The verifier requires exact immutable
-   source identity and semantic equality of the theorem-facing and retained
-   historical outputs; volatile timings, temporary paths and container metadata
-   are not treated as mathematical evidence.
+5. The same route rebuilds both output-free notebooks, the retained historical
+   Phase 4 diagnostics, the Hardy matrix, and the dependent Schur and Laurent
+   contour certificates, then executes the thesis-mathematics notebook with
+   `--kernel-name blaschke-replay`.
+6. After computation and restoration of the source-plan compatibility alias,
+   the orchestrator re-hashes the inventory against the external digest from
+   step 1 and requires every declared generated member to be a regular file.
+   It records the exact closure list, count and fingerprint before any COMPLETE
+   receipt or normalization. A missing, unsafe, nonregular or locally forged
+   closure stops the replay.
+7. Only after that closure gate passes does full mode normalize portable
+   path/provenance fields and compare the forced executed replay with the
+   published archive. The verifier requires exact immutable source identity and
+   semantic equality of theorem-facing and retained historical outputs;
+   volatile timings, temporary paths and container metadata are not treated as
+   mathematical evidence.
 
 The theorem-facing report is
 `Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_24_target_N600_M610_spectral_certificate.json`.
@@ -2404,6 +2401,9 @@ def build_reproducibility_bundle(
             file_records=file_records,
         )
         source_only_inventory_payload = _json_bytes(source_only_inventory)
+        source_only_inventory_sha256 = hashlib.sha256(
+            source_only_inventory_payload
+        ).hexdigest()
         file_records.append(
             _write_generated_and_record(
                 path=staging_root / SOURCE_ONLY_INVENTORY_NAME,
@@ -2510,26 +2510,25 @@ def build_reproducibility_bundle(
                 ).hexdigest(),
             },
             "execution_commands": (
-                "python -B Numerics/prepare_blaschke_source_only_replay.py "
-                "--bundle-root .",
-                "python -u -B "
-                "Numerics/blaschke_deformation_historical_phase4.py "
-                "--production --assembly-workers 24 --surface-workers 6 --force",
-                "BLASCHKE_FORCE_HARDY_MATRIX=1 BLASCHKE_FORCE_CONTOURS=1 "
-                "python -u -B "
-                "Numerics/execute_notebook_incremental.py "
-                "Numerics/blaschke_deformation_certifier_thesis_math.ipynb "
-                "--kernel-name blaschke-replay",
+                "python -B Numerics/run_blaschke_clean_room_replay.py "
+                "--bundle-root . --kernel-name blaschke-replay "
+                "--assembly-workers 24 --surface-workers 6 "
+                f"--expected-inventory-sha256 {source_only_inventory_sha256} "
+                "--published-archive "
+                "/absolute/path/to/blaschke_deformation_certifier_reproducibility.tar.gz",
             ),
             "source_only_replay": {
                 "inventory_path": SOURCE_ONLY_INVENTORY_NAME,
-                "inventory_sha256": hashlib.sha256(
-                    source_only_inventory_payload
-                ).hexdigest(),
+                "inventory_sha256": source_only_inventory_sha256,
+                "inventory_digest_authority": (
+                    "separately authenticated external manifest field "
+                    "bundle.source_only_replay.inventory_sha256"
+                ),
                 "preparation_script": (
                     "Numerics/prepare_blaschke_source_only_replay.py"
                 ),
                 "orchestrator": "Numerics/run_blaschke_clean_room_replay.py",
+                "orchestrator_requires_expected_inventory_sha256": True,
                 "required_for_current_release_acceptance": True,
                 "immutable_external_input_count": source_only_inventory["counts"][
                     "immutable_external_input"

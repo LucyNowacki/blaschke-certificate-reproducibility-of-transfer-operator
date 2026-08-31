@@ -100,7 +100,10 @@ its byte hash against the separately published checksum and external manifest,
 then run `verify_blaschke_deformation_reproducibility.py` from the authenticated
 source commit with the archive, external-manifest and checksum arguments.
 Never load a retained pickle cache before those archive and manifest checks
-pass.
+pass.  Record the exact lowercase digest at
+`bundle.source_only_replay.inventory_sha256` in that verified external
+manifest; the extracted inventory, preparation receipt and internal manifest
+are not independent authorities for this value.
 
 An extracted, verified release archive is not source-only merely because its
 notebook builders emit output-free notebooks: the archive also carries the
@@ -242,14 +245,19 @@ For current-release acceptance, use a separate extracted scratch bundle and
 the source-only preparation/orchestration path rather than the deployment
 working tree:
 
-`python -B Numerics/run_blaschke_clean_room_replay.py --bundle-root . --kernel-name blaschke-replay --assembly-workers 24 --surface-workers 6 --published-archive /absolute/path/to/blaschke_deformation_certifier_reproducibility.tar.gz`
+`python -B Numerics/run_blaschke_clean_room_replay.py --bundle-root . --kernel-name blaschke-replay --assembly-workers 24 --surface-workers 6 --expected-inventory-sha256 SHA256_FROM_VERIFIED_EXTERNAL_MANIFEST --published-archive /absolute/path/to/blaschke_deformation_certifier_reproducibility.tar.gz`
 
 This command runs preparation before either builder, forces the historical
 Phase 4, 1024/2048-bit Hardy-matrix and contour producers, and optionally runs
-the replay-versus-published verifier.  After execution it deterministically
-normalizes retained path/provenance fields and rejects any manifest member that
-still contains host-local paths or stale runtime metadata.  The uncached N=600
-replay is expected to take substantially longer than ten minutes.
+the replay-versus-published verifier.  The mandatory digest argument must be
+the literal 64-hex value recorded from the verified external manifest above;
+the route rejects a locally rewritten inventory, receipt and internal manifest
+before accepting generated closure.  After execution it requires every
+declared generated member as a regular file, records the exact closure list,
+count and fingerprint, then deterministically normalizes retained
+path/provenance fields and rejects any manifest member that still contains
+host-local paths or stale runtime metadata.  The uncached N=600 replay is
+expected to take substantially longer than ten minutes.
 
 The exact documentation scope for directly mathematical functions is recorded
 in `Numerics/mathematical_function_inventory.json`.  Its focused AST test
