@@ -388,6 +388,15 @@ class SampledSchurDiagnosticProducerTests(unittest.TestCase):
         config = sampled_schur.SampledSchurDiagnosticsConfig()
         producer = FakeSampledSchurEnvelope()
         kappa = lambda n_value, r_value: float(n_value) + float(r_value)
+        kappa.runtime_evidence = (
+            {
+                "schema": "numerics1-scoped-openblas-runtime-v1",
+                "operation": "test diagnostic SVD",
+                "outer_before": {"num_threads": 1},
+                "inside": {"num_threads": 24},
+                "outer_after": {"num_threads": 1},
+            },
+        )
 
         with tempfile.TemporaryDirectory(prefix="sampled-schur-test-") as temporary:
             root = Path(temporary)
@@ -438,6 +447,16 @@ class SampledSchurDiagnosticProducerTests(unittest.TestCase):
             self.assertIs(report["theorem_gate"], False)
             self.assertEqual(tuple(report["config"]["n_values"]), config.n_values)
             self.assertEqual(report["config"]["oversampling"], 6)
+            self.assertEqual(
+                report["lineage"]["kappa_binary64_blas_runtime_evidence"],
+                list(kappa.runtime_evidence),
+            )
+            self.assertIn(
+                "never a theorem gate",
+                report["lineage"][
+                    "kappa_binary64_blas_runtime_evidence_role"
+                ],
+            )
 
     def test_sampled_row_cardinality_is_locked(self) -> None:
         with tempfile.TemporaryDirectory(

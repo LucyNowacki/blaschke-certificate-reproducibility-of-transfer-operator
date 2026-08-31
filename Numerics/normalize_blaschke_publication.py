@@ -20,7 +20,7 @@ import gzip
 import hashlib
 import io
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import pickletools
 import re
 from typing import Any, Callable, Iterable
@@ -43,27 +43,10 @@ PORTABLE_KERNELSPEC = {
     "name": "blaschke-replay",
 }
 
-PORTABLE_RELEASE_STATEMENT = (
-    "This notebook preserves the validated NUMERICS_1 arithmetic from commit "
-    "5ad612aed00e667f46bb176e7e09e3a51cb11676; the public release additionally "
-    "normalizes environment-specific path displays and runtime metadata without "
-    "changing mathematical or numerical evidence."
+RAW_COMPARISON_RECEIPT_SCHEMA = (
+    "numerics1-raw-reconstruction-comparison-v2-retirement-policy"
 )
-PORTABLE_SYNC_SCOPE = (
-    "research-thesis locator and Cell 110M exposition refresh plus public "
-    "portability metadata and path-display normalization"
-)
-PORTABLE_REPLAY_STATUS = (
-    "No notebook cell or numerical producer was executed for the source "
-    "synchronisation or public portability normalization."
-)
-PORTABLE_STORED_OUTPUT_STATUS = (
-    "All code-cell sources, execution counts, and mathematical or numerical "
-    "stored outputs are retained from the authenticated arithmetic baseline; "
-    "environment-specific display paths and runtime metadata are normalized for "
-    "the public bundle; Cell 107N remains the compute authority and Cell 110M "
-    "adds no theorem gate."
-)
+SOURCE_SYNC_SCHEMA = "numerics1-source-sync-after-execution-v1"
 
 NOTEBOOK_RELATIVES = (
     "Numerics/blaschke_deformation_certifier_template.ipynb",
@@ -144,6 +127,259 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _canonical_sha256(value: object) -> str:
+    payload = json.dumps(
+        value,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _is_lower_hex(value: object, length: int) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == int(length)
+        and re.fullmatch(r"[0-9a-f]+", value) is not None
+    )
+
+
+def _safe_receipt_member(root: Path, value: object) -> tuple[str, Path]:
+    if not isinstance(value, str) or not value:
+        raise PublicationPortabilityError(
+            "Raw-comparison member paths must be non-empty strings."
+        )
+    relative = PurePosixPath(value)
+    if relative.is_absolute() or any(
+        part in {"", ".", ".."} for part in relative.parts
+    ):
+        raise PublicationPortabilityError(
+            f"Unsafe raw-comparison member path: {value!r}."
+        )
+    candidate = root.joinpath(*relative.parts)
+    cursor = root
+    for part in relative.parts:
+        cursor = cursor / part
+        if cursor.is_symlink():
+            raise PublicationPortabilityError(
+                f"Raw-comparison member traverses a symlink: {value!r}."
+            )
+    try:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError) as exc:
+        raise PublicationPortabilityError(
+            f"Raw-comparison member is missing or escapes the bundle: {value!r}."
+        ) from exc
+    if not resolved.is_file():
+        raise PublicationPortabilityError(
+            f"Raw-comparison member is not a regular file: {value!r}."
+        )
+    return relative.as_posix(), resolved
+
+
+def _load_raw_comparison_receipt(
+    receipt_path: Path,
+    *,
+    root: Path,
+) -> dict[str, object]:
+    """Validate a raw receipt and derive hash-bound notebook metadata.
+
+    Validation happens before any publication member is rewritten.  The
+    receipt must live outside the candidate bundle and enumerate the exact raw
+    members it compared, so a receipt from another replay cannot be reused.
+    """
+
+    root = Path(root).resolve(strict=True)
+    receipt_path = Path(receipt_path)
+    if receipt_path.is_symlink():
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt must not be a symlink."
+        )
+    try:
+        receipt_path = receipt_path.resolve(strict=True)
+    except OSError as exc:
+        raise PublicationPortabilityError(
+            f"Cannot resolve the raw-comparison receipt: {receipt_path}."
+        ) from exc
+    try:
+        receipt_path.relative_to(root)
+    except ValueError:
+        pass
+    else:
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt must be external to the candidate bundle."
+        )
+    if not receipt_path.is_file():
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt is not a regular file."
+        )
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt is not valid UTF-8 JSON."
+        ) from exc
+    if not isinstance(receipt, dict):
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt must be a JSON object."
+        )
+    required_state = {
+        "schema": RAW_COMPARISON_RECEIPT_SCHEMA,
+        "phase": "raw-pre-normalization",
+        "status": "PASS",
+        "comparison_run": True,
+        "normalization_run": False,
+        "provenance_refresh_run": False,
+        "production_identity_checked": True,
+        "failures": [],
+    }
+    if any(receipt.get(key) != value for key, value in required_state.items()):
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt did not pass in raw pre-normalization form."
+        )
+
+    identity = receipt.get("candidate_identity")
+    if not isinstance(identity, dict):
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt lacks a candidate identity."
+        )
+    if not (
+        _is_lower_hex(identity.get("commit"), 40)
+        and _is_lower_hex(identity.get("tree"), 40)
+        and _is_lower_hex(identity.get("manifest_sha256"), 64)
+        and _is_lower_hex(
+            identity.get("source_inventory_expected_sha256"), 64
+        )
+        and _is_lower_hex(
+            identity.get("source_inventory_observed_sha256"), 64
+        )
+        and identity.get("source_inventory_expected_sha256")
+        == identity.get("source_inventory_observed_sha256")
+    ):
+        raise PublicationPortabilityError(
+            "The raw-comparison candidate identity is malformed or unauthenticated."
+        )
+
+    for key in (
+        "comparator_sha256",
+        "comparison_rules_sha256",
+        "theorem_projection_sha256",
+        "candidate_raw_members_sha256",
+    ):
+        if not _is_lower_hex(receipt.get(key), 64):
+            raise PublicationPortabilityError(
+                f"The raw-comparison receipt has an invalid {key}."
+            )
+
+    member_hashes = receipt.get("candidate_raw_member_sha256")
+    generated_paths = receipt.get("generated_member_paths")
+    if not isinstance(member_hashes, dict) or not member_hashes:
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt has no hash-bound candidate members."
+        )
+    if not isinstance(generated_paths, list) or not generated_paths:
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt has no generated-member set."
+        )
+    if generated_paths != sorted(generated_paths) or len(generated_paths) != len(
+        set(generated_paths)
+    ):
+        raise PublicationPortabilityError(
+            "The generated raw-comparison member paths are not unique and sorted."
+        )
+    if receipt.get("generated_member_count") != len(generated_paths):
+        raise PublicationPortabilityError(
+            "The raw-comparison generated-member count is inconsistent."
+        )
+
+    observed_member_hashes: dict[str, str] = {}
+    for value, expected_digest in sorted(member_hashes.items()):
+        if not _is_lower_hex(expected_digest, 64):
+            raise PublicationPortabilityError(
+                f"Malformed raw-comparison member digest for {value!r}."
+            )
+        relative, candidate = _safe_receipt_member(root, value)
+        observed_digest = sha256_file(candidate)
+        if observed_digest != expected_digest:
+            raise PublicationPortabilityError(
+                f"Raw-comparison member digest drifted: {relative}."
+            )
+        observed_member_hashes[relative] = observed_digest
+    if list(member_hashes) != sorted(member_hashes):
+        raise PublicationPortabilityError(
+            "Raw-comparison candidate members must be serialized in path order."
+        )
+    if any(path not in observed_member_hashes for path in generated_paths):
+        raise PublicationPortabilityError(
+            "A generated raw-comparison path is absent from the member hashes."
+        )
+    required_members = {
+        "MANIFEST.sha256",
+        "source-only-replay-inventory.json",
+        "reproducibility_manifest.json",
+        *NOTEBOOK_RELATIVES,
+    }
+    if not required_members <= set(observed_member_hashes):
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt omits required identity or notebook members."
+        )
+    if not {
+        "Numerics/blaschke_deformation_certifier.ipynb",
+        "Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
+    } <= set(generated_paths):
+        raise PublicationPortabilityError(
+            "The raw-comparison receipt did not classify both rebuilt notebooks as generated."
+        )
+    if (
+        observed_member_hashes["MANIFEST.sha256"]
+        != identity["manifest_sha256"]
+        or observed_member_hashes["source-only-replay-inventory.json"]
+        != identity["source_inventory_observed_sha256"]
+    ):
+        raise PublicationPortabilityError(
+            "The raw-comparison candidate identity is not bound to this bundle."
+        )
+    fingerprint = _canonical_sha256(
+        {"candidate_raw_member_sha256": observed_member_hashes}
+    )
+    if fingerprint != receipt["candidate_raw_members_sha256"]:
+        raise PublicationPortabilityError(
+            "The raw-comparison member-set fingerprint is invalid."
+        )
+
+    return {
+        "schema": SOURCE_SYNC_SCHEMA,
+        "status": "raw reconstruction comparison passed before normalization",
+        "execution_binding": (
+            "fresh candidate sources and stored outputs were compared in raw "
+            "pre-normalization form"
+        ),
+        "raw_comparison": {
+            "receipt_schema": receipt["schema"],
+            "receipt_sha256": sha256_file(receipt_path),
+            "phase": receipt["phase"],
+            "status": receipt["status"],
+            "production_identity_checked": True,
+            "candidate_identity": dict(identity),
+            "candidate_raw_members_sha256": fingerprint,
+            "candidate_raw_member_count": len(observed_member_hashes),
+            "generated_member_count": len(generated_paths),
+            "comparator_sha256": receipt["comparator_sha256"],
+            "comparison_rules_sha256": receipt["comparison_rules_sha256"],
+            "theorem_projection_sha256": receipt[
+                "theorem_projection_sha256"
+            ],
+        },
+        "publication_normalization": {
+            "role": "portable paths and runtime metadata only",
+            "numerical_execution_performed": False,
+            "numerical_arrays_or_theorem_fields_changed": False,
+        },
+    }
+
+
 def _portable_output_path(value: object) -> str:
     text = str(value).replace("\\", "/")
     if text.startswith(f"{OUTPUT_DIRECTORY_RELATIVE}/"):
@@ -212,7 +448,10 @@ def _write_bytes_if_changed(path: Path, payload: bytes) -> bool:
     return True
 
 
-def _normalise_notebook(path: Path) -> bool:
+def _normalise_notebook(
+    path: Path,
+    source_sync_after_execution: dict[str, object],
+) -> bool:
     notebook = json.loads(path.read_text(encoding="utf-8"))
     metadata = notebook.setdefault("metadata", {})
     metadata["kernelspec"] = dict(PORTABLE_KERNELSPEC)
@@ -224,16 +463,9 @@ def _normalise_notebook(path: Path) -> bool:
         }
     )
     metadata["language_info"] = language_info
-    source_sync = metadata.get("source_sync_after_execution")
-    if isinstance(source_sync, dict):
-        source_sync.update(
-            {
-                "release_statement": PORTABLE_RELEASE_STATEMENT,
-                "replay_status": PORTABLE_REPLAY_STATUS,
-                "scope": PORTABLE_SYNC_SCOPE,
-                "stored_output_status": PORTABLE_STORED_OUTPUT_STATUS,
-            }
-        )
+    metadata["source_sync_after_execution"] = json.loads(
+        json.dumps(source_sync_after_execution)
+    )
     for cell in notebook.get("cells", []):
         if isinstance(cell, dict) and "outputs" in cell:
             cell["outputs"] = _walk_strings(
@@ -443,13 +675,21 @@ def _normalise_historical_phase4(root: Path, changed: list[str]) -> None:
         changed.append(HISTORICAL_PHASE4_REPORT_RELATIVE)
 
 
-def normalize_publication(root: Path) -> list[str]:
+def normalize_publication(
+    root: Path,
+    *,
+    raw_comparison_receipt: Path,
+) -> list[str]:
     """Normalize the exact retained publication members and dependent hashes."""
 
     root = Path(root).resolve(strict=True)
+    source_sync = _load_raw_comparison_receipt(
+        raw_comparison_receipt,
+        root=root,
+    )
     changed: list[str] = []
     for relative in NOTEBOOK_RELATIVES:
-        if _normalise_notebook(root / relative):
+        if _normalise_notebook(root / relative, source_sync):
             changed.append(relative)
     _normalise_hardy_members(root, changed)
     _normalise_spectral_members(root, changed)
@@ -669,7 +909,62 @@ def _assert_zero_host_markers(root: Path) -> None:
         )
 
 
+def _validated_source_sync(value: object, *, relative: str) -> dict[str, object]:
+    if not isinstance(value, dict) or value.get("schema") != SOURCE_SYNC_SCHEMA:
+        raise PublicationPortabilityError(
+            f"Notebook source-sync metadata is missing or invalid: {relative}."
+        )
+    if value.get("status") != (
+        "raw reconstruction comparison passed before normalization"
+    ):
+        raise PublicationPortabilityError(
+            f"Notebook source-sync status is invalid: {relative}."
+        )
+    raw = value.get("raw_comparison")
+    if not isinstance(raw, dict):
+        raise PublicationPortabilityError(
+            f"Notebook raw-comparison binding is missing: {relative}."
+        )
+    identity = raw.get("candidate_identity")
+    if not isinstance(identity, dict) or not (
+        raw.get("receipt_schema") == RAW_COMPARISON_RECEIPT_SCHEMA
+        and raw.get("phase") == "raw-pre-normalization"
+        and raw.get("status") == "PASS"
+        and raw.get("production_identity_checked") is True
+        and _is_lower_hex(raw.get("receipt_sha256"), 64)
+        and _is_lower_hex(raw.get("candidate_raw_members_sha256"), 64)
+        and type(raw.get("candidate_raw_member_count")) is int
+        and type(raw.get("generated_member_count")) is int
+        and raw["candidate_raw_member_count"] >= raw["generated_member_count"] > 0
+        and _is_lower_hex(raw.get("comparator_sha256"), 64)
+        and _is_lower_hex(raw.get("comparison_rules_sha256"), 64)
+        and _is_lower_hex(raw.get("theorem_projection_sha256"), 64)
+        and _is_lower_hex(identity.get("commit"), 40)
+        and _is_lower_hex(identity.get("tree"), 40)
+        and _is_lower_hex(identity.get("manifest_sha256"), 64)
+        and _is_lower_hex(
+            identity.get("source_inventory_expected_sha256"), 64
+        )
+        and identity.get("source_inventory_expected_sha256")
+        == identity.get("source_inventory_observed_sha256")
+    ):
+        raise PublicationPortabilityError(
+            f"Notebook raw-comparison binding is malformed: {relative}."
+        )
+    expected_normalization = {
+        "role": "portable paths and runtime metadata only",
+        "numerical_execution_performed": False,
+        "numerical_arrays_or_theorem_fields_changed": False,
+    }
+    if value.get("publication_normalization") != expected_normalization:
+        raise PublicationPortabilityError(
+            f"Notebook publication-normalization role is invalid: {relative}."
+        )
+    return value
+
+
 def _assert_notebook_metadata(root: Path) -> None:
+    common_source_sync: dict[str, object] | None = None
     for relative in NOTEBOOK_RELATIVES:
         notebook = json.loads((root / relative).read_text(encoding="utf-8"))
         metadata = notebook.get("metadata", {})
@@ -681,19 +976,16 @@ def _assert_notebook_metadata(root: Path) -> None:
             raise PublicationPortabilityError(
                 f"Notebook Python version is not locked: {relative}."
             )
-        source_sync = metadata.get("source_sync_after_execution")
-        if isinstance(source_sync, dict):
-            expected = {
-                "release_statement": PORTABLE_RELEASE_STATEMENT,
-                "replay_status": PORTABLE_REPLAY_STATUS,
-                "scope": PORTABLE_SYNC_SCOPE,
-                "stored_output_status": PORTABLE_STORED_OUTPUT_STATUS,
-            }
-            observed = {key: source_sync.get(key) for key in expected}
-            if observed != expected:
-                raise PublicationPortabilityError(
-                    f"Notebook source-sync metadata is stale: {relative}."
-                )
+        source_sync = _validated_source_sync(
+            metadata.get("source_sync_after_execution"),
+            relative=relative,
+        )
+        if common_source_sync is None:
+            common_source_sync = source_sync
+        elif source_sync != common_source_sync:
+            raise PublicationPortabilityError(
+                "Notebook source-sync metadata does not share one raw receipt."
+            )
 
 
 def _assert_relative_artifacts_resolve(root: Path) -> None:
@@ -800,12 +1092,27 @@ def _main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--check", action="store_true")
+    parser.add_argument(
+        "--raw-comparison-receipt",
+        type=Path,
+        help=(
+            "External hash-bound PASS receipt for the raw pre-normalization "
+            "reconstruction comparison; required when normalization is run."
+        ),
+    )
     arguments = parser.parse_args()
     if arguments.check:
         assert_publication_portable(arguments.root)
         print("Publication portability check passed.")
         return
-    changed = normalize_publication(arguments.root)
+    if arguments.raw_comparison_receipt is None:
+        parser.error(
+            "--raw-comparison-receipt is required unless --check is used"
+        )
+    changed = normalize_publication(
+        arguments.root,
+        raw_comparison_receipt=arguments.raw_comparison_receipt,
+    )
     print(json.dumps({"changed": changed, "changed_count": len(changed)}, indent=2))
 
 

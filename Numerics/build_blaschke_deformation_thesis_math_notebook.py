@@ -266,7 +266,15 @@ from Numerics.blaschke_deformation_sampled_schur_diagnostics import (
 def _sampled_schur_kappa(N, r):
     '''Explanation: Changing from scaled Legendre coordinates to packet coordinates can amplify finite errors. This sampled condition number estimates that amplification for diagnostic Schur rows, while the final perturbation proof uses the rigorous transport certificate.
     Functionality: Evaluate the notebook's finite connection condition number at the requested dimension and radius.'''
-    return float(kappa_T_numeric(int(N), str(r)))
+    value = float(kappa_T_numeric(int(N), str(r)))
+    _sampled_schur_kappa.runtime_evidence = tuple(
+        KAPPA_T_NUMERIC_BLAS_RUNTIME_EVIDENCE
+    )
+    return value
+
+
+KAPPA_T_NUMERIC_BLAS_RUNTIME_EVIDENCE.clear()
+_sampled_schur_kappa.runtime_evidence = ()
 
 
 SAMPLED_SCHUR_DIAGNOSTICS_RESULT = rebuild_sampled_schur_diagnostics(
@@ -1431,6 +1439,11 @@ def _merge_preserved_execution_state(
     )
     metadata = deepcopy(preserved.get("metadata", {}))
     metadata.update(deepcopy(current.get("metadata", {})))
+    # A source refresh invalidates any statement that the preserved outputs
+    # were executed from, and raw-compared against, these newly installed
+    # sources.  Publication normalization may recreate this metadata only
+    # after validating an external hash-bound raw-comparison receipt.
+    metadata.pop("source_sync_after_execution", None)
     merged["metadata"] = metadata
     return merged
 

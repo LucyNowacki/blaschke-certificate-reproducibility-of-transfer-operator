@@ -20,6 +20,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import build_blaschke_deformation_thesis_math_notebook as notebook_builder
+import blaschke_deformation_phase2_transport as phase2_transport
 import hardy_moat_surface_worker as surface_worker
 import run_blaschke_clean_room_replay as replay
 
@@ -36,6 +37,8 @@ class ReplayThreadEnvironmentTests(unittest.TestCase):
             (numerics / "blaschke_deformation_reproducibility_plan.json").write_text(
                 "{}\n", encoding="utf-8"
             )
+            raw_comparison_receipt = Path(temporary) / "raw-comparison.json"
+            raw_comparison_receipt.write_text("{}\n", encoding="utf-8")
             calls: list[tuple[list[str], dict[str, str]]] = []
 
             def record(
@@ -70,6 +73,7 @@ class ReplayThreadEnvironmentTests(unittest.TestCase):
                     prepare_only=False,
                     published_archive=None,
                     expected_inventory_sha256="0" * 64,
+                    raw_comparison_receipt=raw_comparison_receipt,
                 )
 
             self.assertTrue(calls)
@@ -137,6 +141,49 @@ class GeneratedKernelSetupTests(unittest.TestCase):
         )
         generated_source = "".join(generated_cell.get("source", []))
         self.assertIn(authoritative, generated_source)
+
+
+class ScopedCompatibilityKernelTests(unittest.TestCase):
+    def test_transport_inverse_uses_inner_24_and_restores_outer_one(self) -> None:
+        inverse, evidence = phase2_transport._invert_midpoint_with_locked_blas(
+            np.eye(3, dtype=np.float64)
+        )
+
+        np.testing.assert_array_equal(inverse, np.eye(3, dtype=np.float64))
+        self.assertEqual(evidence["scope_threads"], 24)
+        self.assertEqual(evidence["outer_threads"], 1)
+        self.assertEqual(
+            evidence["outer_before"]["runtime"]["num_threads"], 1
+        )
+        self.assertEqual(evidence["inside"]["runtime"]["num_threads"], 24)
+        self.assertEqual(evidence["outer_after"]["runtime"]["num_threads"], 1)
+
+    def test_transport_inverse_restores_outer_one_after_linalg_failure(self) -> None:
+        with self.assertRaises(np.linalg.LinAlgError):
+            phase2_transport._invert_midpoint_with_locked_blas(
+                np.zeros((2, 2), dtype=np.float64)
+            )
+
+        restored = phase2_transport._verified_openblas_runtime(
+            1,
+            stage="test-after-failed-inverse",
+        )
+        self.assertEqual(restored["runtime"]["num_threads"], 1)
+
+    def test_transport_inverse_fails_closed_before_linalg_without_runtime(self) -> None:
+        with mock.patch.object(
+            phase2_transport,
+            "threadpool_info",
+            return_value=[],
+        ), mock.patch.object(
+            phase2_transport.np.linalg,
+            "inv",
+        ) as inverse:
+            with self.assertRaisesRegex(RuntimeError, "exactly one live OpenBLAS"):
+                phase2_transport._invert_midpoint_with_locked_blas(
+                    np.eye(2, dtype=np.float64)
+                )
+        inverse.assert_not_called()
 
 
 class SurfaceWorkerRuntimeTests(unittest.TestCase):

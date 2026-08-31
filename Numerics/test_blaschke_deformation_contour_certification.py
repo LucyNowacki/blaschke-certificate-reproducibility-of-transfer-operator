@@ -9,6 +9,7 @@ import tempfile
 import unittest
 from unittest import mock
 
+import flint
 import numpy as np
 from flint import arb
 
@@ -341,6 +342,105 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
         self.assertTrue(refreshed["certified_small_gain_pass"])
         self.assertTrue(refreshed["finite_to_exact_rank_transfer_certified"])
         self.assertTrue(refreshed["theorem_certified"])
+
+    def test_small_gain_precision_roles_match_legacy_and_explicit_256(self) -> None:
+        output_dir = (
+            Path(__file__).resolve().parent
+            / "outputs"
+            / "blaschke_deformation_certifier"
+            / "data"
+        )
+        certificate_path = (
+            output_dir
+            / "blaschke_deformation_24_target_N600_M610_spectral_certificate.csv"
+        )
+        epsilon_path = (
+            output_dir
+            / "branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv"
+        )
+        with certificate_path.open(encoding="utf-8", newline="") as handle:
+            stored_rows = list(csv.DictReader(handle))
+        with epsilon_path.open(encoding="utf-8", newline="") as handle:
+            epsilon_text = next(csv.DictReader(handle))[
+                "new_epsilon_response_prefactor_candidate_text"
+            ]
+
+        previous_precision = int(flint.ctx.prec)
+        with certificate._fixed_flint_precision(256):
+            epsilon = arb(epsilon_text).upper()
+            expected_epsilon = certificate._upper_float(epsilon.upper())
+            expected_products = []
+            for stored in stored_rows:
+                moat = arb(stored["lifted_finite_section_moat_lower"]).lower()
+                expected_products.append(
+                    certificate._upper_float((epsilon.upper() / moat).upper())
+                )
+
+        refreshed = certificate._reaggregate_small_gain_rows(
+            stored_rows,
+            epsilon,
+            epsilon_text=epsilon_text,
+            precision_bits=256,
+        )
+
+        self.assertEqual(int(flint.ctx.prec), previous_precision)
+        self.assertEqual(len(refreshed), 24)
+        self.assertTrue(
+            any(
+                row["theorem_small_gain_product_upper"]
+                != row["legacy_5c0_compatibility_small_gain_product_upper"]
+                for row in refreshed
+            )
+        )
+        for stored, row, expected_product in zip(
+            stored_rows, refreshed, expected_products, strict=True
+        ):
+            self.assertEqual(row["theorem_precision_bits"], 256)
+            self.assertEqual(row["theorem_epsilon_upper"], expected_epsilon)
+            self.assertEqual(
+                row["theorem_small_gain_product_upper"], expected_product
+            )
+            self.assertEqual(row["epsilon_upper"], expected_epsilon)
+            self.assertEqual(
+                row["certified_small_gain_product_upper"], expected_product
+            )
+            self.assertEqual(
+                row["legacy_5c0_compatibility_epsilon_upper"],
+                float(stored["epsilon_upper"]),
+            )
+            self.assertEqual(
+                row["legacy_5c0_compatibility_small_gain_product_upper"],
+                float(stored["certified_small_gain_product_upper"]),
+            )
+            self.assertEqual(
+                row["legacy_5c0_compatibility_serialized_moat_lower"],
+                float(stored["lifted_finite_section_moat_lower"]),
+            )
+            self.assertTrue(
+                row["legacy_5c0_compatibility_is_conservative_upper"]
+            )
+            self.assertFalse(row["legacy_5c0_compatibility_theorem_gate"])
+            self.assertTrue(row["theorem_certified"])
+
+        roles = certificate._precision_role_report(
+            refreshed,
+            theorem_precision_bits=256,
+        )
+        self.assertTrue(
+            roles["theorem_projection"]["canonical_fields_are_theorem_values"]
+        )
+        self.assertTrue(roles["theorem_projection"]["theorem_gate"])
+        self.assertFalse(
+            roles["legacy_5c0_compatibility_projection"]["theorem_gate"]
+        )
+
+    def test_fixed_flint_precision_restores_after_failure(self) -> None:
+        previous_precision = int(flint.ctx.prec)
+        with self.assertRaisesRegex(RuntimeError, "probe failure"):
+            with certificate._fixed_flint_precision(197):
+                self.assertEqual(int(flint.ctx.prec), 197)
+                raise RuntimeError("probe failure")
+        self.assertEqual(int(flint.ctx.prec), previous_precision)
 
 
 if __name__ == "__main__":

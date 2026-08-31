@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 import runpy
 
+import normalize_blaschke_publication as publication
+
 
 HERE = Path(__file__).resolve().parent
 DEPLOYMENT_ROOT = HERE.parent
@@ -19,11 +21,30 @@ CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
 EXPECTED_VISUAL_CELL_COUNT = 20
 EXPECTED_STORED_PNG_OUTPUT_COUNT = 34
 ALPHA11_PROFILE_CELL_ID = "32961420"
-ARITHMETIC_BASELINE_COMMIT = "5ad612aed00e667f46bb176e7e09e3a51cb11676"
+SOURCE_SYNC_SCHEMA = publication.SOURCE_SYNC_SCHEMA
 
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _source_sync_metadata(notebook: dict[str, object]) -> dict[str, object]:
+    metadata = notebook.get("metadata")
+    source_sync = (
+        metadata.get("source_sync_after_execution")
+        if isinstance(metadata, dict)
+        else None
+    )
+    try:
+        return publication._validated_source_sync(
+            source_sync,
+            relative=FINAL_NOTEBOOK.name,
+        )
+    except publication.PublicationPortabilityError as exc:
+        raise RuntimeError(
+            "Final notebook lacks valid receipt-bound "
+            "source_sync_after_execution metadata."
+        ) from exc
 
 
 def _resolve_recorded_source(value: str) -> Path:
@@ -46,6 +67,15 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
     if not isinstance(notebook, dict) or not isinstance(entries, dict):
         raise RuntimeError("Unexpected notebook provenance schema.")
     final_notebook = json.loads(FINAL_NOTEBOOK.read_text(encoding="utf-8"))
+    source_sync = _source_sync_metadata(final_notebook)
+    source_sync_sha256 = hashlib.sha256(
+        json.dumps(
+            source_sync,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
     visual_cell_count = sum(
         cell.get("cell_type") == "code"
         and any("image/png" in output.get("data", {}) for output in cell.get("outputs", []))
@@ -124,22 +154,8 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
         "standalone_source_sha256": dict(sorted(refreshed.items())),
         "inline_helper_count": len(inline_helper_hashes),
         "inline_helper_sha256": dict(sorted(inline_helper_hashes.items())),
-        "arithmetic_baseline_commit": ARITHMETIC_BASELINE_COMMIT,
-        "source_sync_scope": (
-            "research-thesis locators and Cell 110M explanatory Markdown plus "
-            "public portability metadata and path-display normalization"
-        ),
-        "replay_status": (
-            "No notebook cell or numerical producer was executed for this source "
-            "synchronisation or public portability normalization."
-        ),
-        "stored_output_status": (
-            "All code-cell sources, execution counts, and mathematical or numerical "
-            "stored outputs are retained from the authenticated arithmetic baseline; "
-            "environment-specific display paths and runtime metadata are normalized "
-            "for the public bundle; Cell 107N remains the compute authority and Cell "
-            "110M adds no theorem gate."
-        ),
+        "source_sync_after_execution": source_sync,
+        "source_sync_after_execution_sha256": source_sync_sha256,
     }
     return payload
 

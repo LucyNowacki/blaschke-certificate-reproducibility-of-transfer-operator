@@ -12,6 +12,7 @@ import unittest
 from unittest import mock
 
 import prepare_blaschke_source_only_replay as preparation
+import normalize_blaschke_publication as portability
 import run_blaschke_clean_room_replay as replay
 
 
@@ -169,6 +170,7 @@ class GeneratedClosureTests(unittest.TestCase):
         compute_only: bool = True,
         expected_inventory_sha256: str | None = None,
         bypass_preparation_authority_preflight: bool = False,
+        raw_comparison_receipt: Path | None = None,
     ) -> tuple[dict[str, object] | None, list[list[str]], Exception | None]:
         commands: list[list[str]] = []
 
@@ -216,6 +218,7 @@ class GeneratedClosureTests(unittest.TestCase):
                         if expected_inventory_sha256 is not None
                         else str(receipt["inventory_sha256"])
                     ),
+                    raw_comparison_receipt=raw_comparison_receipt,
                 )
         except Exception as exc:  # returned for concise failure-mode assertions
             return None, commands, exc
@@ -602,6 +605,23 @@ class GeneratedClosureTests(unittest.TestCase):
     def test_missing_member_blocks_full_replay_before_normalizer(self) -> None:
         with tempfile.TemporaryDirectory(prefix="generated-closure-normalizer-") as temp:
             root, receipt = self._prepared_bundle(Path(temp))
+            raw_comparison_receipt = Path(temp) / "raw-comparison-pass.json"
+            raw_comparison_receipt.write_text(
+                json.dumps(
+                    {
+                        "schema": portability.RAW_COMPARISON_RECEIPT_SCHEMA,
+                        "phase": "raw-pre-normalization",
+                        "status": "PASS",
+                        "comparison_run": True,
+                        "normalization_run": False,
+                        "provenance_refresh_run": False,
+                        "production_identity_checked": True,
+                        "failures": [],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
 
             def remove_member(bundle: Path, current: dict[str, object]) -> None:
                 self._generated_data_path(bundle, current).unlink()
@@ -611,6 +631,7 @@ class GeneratedClosureTests(unittest.TestCase):
                 receipt,
                 mutate_after_compute=remove_member,
                 compute_only=False,
+                raw_comparison_receipt=raw_comparison_receipt,
             )
             self.assertIsNone(result)
             self.assertIsInstance(error, preparation.SourceOnlyReplayError)

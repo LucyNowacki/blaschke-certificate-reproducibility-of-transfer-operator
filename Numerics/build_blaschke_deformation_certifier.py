@@ -30,6 +30,81 @@ LOCKED_TEMPLATE_SHA256 = (
 )
 
 
+KAPPA_T_NUMERIC_SCOPED_BLAS = r"""KAPPA_T_NUMERIC_BLAS_RUNTIME_EVIDENCE = []
+
+
+def kappa_T_numeric(N, r):
+    '''Explanation: The two-norm condition number estimates the amplification caused by changing finite bases. Here it is a diagnostic preview; the theorem uses the separately certified Arb residual bound for the inverse.
+Functionality: Compute the diagnostic binary64 two-norm condition number of the finite connection matrix under the release-locked OpenBLAS runtime.'''
+    from threadpoolctl import threadpool_info, threadpool_limits
+
+    expected_runtime = {
+        'user_api': 'blas',
+        'internal_api': 'openblas',
+        'version': '0.3.30',
+        'threading_layer': 'pthreads',
+        'architecture': 'Haswell',
+    }
+    outer_before = [
+        record for record in threadpool_info()
+        if record.get('user_api') == 'blas'
+    ]
+    if len(outer_before) != 1 or any(
+        str(outer_before[0].get(key)) != value
+        for key, value in expected_runtime.items()
+    ) or int(outer_before[0].get('num_threads') or 0) != 1:
+        raise RuntimeError(
+            'kappa_T_numeric requires exactly one outer OpenBLAS 0.3.30 '
+            f'pthreads Haswell runtime at one thread; observed {outer_before!r}.'
+        )
+    T = T_connection(N, r)
+    with threadpool_limits(limits=24, user_api='blas'):
+        inside = [
+            record for record in threadpool_info()
+            if record.get('user_api') == 'blas'
+        ]
+        if len(inside) != 1 or any(
+            str(inside[0].get(key)) != value
+            for key, value in expected_runtime.items()
+        ) or int(inside[0].get('num_threads') or 0) != 24:
+            raise RuntimeError(
+                'kappa_T_numeric requires exactly one scoped OpenBLAS 0.3.30 '
+                f'pthreads Haswell runtime at 24 threads; observed {inside!r}.'
+            )
+        svals = np.linalg.svd(mp_to_numpy_matrix(T), compute_uv=False)
+    outer_after = [
+        record for record in threadpool_info()
+        if record.get('user_api') == 'blas'
+    ]
+    if len(outer_after) != 1 or any(
+        str(outer_after[0].get(key)) != value
+        for key, value in expected_runtime.items()
+    ) or int(outer_after[0].get('num_threads') or 0) != 1:
+        raise RuntimeError(
+            'kappa_T_numeric did not restore the outer one-thread BLAS policy; '
+            f'observed {outer_after!r}.'
+        )
+    portable = lambda record: {
+        key: record.get(key)
+        for key in (
+            'user_api', 'internal_api', 'version', 'threading_layer',
+            'architecture', 'num_threads',
+        )
+    }
+    KAPPA_T_NUMERIC_BLAS_RUNTIME_EVIDENCE.append({
+        'schema': 'numerics1-scoped-openblas-runtime-v1',
+        'operation': 'numpy.linalg.svd(connection, compute_uv=False)',
+        'N': int(N),
+        'scope_threads': 24,
+        'outer_threads': 1,
+        'outer_before': portable(outer_before[0]),
+        'inside': portable(inside[0]),
+        'outer_after': portable(outer_after[0]),
+        'portable_fields_only': True,
+    })
+    return float(svals[0] / svals[-1])"""
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -470,6 +545,23 @@ def _normalise_notebook(notebook: dict[str, Any]) -> dict[str, Any]:
     notebook = deepcopy(notebook)
     cells = notebook["cells"]
 
+    kappa_cell = _unique_cell(cells, "def kappa_T_numeric")
+    kappa_source = _source(kappa_cell)
+    if "KAPPA_T_NUMERIC_BLAS_RUNTIME_EVIDENCE" not in kappa_source:
+        legacy_kappa = '''def kappa_T_numeric (N ,r ):
+    \'\'\'Explanation: The two-norm condition number estimates the amplification caused by changing finite bases. Here it is a diagnostic preview; the theorem uses the separately certified Arb residual bound for the inverse.
+Functionality: Compute the diagnostic binary64 two-norm condition number of the finite connection matrix.\'\'\'
+    T =T_connection (N ,r )
+    svals =np .linalg .svd (mp_to_numpy_matrix (T ),compute_uv =False )
+    return float (svals [0 ]/svals [-1 ])'''
+        kappa_source = _checked_replace(
+            kappa_source,
+            legacy_kappa,
+            KAPPA_T_NUMERIC_SCOPED_BLAS,
+            label="Cell 18 scoped kappa_T_numeric BLAS policy",
+        )
+    _set_source(kappa_cell, kappa_source)
+
     cell24a = _unique_cell(cells, "# Cell 24A\n")
     _set_source(cell24a, CELL_24A_WRAPPER)
 
@@ -721,12 +813,24 @@ def _clear_runtime_state(notebook: dict[str, Any]) -> dict[str, Any]:
 
 def _validate(notebook: dict[str, Any]) -> None:
     cells = notebook["cells"]
+    kappa = _source(_unique_cell(cells, "def kappa_T_numeric"))
     cell24a = _source(_unique_cell(cells, "# Cell 24A\n"))
     cell24b = _source(_unique_cell(cells, "# Cell 24B\n"))
     cell24c = _source(_unique_cell(cells, "# Cell 24C\n"))
     hardy = _source(_unique_cell(cells, "# Cell 102A\n"))
     contour = _source(_unique_cell(cells, "# Cell 103\n"))
     cell104 = _source(_unique_cell(cells, "# Cell 104\n"))
+    for marker in (
+        "KAPPA_T_NUMERIC_BLAS_RUNTIME_EVIDENCE",
+        "threadpool_limits(limits=24, user_api='blas')",
+        "OpenBLAS 0.3.30",
+        "np.linalg.svd(mp_to_numpy_matrix(T), compute_uv=False)",
+        "outer_threads': 1",
+    ):
+        if marker not in kappa:
+            raise AssertionError(
+                f"Cell 18 lacks its scoped diagnostic SVD policy: {marker}."
+            )
     required_24a = (
         "Phase2FiniteMConfig",
         "certify_finite_m_completion",

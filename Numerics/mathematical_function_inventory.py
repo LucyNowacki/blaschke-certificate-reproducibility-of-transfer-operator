@@ -966,13 +966,12 @@ def sync_final_inline_helpers() -> None:
             source_cell["source"] = magic + "".join(actual_lines[1:end_index + 1]) + module_source
         else:
             source_cell["source"] = expected
-    notebook.setdefault("metadata", {})["source_sync_after_execution"] = {
-        "date": "2026-08-29",
-        "scope": "mathematical docstrings and fail-closed Phase 2 gate propagation",
-        "stored_output_status": (
-            "retained historical outputs; not evidence for the post-sync sources until a full clean-room replay"
-        ),
-    }
+    # Inline-source synchronization invalidates any previous execution/source
+    # binding.  Only publication normalization, supplied with a validated
+    # hash-bound raw-comparison receipt, may create this metadata again.
+    notebook.setdefault("metadata", {}).pop(
+        "source_sync_after_execution", None
+    )
     FINAL_NOTEBOOK.write_text(
         json.dumps(notebook, indent=1, ensure_ascii=False) + "\n",
         encoding="utf-8",

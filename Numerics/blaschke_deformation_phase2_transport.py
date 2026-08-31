@@ -22,6 +22,7 @@ from typing import Any
 import flint
 from flint import arb, arb_mat
 import numpy as np
+from threadpoolctl import threadpool_info, threadpool_limits
 
 try:
     from .blaschke_deformation_phase2_geometry import lower_text, upper_text
@@ -31,6 +32,14 @@ except ImportError:
 
 MAP_LABEL = "blaschke_mu_0p3"
 PRODUCER_SCHEMA = "phase2-transport-v2"
+INVERSE_BLAS_THREADS = 24
+LOCKED_OPENBLAS_RUNTIME = {
+    "user_api": "blas",
+    "internal_api": "openblas",
+    "version": "0.3.30",
+    "threading_layer": "pthreads",
+    "architecture": "Haswell",
+}
 
 
 @dataclass(frozen=True)
@@ -116,6 +125,88 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _verified_openblas_runtime(
+    expected_threads: int,
+    *,
+    stage: str,
+) -> dict[str, Any]:
+    """Return portable evidence for the exact locked OpenBLAS runtime.
+
+    The replay keeps every process and worker at one BLAS thread.  The two
+    explicitly authorised binary64 compatibility kernels temporarily use 24
+    threads, and only those kernels may do so.  Checking the live library here
+    prevents an ABI-compatible but numerically different BLAS implementation,
+    microarchitecture dispatch, or thread count from silently changing the
+    retained witness bytes.
+    """
+
+    if int(expected_threads) < 1:
+        raise ValueError("The expected BLAS thread count must be positive.")
+    records = [
+        record
+        for record in threadpool_info()
+        if record.get("user_api") == "blas"
+    ]
+    invalid = [
+        record
+        for record in records
+        if any(
+            str(record.get(key)) != value
+            for key, value in LOCKED_OPENBLAS_RUNTIME.items()
+        )
+        or int(record.get("num_threads") or 0) != int(expected_threads)
+    ]
+    if len(records) != 1 or invalid:
+        raise RuntimeError(
+            "The finite transport inverse requires exactly one live OpenBLAS "
+            "0.3.30 pthreads Haswell runtime at "
+            f"{int(expected_threads)} threads during {stage}; observed "
+            f"{records!r}."
+        )
+    portable = {
+        key: records[0].get(key)
+        for key in (
+            "user_api",
+            "internal_api",
+            "version",
+            "threading_layer",
+            "architecture",
+            "num_threads",
+        )
+    }
+    return {
+        "stage": str(stage),
+        "expected_threads": int(expected_threads),
+        "runtime": portable,
+    }
+
+
+def _invert_midpoint_with_locked_blas(
+    midpoint: np.ndarray,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Invert one midpoint under the exact scoped compatibility runtime."""
+
+    outer_before = _verified_openblas_runtime(1, stage="outer-before-inverse")
+    with threadpool_limits(limits=INVERSE_BLAS_THREADS, user_api="blas"):
+        inside = _verified_openblas_runtime(
+            INVERSE_BLAS_THREADS,
+            stage="scoped-midpoint-inverse",
+        )
+        inverse = np.linalg.inv(midpoint)
+    outer_after = _verified_openblas_runtime(1, stage="outer-after-inverse")
+    evidence = {
+        "schema": "numerics1-scoped-openblas-runtime-v1",
+        "operation": "numpy.linalg.inv(midpoint)",
+        "scope_threads": INVERSE_BLAS_THREADS,
+        "outer_threads": 1,
+        "outer_before": outer_before,
+        "inside": inside,
+        "outer_after": outer_after,
+        "portable_fields_only": True,
+    }
+    return inverse, evidence
 
 
 def _alpha_values(N: int) -> np.ndarray:
@@ -371,6 +462,12 @@ def _configuration_digest(config: Phase2TransportConfig) -> str:
         "map_label": MAP_LABEL,
         "producer_schema": PRODUCER_SCHEMA,
         **asdict(config),
+        "binary64_inverse_policy": {
+            "operation": "numpy.linalg.inv(midpoint)",
+            "scope_threads": INVERSE_BLAS_THREADS,
+            "outer_threads": 1,
+            **LOCKED_OPENBLAS_RUNTIME,
+        },
         "basis_normalisation": "X-orthonormal Chebyshev packets",
         "coordinate_orientation": "c to y=D_r,N c to d=T_N(r)y",
     }
@@ -399,7 +496,9 @@ Functionality: Certify the finite connection condition number by inverse residua
     midpoint = connection_matrix_float(config.N, config.r)
     if not np.all(np.isfinite(midpoint)):
         raise ArithmeticError("The midpoint connection matrix is not finite.")
-    inverse = np.linalg.inv(midpoint)
+    inverse, inverse_runtime_evidence = _invert_midpoint_with_locked_blas(
+        midpoint
+    )
     inverse[np.tril_indices(config.N, -1)] = 0.0
     row_indices, column_indices = np.indices(inverse.shape)
     inverse[(column_indices - row_indices) % 2 != 0] = 0.0
@@ -441,6 +540,11 @@ Functionality: Certify the finite connection condition number by inverse residua
         norm_connection * norm_inverse / one_minus_delta
     ).upper()
     configuration_digest = _configuration_digest(config)
+    inverse_runtime_json = json.dumps(
+        inverse_runtime_evidence,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
     data_dir = Path(data_dir)
     report_dir = Path(report_dir)
@@ -454,6 +558,7 @@ Functionality: Certify the finite connection condition number by inverse residua
         N=np.array([config.N], dtype=np.int64),
         r=np.array([config.r]),
         configuration_digest=np.array([configuration_digest]),
+        inverse_blas_runtime_evidence=np.array(inverse_runtime_json),
     )
     witness_digest = _sha256(witness_path)
 
@@ -478,6 +583,7 @@ Functionality: Certify the finite connection condition number by inverse residua
         "transport_row_blocks": int(transport_blocks),
         "arb_dps": int(math.ceil(config.precision_bits / math.log2(10))),
         "inverse_backend": "numpy binary64 witness with Arb residual",
+        "inverse_blas_runtime_evidence": inverse_runtime_json,
         "configuration_digest": configuration_digest,
         "geometry_configuration_digest": config.geometry_configuration_digest,
         "producer_schema": PRODUCER_SCHEMA,
@@ -502,6 +608,7 @@ Functionality: Certify the finite connection condition number by inverse residua
         "csv_sha256": _sha256(csv_path),
         "inverse_witness_path": str(witness_path),
         "inverse_witness_sha256": witness_digest,
+        "binary64_inverse_runtime": inverse_runtime_evidence,
     }
     _atomic_text(report_path, json.dumps(report, indent=2, sort_keys=True) + "\n")
     return Phase2TransportResult(

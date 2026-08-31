@@ -9,15 +9,15 @@
   "inline_helper_count": 18,
   "notebook_cell_count": 141,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "1f2062a89b7242789a7835883caec87c184e0d40d9ce4d1d81ce66a1bafd67b8",
+  "notebook_sha256": "68ee246d40c0bdef14e0b85e9ab496af54ed494cfb50616b3ed47f42f1ec5324",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",
     "blaschke_deformation_certification.py": "f46d403cfe1e2458e9455592f0d5e33fb95697dfabfd18d10dab53da84daf2ec",
     "blaschke_deformation_spectral_certification.py": "b20bac59a78a8233ce7d1e11f10e54f5fbbf10d2c6951a983c76c15328c31824",
-    "blaschke_deformation_contour_certification.py": "1aebcc004a19a6d09366c75a76a31fb297bad657666d6f91506f068401c95675",
+    "blaschke_deformation_contour_certification.py": "7eb216666a2a9c1234ec63dd4cf71c5e27eb3863c0ca36bacb0f8e60eb488104",
     "blaschke_deformation_phase2_geometry.py": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
-    "blaschke_deformation_phase2_transport.py": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5",
+    "blaschke_deformation_phase2_transport.py": "7a0b891cf1f145683a38837cc32ac9945c4e337af057df86410455777444ebd2",
     "blaschke_deformation_phase2_matrix.py": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
     "blaschke_deformation_phase2_pipeline.py": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
     "blaschke_deformation_historical_comparisons.py": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
@@ -28,11 +28,11 @@
     "blaschke_deformation_phase2_resolved_response.py": "3047063eba4c36e27dc2824e62e76b9a8b070f3ab3e6334b59c99027fb7a238e",
     "blaschke_deformation_phase2_final_aggregation.py": "aba945190bf7306688b8c64f0a236b6e6b48f83df235a6f67692683bb0c0ea25",
     "blaschke_deformation_phase1_diagnostics.py": "93dcebd2450f92df3e488fb5f5765a6ad9cb34d954e01000b29edb61613fdaf9",
-    "blaschke_deformation_sampled_schur_diagnostics.py": "15f3cc33ed067043f3845493aa11c2230e94876d2d8993fe1fdf63f178fe2eea"
+    "blaschke_deformation_sampled_schur_diagnostics.py": "692358513b7e81330f1a4ec382f35f4bd519c950c201b6009040d4d0ce810e6f"
   },
   "counts": {
     "mathematical": 154,
-    "infrastructure": 245,
+    "infrastructure": 250,
     "plotting": 21
   },
   "functions": [
@@ -139,266 +139,287 @@
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_fraction_text",
       "classification": "infrastructure",
-      "line": 151
+      "line": 153
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_fraction_arb",
       "classification": "infrastructure",
-      "line": 155
+      "line": 157
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_fraction_acb",
       "classification": "infrastructure",
-      "line": 159
+      "line": 161
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_exact_float",
       "classification": "infrastructure",
-      "line": 163
+      "line": 165
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_exact_complex128",
       "classification": "infrastructure",
-      "line": 168
+      "line": 170
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_numpy_to_acb_exact",
       "classification": "mathematical",
-      "line": 173
+      "line": 175
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_frobenius_upper",
       "classification": "mathematical",
-      "line": 189
+      "line": 191
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_upper_float",
       "classification": "infrastructure",
-      "line": 200
+      "line": 202
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_lower_float",
       "classification": "infrastructure",
-      "line": 204
+      "line": 206
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_upper_text",
       "classification": "infrastructure",
-      "line": 208
+      "line": 210
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_lower_text",
       "classification": "infrastructure",
-      "line": 212
+      "line": 214
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
-      "qualname": "_write_csv",
+      "qualname": "_fixed_flint_precision",
       "classification": "infrastructure",
-      "line": 216
+      "line": 219
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
-      "qualname": "_write_json",
+      "qualname": "_precision_separated_small_gain",
       "classification": "infrastructure",
       "line": 235
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
+      "qualname": "_precision_role_report",
+      "classification": "infrastructure",
+      "line": 317
+    },
+    {
+      "scope": "inline_helper",
+      "source": "blaschke_deformation_contour_certification.py",
+      "qualname": "_write_csv",
+      "classification": "infrastructure",
+      "line": 374
+    },
+    {
+      "scope": "inline_helper",
+      "source": "blaschke_deformation_contour_certification.py",
+      "qualname": "_write_json",
+      "classification": "infrastructure",
+      "line": 393
+    },
+    {
+      "scope": "inline_helper",
+      "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_read_csv",
       "classification": "infrastructure",
-      "line": 242
+      "line": 400
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_csv_bool",
       "classification": "infrastructure",
-      "line": 247
+      "line": 405
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_runtime_fingerprint",
       "classification": "infrastructure",
-      "line": 251
+      "line": 409
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_target_contours",
       "classification": "mathematical",
-      "line": 280
+      "line": 438
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_contour_plan_rows",
       "classification": "infrastructure",
-      "line": 323
+      "line": 481
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_load_epsilon",
       "classification": "infrastructure",
-      "line": 366
+      "line": 524
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_load_matrix_report",
       "classification": "infrastructure",
-      "line": 406
+      "line": 567
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_load_exact_payload_metadata",
       "classification": "infrastructure",
-      "line": 434
+      "line": 595
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_validate_schur_similarity",
       "classification": "mathematical",
-      "line": 440
+      "line": 601
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_certified_schur_diagonal_geometry",
       "classification": "mathematical",
-      "line": 509
+      "line": 670
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_uniform_triangular_inverse_bound",
       "classification": "mathematical",
-      "line": 554
+      "line": 715
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_schur_contour_attempt",
       "classification": "mathematical",
-      "line": 598
+      "line": 759
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_base_result_row",
       "classification": "infrastructure",
-      "line": 698
+      "line": 885
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_laurent_coefficients",
       "classification": "mathematical",
-      "line": 714
+      "line": 901
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_laurent_contour_certificate",
       "classification": "mathematical",
-      "line": 753
+      "line": 940
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_certificate_paths",
       "classification": "infrastructure",
-      "line": 943
+      "line": 1156
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_laurent_witness_rows",
       "classification": "infrastructure",
-      "line": 959
+      "line": 1172
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_laurent_witness_records_are_reusable",
       "classification": "infrastructure",
-      "line": 1013
+      "line": 1226
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_validate_target_contour_plan",
       "classification": "mathematical",
-      "line": 1057
+      "line": 1270
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_existing_geometry_is_reusable",
       "classification": "mathematical",
-      "line": 1090
+      "line": 1303
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_reaggregate_small_gain_rows",
       "classification": "mathematical",
-      "line": 1156
+      "line": 1401
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_reaggregate_existing_certificate",
       "classification": "mathematical",
-      "line": 1215
+      "line": 1482
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "certify_all_target_contours",
       "classification": "mathematical",
-      "line": 1265
+      "line": 1543
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "_default_paths",
       "classification": "infrastructure",
-      "line": 1635
+      "line": 1923
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_contour_certification.py",
       "qualname": "main",
       "classification": "infrastructure",
-      "line": 1651
+      "line": 1939
     },
     {
       "scope": "inline_helper",
@@ -1812,119 +1833,133 @@
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_atomic_text",
       "classification": "infrastructure",
-      "line": 56
+      "line": 65
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_atomic_csv",
       "classification": "infrastructure",
-      "line": 75
+      "line": 84
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_atomic_npz",
       "classification": "infrastructure",
-      "line": 96
+      "line": 105
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_sha256",
       "classification": "infrastructure",
-      "line": 113
+      "line": 122
+    },
+    {
+      "scope": "inline_helper",
+      "source": "blaschke_deformation_phase2_transport.py",
+      "qualname": "_verified_openblas_runtime",
+      "classification": "infrastructure",
+      "line": 130
+    },
+    {
+      "scope": "inline_helper",
+      "source": "blaschke_deformation_phase2_transport.py",
+      "qualname": "_invert_midpoint_with_locked_blas",
+      "classification": "infrastructure",
+      "line": 186
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_alpha_values",
       "classification": "mathematical",
-      "line": 121
+      "line": 212
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "connection_matrix_float",
       "classification": "mathematical",
-      "line": 131
+      "line": 222
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_alpha_values_arb",
       "classification": "mathematical",
-      "line": 154
+      "line": 245
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "connection_matrix_arb",
       "classification": "mathematical",
-      "line": 165
+      "line": 256
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_connection_entry_arb",
       "classification": "mathematical",
-      "line": 191
+      "line": 282
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_partition_rows",
       "classification": "infrastructure",
-      "line": 213
+      "line": 304
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_transport_row_block",
       "classification": "mathematical",
-      "line": 227
+      "line": 318
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_certify_transport_by_row_blocks",
       "classification": "mathematical",
-      "line": 285
+      "line": 376
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_float_matrix_as_arb",
       "classification": "mathematical",
-      "line": 334
+      "line": 425
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_identity",
       "classification": "mathematical",
-      "line": 347
+      "line": 438
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_frobenius_upper",
       "classification": "mathematical",
-      "line": 356
+      "line": 447
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_configuration_digest",
       "classification": "infrastructure",
-      "line": 369
+      "line": 460
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "certify_transport",
       "classification": "mathematical",
-      "line": 381
+      "line": 478
     },
     {
       "scope": "inline_helper",
@@ -2884,7 +2919,7 @@
       "cell_id": "9b8c4f29",
       "qualname": "kappa_T_numeric",
       "classification": "mathematical",
-      "line": 90
+      "line": 93
     },
     {
       "scope": "notebook_cell",

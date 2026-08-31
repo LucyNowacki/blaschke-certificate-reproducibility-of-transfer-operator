@@ -430,6 +430,7 @@ def run_replay(
     published_archive: Path | None,
     compute_only: bool = False,
     expected_inventory_sha256: str | None = None,
+    raw_comparison_receipt: Path | None = None,
 ) -> dict[str, object]:
     root = Path(bundle_root).resolve(strict=True)
     if root.name != BUNDLE_ROOT_NAME or (root / ".git").exists():
@@ -440,6 +441,16 @@ def run_replay(
         raise ValueError(
             "Compute-only replay cannot compare a published archive before "
             "normalization and provenance refresh."
+        )
+    if compute_only and raw_comparison_receipt is not None:
+        raise ValueError(
+            "Compute-only replay stops before raw comparison and cannot consume "
+            "a comparison receipt."
+        )
+    if not prepare_only and not compute_only and raw_comparison_receipt is None:
+        raise ValueError(
+            "Full publication replay requires an external hash-bound raw "
+            "comparison receipt."
         )
     if not prepare_only:
         expected_inventory_sha256 = _authenticate_inventory_before_preparation(
@@ -539,6 +550,8 @@ def run_replay(
                 "Numerics/normalize_blaschke_publication.py",
                 "--root",
                 ".",
+                "--raw-comparison-receipt",
+                str(Path(raw_comparison_receipt).resolve(strict=True)),
             ],
             root=root,
             environment=environment,
@@ -590,6 +603,14 @@ def main() -> None:
     )
     parser.add_argument("--published-archive", type=Path)
     parser.add_argument(
+        "--raw-comparison-receipt",
+        type=Path,
+        help=(
+            "External PASS receipt from comparison of this replay's raw, "
+            "pre-normalization members; required for full publication replay."
+        ),
+    )
+    parser.add_argument(
         "--expected-inventory-sha256",
         help=(
             "Exact source-only inventory digest from the authenticated external "
@@ -606,6 +627,7 @@ def main() -> None:
         published_archive=args.published_archive,
         compute_only=args.compute_only,
         expected_inventory_sha256=args.expected_inventory_sha256,
+        raw_comparison_receipt=args.raw_comparison_receipt,
     )
     print(json.dumps(result, indent=2))
 

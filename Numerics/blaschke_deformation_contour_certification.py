@@ -13,6 +13,7 @@ residuals against the exact-dyadic matrix.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import csv
 from dataclasses import asdict, dataclass
 from fractions import Fraction
@@ -63,6 +64,7 @@ MOAT_METHOD_LAURENT = (
 CERTIFICATE_ROUTE_SCHUR = "Schur-count/Schur-moat"
 CERTIFICATE_ROUTE_LAURENT = "Schur-count/Laurent-moat"
 COUNT_REFERENCE_MATRIX = "exact-binary upper-triangular Schur matrix T"
+LEGACY_5C0_COMPATIBILITY_PRECISION_BITS = 53
 
 # A deterministic epsilon is theorem-eligible only when every fresh Phase 2
 # component gate is present and true. Missing columns fail closed, preventing
@@ -211,6 +213,162 @@ def _upper_text(value: arb, digits: int = 80) -> str:
 
 def _lower_text(value: arb, digits: int = 80) -> str:
     return value.lower().str(int(digits), radius=False, more=True)
+
+
+@contextmanager
+def _fixed_flint_precision(precision_bits: int):
+    """Run one bounded calculation at an explicit, restored FLINT precision."""
+
+    precision_bits = int(precision_bits)
+    if precision_bits < 2:
+        raise ValueError("FLINT precision must be at least two bits.")
+    previous = flint.ctx.prec
+    flint.ctx.prec = precision_bits
+    try:
+        if int(flint.ctx.prec) != precision_bits:
+            raise RuntimeError("FLINT did not enter the requested precision scope.")
+        yield
+    finally:
+        flint.ctx.prec = previous
+
+
+def _precision_separated_small_gain(
+    epsilon: arb,
+    lifted_moat: arb,
+    *,
+    epsilon_text: str,
+    theorem_precision_bits: int,
+    legacy_serialized_moat_lower_text: str | None = None,
+) -> dict[str, object]:
+    """Return canonical theorem values and a non-gating 5c0 projection.
+
+    The canonical quotient is recomputed at the configured theorem precision.
+    The legacy projection deliberately repeats the old 53-bit parse and
+    reaggregation, but starts from an upward epsilon enclosure and a downward
+    serialized-moat enclosure.  Its quotient is therefore still a rigorous
+    upper bound.  It is retained only to explain the authenticated 5c0 bytes;
+    no Boolean theorem decision is read from it.
+    """
+
+    theorem_precision_bits = int(theorem_precision_bits)
+    with _fixed_flint_precision(theorem_precision_bits):
+        theorem_epsilon = epsilon.upper()
+        theorem_moat = lifted_moat.lower()
+        if not theorem_moat > 0:
+            raise ArithmeticError("The theorem small-gain moat is not positive.")
+        theorem_product = (theorem_epsilon / theorem_moat).upper()
+        theorem_epsilon_float = _upper_float(theorem_epsilon)
+        theorem_product_float = _upper_float(theorem_product)
+
+    # A cached certificate already stores the outward-rounded binary64 moat.
+    # Reuse that text verbatim for the legacy projection: applying
+    # ``_lower_float`` to its parsed enclosure would move one more binary64
+    # step downward and would no longer reproduce the authenticated 5c0
+    # diagnostic.  A fresh calculation has no stored text yet, so it performs
+    # the single serialization step here.
+    serialized_moat_lower = (
+        str(legacy_serialized_moat_lower_text)
+        if legacy_serialized_moat_lower_text is not None
+        else repr(_lower_float(lifted_moat))
+    )
+    with _fixed_flint_precision(LEGACY_5C0_COMPATIBILITY_PRECISION_BITS):
+        legacy_epsilon = arb(str(epsilon_text)).upper()
+        legacy_moat = arb(serialized_moat_lower).lower()
+        if not legacy_moat > 0:
+            raise ArithmeticError("The legacy compatibility moat is not positive.")
+        legacy_product = (legacy_epsilon / legacy_moat).upper()
+        legacy_epsilon_float = _upper_float(legacy_epsilon)
+        legacy_product_float = _upper_float(legacy_product)
+
+    if (
+        legacy_epsilon_float < theorem_epsilon_float
+        or legacy_product_float < theorem_product_float
+    ):
+        raise ArithmeticError(
+            "The fixed-53-bit compatibility projection is not conservative "
+            "relative to the configured theorem projection."
+        )
+    return {
+        "theorem_precision_bits": theorem_precision_bits,
+        "theorem_epsilon_upper": theorem_epsilon_float,
+        "theorem_small_gain_product_upper": theorem_product_float,
+        "theorem_rounding_role": (
+            "configured-precision interval upper bounds used by theorem gates"
+        ),
+        "legacy_5c0_compatibility_precision_bits": (
+            LEGACY_5C0_COMPATIBILITY_PRECISION_BITS
+        ),
+        "legacy_5c0_compatibility_epsilon_upper": legacy_epsilon_float,
+        "legacy_5c0_compatibility_small_gain_product_upper": (
+            legacy_product_float
+        ),
+        "legacy_5c0_compatibility_serialized_moat_lower": float(
+            serialized_moat_lower
+        ),
+        "legacy_5c0_compatibility_rounding_role": (
+            "fixed-53-bit upward epsilon over downward serialized moat; "
+            "diagnostic compatibility only"
+        ),
+        "legacy_5c0_compatibility_is_conservative_upper": True,
+        "legacy_5c0_compatibility_theorem_gate": False,
+    }
+
+
+def _precision_role_report(
+    rows: Iterable[dict[str, object]],
+    *,
+    theorem_precision_bits: int,
+) -> dict[str, object]:
+    """Summarise the disjoint theorem and legacy compatibility roles."""
+
+    rows = list(rows)
+    if not rows:
+        raise ValueError("The precision-role report requires certificate rows.")
+    canonical_fields_are_theorem_values = all(
+        float(row["epsilon_upper"])
+        == float(row["theorem_epsilon_upper"])
+        and float(row["certified_small_gain_product_upper"])
+        == float(row["theorem_small_gain_product_upper"])
+        for row in rows
+    )
+    legacy_is_conservative = all(
+        _csv_bool(row["legacy_5c0_compatibility_is_conservative_upper"])
+        and float(row["legacy_5c0_compatibility_epsilon_upper"])
+        >= float(row["theorem_epsilon_upper"])
+        and float(row["legacy_5c0_compatibility_small_gain_product_upper"])
+        >= float(row["theorem_small_gain_product_upper"])
+        and not _csv_bool(row["legacy_5c0_compatibility_theorem_gate"])
+        for row in rows
+    )
+    if not canonical_fields_are_theorem_values:
+        raise ArithmeticError(
+            "A legacy compatibility value entered a canonical theorem field."
+        )
+    if not legacy_is_conservative:
+        raise ArithmeticError(
+            "The legacy compatibility projection is not conservative and non-gating."
+        )
+    return {
+        "theorem_projection": {
+            "precision_bits": int(theorem_precision_bits),
+            "row_count": len(rows),
+            "rounding_role": (
+                "configured-precision interval upper bounds used by theorem gates"
+            ),
+            "canonical_fields_are_theorem_values": True,
+            "theorem_gate": True,
+        },
+        "legacy_5c0_compatibility_projection": {
+            "precision_bits": LEGACY_5C0_COMPATIBILITY_PRECISION_BITS,
+            "row_count": len(rows),
+            "rounding_role": (
+                "fixed-53-bit upward epsilon over downward serialized moat; "
+                "diagnostic compatibility only"
+            ),
+            "is_conservative_upper": True,
+            "theorem_gate": False,
+        },
+    }
 
 
 def _write_csv(path: Path, rows: Iterable[dict[str, object]]) -> None:
@@ -397,10 +555,13 @@ def _load_epsilon(
     value = str(row.get("new_epsilon_response_prefactor_candidate_text", ""))
     if not value:
         raise ValueError("The deterministic epsilon certificate has no exact text value.")
-    epsilon = arb(value)
-    if epsilon.lower() <= 0:
-        raise ArithmeticError("The deterministic perturbation radius is not positive.")
-    return epsilon.upper(), value
+    with _fixed_flint_precision(config.precision_bits):
+        epsilon = arb(value).upper()
+        if epsilon.lower() <= 0:
+            raise ArithmeticError(
+                "The deterministic perturbation radius is not positive."
+            )
+    return epsilon, value
 
 
 def _load_matrix_report(
@@ -602,6 +763,9 @@ def _schur_contour_attempt(
     schur_report: dict[str, object],
     eta_A: arb,
     epsilon: arb,
+    *,
+    epsilon_text: str | None = None,
+    precision_bits: int = 256,
 ) -> dict[str, object]:
     '''Explanation: This is the finite-to-infinite bridge: the Schur diagonal gives the finite count, the triangular inverse gives the moat, and a strict small-gain inequality prevents the exact operator homotopy from crossing the contour.
 Functionality: Derive one Schur-diagonal count, triangular complete-circle moat, perturbation transports, and finite-to-exact small-gain verdict.'''
@@ -627,7 +791,20 @@ Functionality: Derive one Schur-diagonal count, triangular complete-circle moat,
         if mathematical_moat > 0 and zero_distance > 0
         else arb(0)
     )
-    small_gain = (epsilon / lifted_moat).upper() if lifted_moat > 0 else None
+    small_gain_projection = (
+        _precision_separated_small_gain(
+            epsilon,
+            lifted_moat,
+            epsilon_text=(
+                str(epsilon_text)
+                if epsilon_text is not None
+                else _upper_text(epsilon, 90)
+            ),
+            theorem_precision_bits=precision_bits,
+        )
+        if lifted_moat > 0
+        else None
+    )
     schur_count = int(
         diagonal_geometry["schur_diagonal_algebraic_count"]
     )
@@ -640,7 +817,10 @@ Functionality: Derive one Schur-diagonal count, triangular complete-circle moat,
         diagonal_geometry["schur_diagonal_membership_certified"]
         and mathematical_count_transport
     )
-    gain_pass = bool(small_gain is not None and small_gain < 1)
+    gain_pass = bool(
+        small_gain_projection is not None
+        and float(small_gain_projection["theorem_small_gain_product_upper"]) < 1
+    )
     finite_to_exact_rank_transfer = bool(finite_count_certified and gain_pass)
     theorem = bool(finite_to_exact_rank_transfer and count_matches)
     if theorem:
@@ -672,10 +852,17 @@ Functionality: Derive one Schur-diagonal count, triangular complete-circle moat,
         "mathematical_finite_matrix_moat_lower": _lower_float(mathematical_moat),
         "distance_to_zero_lower": _lower_float(zero_distance),
         "lifted_finite_section_moat_lower": _lower_float(lifted_moat),
-        "epsilon_upper": _upper_float(epsilon),
-        "certified_small_gain_product_upper": (
-            _upper_float(small_gain) if small_gain is not None else math.inf
+        "epsilon_upper": (
+            small_gain_projection["theorem_epsilon_upper"]
+            if small_gain_projection is not None
+            else math.inf
         ),
+        "certified_small_gain_product_upper": (
+            small_gain_projection["theorem_small_gain_product_upper"]
+            if small_gain_projection is not None
+            else math.inf
+        ),
+        **(small_gain_projection or {}),
         "finite_count_matches_expected": count_matches,
         "A_N_circ_count_transport_certified": midpoint_count_transport,
         "mathematical_finite_count_transport_certified": (
@@ -757,6 +944,9 @@ def _laurent_contour_certificate(
     schur_report: dict[str, object],
     eta_A: arb,
     epsilon: arb,
+    *,
+    epsilon_text: str | None = None,
+    precision_bits: int = 256,
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     '''Explanation: If a Laurent matrix polynomial has residual norm below one everywhere on the circle, a Neumann argument proves the true resolvent exists there. This supplies the rigorous moat when the triangular Schur bound is too pessimistic.
 Functionality: Validate a complete-circle Laurent approximate inverse in Arb. The Laurent approximate inverse certifies the complete-circle resolvent moat only. The finite algebraic count is obtained from the validated Schur diagonal and transported through the matrix homotopies.'''
@@ -844,8 +1034,24 @@ Functionality: Validate a complete-circle Laurent approximate inverse in Arb. Th
         if mathematical_moat > 0 and zero_distance > 0
         else arb(0)
     )
-    small_gain = (epsilon / lifted_moat).upper() if lifted_moat > 0 else None
-    gain_pass = bool(small_gain is not None and small_gain < 1)
+    small_gain_projection = (
+        _precision_separated_small_gain(
+            epsilon,
+            lifted_moat,
+            epsilon_text=(
+                str(epsilon_text)
+                if epsilon_text is not None
+                else _upper_text(epsilon, 90)
+            ),
+            theorem_precision_bits=precision_bits,
+        )
+        if lifted_moat > 0
+        else None
+    )
+    gain_pass = bool(
+        small_gain_projection is not None
+        and float(small_gain_projection["theorem_small_gain_product_upper"]) < 1
+    )
     finite_to_exact_rank_transfer = bool(finite_count_certified and gain_pass)
     theorem = bool(
         triangular_residual < 1
@@ -914,10 +1120,17 @@ Functionality: Validate a complete-circle Laurent approximate inverse in Arb. Th
         "mathematical_finite_matrix_moat_lower": _lower_float(mathematical_moat),
         "distance_to_zero_lower": _lower_float(zero_distance),
         "lifted_finite_section_moat_lower": _lower_float(lifted_moat),
-        "epsilon_upper": _upper_float(epsilon),
-        "certified_small_gain_product_upper": (
-            _upper_float(small_gain) if small_gain is not None else math.inf
+        "epsilon_upper": (
+            small_gain_projection["theorem_epsilon_upper"]
+            if small_gain_projection is not None
+            else math.inf
         ),
+        "certified_small_gain_product_upper": (
+            small_gain_projection["theorem_small_gain_product_upper"]
+            if small_gain_projection is not None
+            else math.inf
+        ),
+        **(small_gain_projection or {}),
         "finite_count_matches_expected": count_matches,
         "finite_count_certified": finite_count_certified,
         "certified_small_gain_pass": gain_pass,
@@ -1100,6 +1313,26 @@ Functionality: Validate cached counts and moats independently of the current eps
 
     if existing.get("certificate_schema") != SCHEMA or len(rows) != 24:
         return False
+    precision_roles = existing.get("small_gain_precision_roles")
+    if not isinstance(precision_roles, dict):
+        return False
+    theorem_role = precision_roles.get("theorem_projection")
+    legacy_role = precision_roles.get("legacy_5c0_compatibility_projection")
+    if not isinstance(theorem_role, dict) or not isinstance(legacy_role, dict):
+        return False
+    if not (
+        int(theorem_role.get("precision_bits", 0))
+        == int(existing.get("precision_bits", 0))
+        and int(theorem_role.get("row_count", 0)) == 24
+        and bool(theorem_role.get("canonical_fields_are_theorem_values"))
+        and bool(theorem_role.get("theorem_gate"))
+        and int(legacy_role.get("precision_bits", 0))
+        == LEGACY_5C0_COMPATIBILITY_PRECISION_BITS
+        and int(legacy_role.get("row_count", 0)) == 24
+        and bool(legacy_role.get("is_conservative_upper"))
+        and not bool(legacy_role.get("theorem_gate"))
+    ):
+        return False
     try:
         stored_sources = normalise_source_hashes(
             dict(existing.get("source_hashes", {}))
@@ -1131,6 +1364,18 @@ Functionality: Validate cached counts and moats independently of the current eps
         and _csv_bool(row.get("zero_outside_enclosed_region"))
         and not _csv_bool(row.get("sampled_values_used_in_theorem_gate"))
         and float(row.get("lifted_finite_section_moat_lower", 0.0)) > 0.0
+        and int(row.get("theorem_precision_bits", 0))
+        == int(existing.get("precision_bits", 0))
+        and float(row.get("epsilon_upper", math.inf))
+        == float(row.get("theorem_epsilon_upper", math.nan))
+        and float(row.get("certified_small_gain_product_upper", math.inf))
+        == float(row.get("theorem_small_gain_product_upper", math.nan))
+        and int(row.get("legacy_5c0_compatibility_precision_bits", 0))
+        == LEGACY_5C0_COMPATIBILITY_PRECISION_BITS
+        and _csv_bool(
+            row.get("legacy_5c0_compatibility_is_conservative_upper")
+        )
+        and not _csv_bool(row.get("legacy_5c0_compatibility_theorem_gate"))
         for row in rows
     ):
         return False
@@ -1156,17 +1401,36 @@ Functionality: Validate cached counts and moats independently of the current eps
 def _reaggregate_small_gain_rows(
     rows: list[dict[str, str]],
     epsilon: arb,
+    *,
+    epsilon_text: str | None = None,
+    precision_bits: int = 256,
 ) -> list[dict[str, object]]:
     '''Explanation: The final rank transfer depends on the product of the updated perturbation radius and each already-certified resolvent bound. Re-evaluating that inequality is enough to decide whether every finite count still transfers to the exact operator.
-Functionality: Reuse certified finite moats and recompute only epsilon-dependent gates.'''
+    Functionality: Reuse certified finite moats and recompute only epsilon-dependent gates.'''
 
     refreshed: list[dict[str, object]] = []
-    epsilon_upper = _upper_float(epsilon)
     for stored in rows:
         row: dict[str, object] = dict(stored)
-        moat = arb(str(stored["lifted_finite_section_moat_lower"])).lower()
-        small_gain = (epsilon / moat).upper()
-        gain_pass = bool(small_gain < 1)
+        with _fixed_flint_precision(precision_bits):
+            moat = arb(
+                str(stored["lifted_finite_section_moat_lower"])
+            ).lower()
+        projection = _precision_separated_small_gain(
+            epsilon,
+            moat,
+            epsilon_text=(
+                str(epsilon_text)
+                if epsilon_text is not None
+                else _upper_text(epsilon, 90)
+            ),
+            theorem_precision_bits=precision_bits,
+            legacy_serialized_moat_lower_text=str(
+                stored["lifted_finite_section_moat_lower"]
+            ),
+        )
+        gain_pass = bool(
+            float(projection["theorem_small_gain_product_upper"]) < 1
+        )
         finite_count = _csv_bool(stored.get("finite_count_certified"))
         count_matches = _csv_bool(stored.get("finite_count_matches_expected"))
         complete_circle = _csv_bool(stored.get("complete_circle_covered"))
@@ -1195,8 +1459,11 @@ Functionality: Reuse certified finite moats and recompute only epsilon-dependent
         )
         row.update(
             {
-                "epsilon_upper": epsilon_upper,
-                "certified_small_gain_product_upper": _upper_float(small_gain),
+                "epsilon_upper": projection["theorem_epsilon_upper"],
+                "certified_small_gain_product_upper": projection[
+                    "theorem_small_gain_product_upper"
+                ],
+                **projection,
                 "certified_small_gain_pass": gain_pass,
                 "finite_to_exact_rank_transfer_certified": finite_to_exact,
                 "theorem_certified": theorem,
@@ -1219,6 +1486,7 @@ def _reaggregate_existing_certificate(
     paths: dict[str, Path],
     epsilon: arb,
     epsilon_text: str,
+    precision_bits: int,
     source_hashes: dict[str, str],
     input_hashes: dict[str, str],
 ) -> dict[str, object]:
@@ -1226,7 +1494,16 @@ def _reaggregate_existing_certificate(
 Functionality: Refresh a final package after an epsilon-only provenance change.'''
 
     started = time.time()
-    refreshed = _reaggregate_small_gain_rows(rows, epsilon)
+    refreshed = _reaggregate_small_gain_rows(
+        rows,
+        epsilon,
+        epsilon_text=epsilon_text,
+        precision_bits=precision_bits,
+    )
+    precision_roles = _precision_role_report(
+        refreshed,
+        theorem_precision_bits=precision_bits,
+    )
     all_gain = all(bool(row["certified_small_gain_pass"]) for row in refreshed)
     all_rank_transfers = all(
         bool(row["finite_to_exact_rank_transfer_certified"])
@@ -1244,6 +1521,7 @@ Functionality: Refresh a final package after an epsilon-only provenance change.'
             "all_small_gain_tests_pass": all_gain,
             "all_finite_to_exact_rank_transfers_certified": all_rank_transfers,
             "all_24_targets_theorem_certified": all_theorem,
+            "small_gain_precision_roles": precision_roles,
             "source_hashes": dict(source_hashes),
             "geometry_input_hashes": {
                 key: value
@@ -1322,6 +1600,7 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
                 paths=paths,
                 epsilon=epsilon,
                 epsilon_text=epsilon_text,
+                precision_bits=config.precision_bits,
                 source_hashes=source_hashes,
                 input_hashes=input_hashes,
             )
@@ -1419,6 +1698,8 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
                 schur_report,
                 eta_A,
                 epsilon,
+                epsilon_text=epsilon_text,
+                precision_bits=config.precision_bits,
             )
             schur_attempts.append(attempt)
             if contour.laurent_sample_count is None:
@@ -1446,6 +1727,8 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
                 schur_report,
                 eta_A,
                 epsilon,
+                epsilon_text=epsilon_text,
+                precision_bits=config.precision_bits,
             )
             if not bool(row["theorem_certified"]):
                 _write_csv(paths["laurent_modes"], mode_rows + rows)
@@ -1544,6 +1827,10 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
             and total_expected_multiplicity == 30
         ):
             raise AssertionError("The terminal twenty-four-target audit failed.")
+        precision_roles = _precision_role_report(
+            final_rows,
+            theorem_precision_bits=config.precision_bits,
+        )
         _write_csv(paths["certificate"], final_rows)
         witness_rows = _laurent_witness_rows(final_rows)
         _write_csv(paths["laurent_witnesses"], witness_rows)
@@ -1607,6 +1894,7 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
             "all_finite_counts_match_expected": all_matches,
             "all_finite_to_exact_rank_transfers_certified": all_rank_transfers,
             "all_small_gain_tests_pass": all_gain,
+            "small_gain_precision_roles": precision_roles,
             "all_complete_circles_covered": all_complete,
             "all_complete_circle_moats_positive": all_positive_moats,
             "zero_excluded_from_every_contour": all_zero_excluded,

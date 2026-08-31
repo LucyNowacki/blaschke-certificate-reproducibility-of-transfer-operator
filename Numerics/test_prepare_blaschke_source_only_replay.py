@@ -11,6 +11,7 @@ import unittest
 from unittest import mock
 
 import prepare_blaschke_source_only_replay as preparation
+import normalize_blaschke_publication as portability
 import run_blaschke_clean_room_replay as replay
 
 run_replay = replay.run_replay
@@ -114,6 +115,23 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
             plan.write_text("{}\n", encoding="utf-8")
             archive = Path(temp) / "published.tar.gz"
             archive.write_bytes(b"fixture")
+            raw_comparison_receipt = Path(temp) / "raw-comparison-pass.json"
+            raw_comparison_receipt.write_text(
+                json.dumps(
+                    {
+                        "schema": portability.RAW_COMPARISON_RECEIPT_SCHEMA,
+                        "phase": "raw-pre-normalization",
+                        "status": "PASS",
+                        "comparison_run": True,
+                        "normalization_run": False,
+                        "provenance_refresh_run": False,
+                        "production_identity_checked": True,
+                        "failures": [],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
             commands: list[list[str]] = []
 
             def record(
@@ -143,6 +161,7 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
                     prepare_only=False,
                     published_archive=archive,
                     expected_inventory_sha256="0" * 64,
+                    raw_comparison_receipt=raw_comparison_receipt,
                 )
 
             normalizer_index = next(
@@ -158,7 +177,13 @@ class SourceOnlyReplayPreparationTests(unittest.TestCase):
             )
             self.assertLess(normalizer_index, verifier_index)
             self.assertEqual(
-                commands[normalizer_index][-2:], ["--root", "."]
+                commands[normalizer_index][-4:],
+                [
+                    "--root",
+                    ".",
+                    "--raw-comparison-receipt",
+                    str(raw_comparison_receipt.resolve()),
+                ],
             )
             self.assertEqual(
                 result["status"],

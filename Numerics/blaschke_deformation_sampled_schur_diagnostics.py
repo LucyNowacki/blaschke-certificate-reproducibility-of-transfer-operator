@@ -216,6 +216,9 @@ Functionality: Rebuild the six retained sampled rows without reading prior outpu
     report_path = Path(report_path or data_dir.parent / "reports" / REPORT_FILENAME)
     _atomic_write_text(csv_path, frame.to_csv(index=False))
     csv_sha256 = _sha256(csv_path)
+    kappa_runtime_evidence = list(
+        getattr(kappa, "runtime_evidence", ())
+    )
     report = {
         "producer_schema": PRODUCER_SCHEMA,
         "schema_version": "2.0.0",
@@ -236,6 +239,11 @@ Functionality: Rebuild the six retained sampled rows without reading prior outpu
                 "python": platform.python_version(),
                 "pandas": pd.__version__,
             },
+            "kappa_binary64_blas_runtime_evidence": kappa_runtime_evidence,
+            "kappa_binary64_blas_runtime_evidence_role": (
+                "portable live evidence for the six diagnostic SVD calls; "
+                "never a theorem gate"
+            ),
         },
         "output": {
             "path": str(csv_path),
