@@ -412,25 +412,34 @@ class PublicationPortabilityTests(unittest.TestCase):
                 portability.LOCKED_PYTHON_VERSION,
             )
 
-    def test_public_replay_instructions_verify_before_cache_loading(self) -> None:
-        for text in (
-            (ROOT / "README.md").read_text(encoding="utf-8"),
-            packager._replay_text(),
-        ):
-            verification = text.index("Before extracting")
-            pickle_warning = text.index("pickle cache")
-            preparation = text.index(
-                "Numerics/prepare_blaschke_source_only_replay.py"
-            )
-            self.assertLess(verification, pickle_warning)
-            self.assertLess(pickle_warning, preparation)
-            authority = text.index("bundle.source_only_replay.inventory_sha256")
-            orchestrator = text.index(
-                "Numerics/run_blaschke_clean_room_replay.py"
-            )
-            self.assertLess(authority, orchestrator)
-            self.assertIn("--expected-inventory-sha256", text)
-            self.assertIn("exact closure list", text)
+    def test_public_replay_instructions_authenticate_before_compute(self) -> None:
+        for relative in ("README.md", "release/REPLAY.md"):
+            text = (ROOT / relative).read_text(encoding="utf-8")
+            authority = text.index("EXPECTED_RELEASE_COMMIT")
+            full_replay = text.index("./reproduce-certificate.sh full")
+            self.assertLess(authority, full_replay)
+            self.assertIn("--expected-git-commit", text)
+            self.assertIn("--expected-release-inventory-sha256", text)
+            self.assertIn("CERTIFICATION_CONFIRMED", text)
+            self.assertIn("27", text)
+            self.assertIn("2048-bit Hardy", text)
+
+        # The archive-specific legacy guide remains independently fail-closed:
+        # it authenticates the archive and external inventory before extraction,
+        # cache loading, or the historical clean-room orchestration route.
+        replay_text = packager._replay_text()
+        verification = replay_text.index("Before extracting")
+        pickle_warning = replay_text.index("pickle cache")
+        preparation = replay_text.index(
+            "Numerics/prepare_blaschke_source_only_replay.py"
+        )
+        self.assertLess(verification, pickle_warning)
+        self.assertLess(pickle_warning, preparation)
+        authority = replay_text.index("bundle.source_only_replay.inventory_sha256")
+        orchestrator = replay_text.index("Numerics/run_blaschke_clean_room_replay.py")
+        self.assertLess(authority, orchestrator)
+        self.assertIn("--expected-inventory-sha256", replay_text)
+        self.assertIn("exact closure list", replay_text)
 
     def test_direct_cache_reuse_resolves_from_official_notebook_cwd(self) -> None:
         if not _root_has_receipt_bound_source_sync():
@@ -501,7 +510,7 @@ class PublicationPortabilityTests(unittest.TestCase):
                         N=600,
                         M=610,
                         rho="2.725",
-                        r="2.473669807791324",
+                        r="2.473669807791324109321273260",
                         precision_bits=256,
                         flint_threads=24,
                     ),

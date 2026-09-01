@@ -1,13 +1,57 @@
 {
+  "binary64_inverse_runtime": {
+    "inside": {
+      "expected_threads": 24,
+      "runtime": {
+        "architecture": "Haswell",
+        "internal_api": "openblas",
+        "num_threads": 24,
+        "threading_layer": "pthreads",
+        "user_api": "blas",
+        "version": "0.3.30"
+      },
+      "stage": "scoped-midpoint-inverse"
+    },
+    "operation": "numpy.linalg.inv(midpoint)",
+    "outer_after": {
+      "expected_threads": 1,
+      "runtime": {
+        "architecture": "Haswell",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "threading_layer": "pthreads",
+        "user_api": "blas",
+        "version": "0.3.30"
+      },
+      "stage": "outer-after-inverse"
+    },
+    "outer_before": {
+      "expected_threads": 1,
+      "runtime": {
+        "architecture": "Haswell",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "threading_layer": "pthreads",
+        "user_api": "blas",
+        "version": "0.3.30"
+      },
+      "stage": "outer-before-inverse"
+    },
+    "outer_threads": 1,
+    "portable_fields_only": true,
+    "schema": "numerics1-scoped-openblas-runtime-v1",
+    "scope_threads": 24
+  },
   "certificate": {
     "N": 600,
     "arb_dps": 116,
-    "configuration_digest": "17afab09f212f9da53ddbbc24af34faf2699760f25e745cc80feac39f7eb6cf2",
+    "configuration_digest": "91b18acaab5771de6ffa6a008a2cf202b7ff30930a87a49776dfee797d946bcb",
     "coordinate_orientation": "c to y=D_r,N c to d=T_N(r)y",
-    "geometry_configuration_digest": "8bd24292d75f65571d0f5b8027c16c6d6eb43f0f9ba0cd1d8e361074f8baf66c",
+    "geometry_configuration_digest": "1f375f3ebbce49a3f49d0fc969019fca7e15e14819be7275e2212bb07a7cf4dd",
     "inverse_backend": "numpy binary64 witness with Arb residual",
-    "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
-    "inverse_witness_sha256": "9f3d39154217340b36c7067095f52ead46c4aa6bac4145ff6499db0c4270db58",
+    "inverse_blas_runtime_evidence": "{\"inside\":{\"expected_threads\":24,\"runtime\":{\"architecture\":\"Haswell\",\"internal_api\":\"openblas\",\"num_threads\":24,\"threading_layer\":\"pthreads\",\"user_api\":\"blas\",\"version\":\"0.3.30\"},\"stage\":\"scoped-midpoint-inverse\"},\"operation\":\"numpy.linalg.inv(midpoint)\",\"outer_after\":{\"expected_threads\":1,\"runtime\":{\"architecture\":\"Haswell\",\"internal_api\":\"openblas\",\"num_threads\":1,\"threading_layer\":\"pthreads\",\"user_api\":\"blas\",\"version\":\"0.3.30\"},\"stage\":\"outer-after-inverse\"},\"outer_before\":{\"expected_threads\":1,\"runtime\":{\"architecture\":\"Haswell\",\"internal_api\":\"openblas\",\"num_threads\":1,\"threading_layer\":\"pthreads\",\"user_api\":\"blas\",\"version\":\"0.3.30\"},\"stage\":\"outer-before-inverse\"},\"outer_threads\":1,\"portable_fields_only\":true,\"schema\":\"numerics1-scoped-openblas-runtime-v1\",\"scope_threads\":24}",
+    "inverse_witness_path": "/tmp/blaschke-certificate-replay.GvdxMDB2/blaschke_deformation_certifier_reproducibility/Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+    "inverse_witness_sha256": "90de31fdc3624d759220c89aae69fdb8e5949faf961da6aac3e5b31dc07caa30",
     "kappa_diag": "1.2530528397052667",
     "kappa_hat": "6.04202342448072018237207036900000000000000000000000000000000000000000000000000000E+2",
     "lambda_max_cert": "1.93000543617319454119806479000000000000000000000000000000000000000000000000000000E+2",
@@ -15,7 +59,7 @@
     "norm_B0_frob_cert": "4.34913750229539526498228297900000000000000000000000000000000000000000000000000000E+1",
     "norm_T_frob_cert": "1.38924635546514734817558788300000000000000000000000000000000000000000000000000000E+1",
     "producer_schema": "phase2-transport-v2",
-    "r": "2.47366980779132410932127326000000000000000000000000000000000000000000000000000000E+0",
+    "r": "2.473669807791324109321273260",
     "r_tau": "2.29309191182255744934082031200000000000000000000000000000000000000000000000000000E+0",
     "residual_delta_cert": "8.01075468784560494134342361900000000000000000000000000000000000000000000000000000E-15",
     "rho": "2.725",
@@ -27,17 +71,17 @@
   "configuration": {
     "N": 600,
     "flint_threads": 24,
-    "geometry_configuration_digest": "8bd24292d75f65571d0f5b8027c16c6d6eb43f0f9ba0cd1d8e361074f8baf66c",
+    "geometry_configuration_digest": "1f375f3ebbce49a3f49d0fc969019fca7e15e14819be7275e2212bb07a7cf4dd",
     "precision_bits": 384,
-    "r": "2.47366980779132410932127326000000000000000000000000000000000000000000000000000000E+0",
+    "r": "2.473669807791324109321273260",
     "r_tau": "2.29309191182255744934082031200000000000000000000000000000000000000000000000000000E+0",
     "rho": "2.725"
   },
-  "configuration_digest": "17afab09f212f9da53ddbbc24af34faf2699760f25e745cc80feac39f7eb6cf2",
-  "csv_path": "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_cert_N600.csv",
-  "csv_sha256": "6f4a6c124b0247c3957fc03fb4ae7f338abcf637ef811e3212753c91f78d96ba",
-  "inverse_witness_path": "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
-  "inverse_witness_sha256": "9f3d39154217340b36c7067095f52ead46c4aa6bac4145ff6499db0c4270db58",
+  "configuration_digest": "91b18acaab5771de6ffa6a008a2cf202b7ff30930a87a49776dfee797d946bcb",
+  "csv_path": "/tmp/blaschke-certificate-replay.GvdxMDB2/blaschke_deformation_certifier_reproducibility/Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_cert_N600.csv",
+  "csv_sha256": "38fe938da9bb99f7450831a9f8cf1280de631c3f858d6ffd38f57f42499eee1c",
+  "inverse_witness_path": "/tmp/blaschke-certificate-replay.GvdxMDB2/blaschke_deformation_certifier_reproducibility/Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+  "inverse_witness_sha256": "90de31fdc3624d759220c89aae69fdb8e5949faf961da6aac3e5b31dc07caa30",
   "map_label": "blaschke_mu_0p3",
   "producer_schema": "phase2-transport-v2"
 }

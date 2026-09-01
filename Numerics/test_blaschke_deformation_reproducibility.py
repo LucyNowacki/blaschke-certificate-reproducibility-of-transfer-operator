@@ -206,7 +206,7 @@ class TemporaryDeployment:
                 "N": 600,
                 "M": 610,
                 "rho": "2.725",
-                "r": "2.473669807791324",
+                "r": "2.473669807791324109321273260",
                 "hardy_matrix_eta_A_upper": "stale-eta-a",
                 "hardy_matrix_midpoint_sha256": "0" * 64,
                 "contour_certificate_schema": (
@@ -231,12 +231,12 @@ class TemporaryDeployment:
     @staticmethod
     def report() -> dict[str, object]:
         report: dict[str, object] = {
-            "certificate_schema": "blaschke-deformation-24-contour-hybrid-v3",
+            "certificate_schema": "blaschke-deformation-24-contour-hybrid-v4",
             "map_label": "blaschke_mu_0p3",
             "N": 600,
             "M": 610,
             "rho": "2.725",
-            "r": "2.473669807791324",
+            "r": "2.473669807791324109321273260",
             "eta_A_upper_text": "1.0e-20",
             "matrix_midpoint_sha256": "a" * 64,
             "contour_precision_bits": 256,
@@ -1036,6 +1036,7 @@ def validate_curated_counterpart(notebook):
         )
         for name in (
             "blaschke_source_only_replay_policy.json",
+            "blaschke_deformation_phase2_geometry.py",
             "normalize_blaschke_publication.py",
             "prepare_blaschke_source_only_replay.py",
             "run_blaschke_clean_room_replay.py",
@@ -1154,6 +1155,27 @@ class ReproducibilityBundleTests(unittest.TestCase):
                 upstream_artifact_names=names,
             )
 
+    def test_temporary_packager_import_has_its_radius_dependency(self) -> None:
+        completed = subprocess.run(
+            (
+                sys.executable,
+                "-B",
+                "-c",
+                (
+                    "import blaschke_deformation_reproducibility as module; "
+                    "print(module.CANONICAL_SELECTED_HARDY_RADIUS_TEXT)"
+                ),
+            ),
+            cwd=self.deployment.root / "Numerics",
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(
+            completed.stdout.strip(),
+            "2.473669807791324109321273260",
+        )
+
     def test_legacy_verifier_reports_current_execution_contract(self) -> None:
         notebook = {
             "cells": [
@@ -1198,6 +1220,35 @@ class ReproducibilityBundleTests(unittest.TestCase):
             "Unexpected spectral report status",
         ):
             packager.refresh_reproducibility_plan(plan, report)
+
+    def test_radius_derived_source_snapshots_are_not_effective_plan_authority(self) -> None:
+        plan = self.deployment.source_plan()
+        precision = plan["precision_settings"]
+        assert isinstance(precision, dict)
+        for field in packager.RADIUS_DERIVED_SOURCE_SNAPSHOT_FIELDS:
+            precision[field] = f"stale-short-radius-{field}"
+        report = self.deployment.report()
+
+        effective = packager.refresh_reproducibility_plan(plan, report)
+        verified_effective = verifier._refresh_plan(plan, report)
+        refreshed_from_report = {
+            "hardy_matrix_eta_A_upper": "eta_A_upper_text",
+            "hardy_matrix_midpoint_sha256": "matrix_midpoint_sha256",
+            "contour_eta_schur_upper": "eta_schur_upper_text",
+        }
+        for field in packager.RADIUS_DERIVED_SOURCE_SNAPSHOT_FIELDS:
+            report_field = refreshed_from_report.get(field)
+            if report_field is None:
+                self.assertNotIn(field, effective["precision_settings"])
+                self.assertNotIn(field, verified_effective["precision_settings"])
+            else:
+                self.assertEqual(
+                    effective["precision_settings"][field], report[report_field]
+                )
+                self.assertEqual(
+                    verified_effective["precision_settings"][field],
+                    report[report_field],
+                )
 
     def test_archive_verifier_accepts_only_exact_reaggregated_status(self) -> None:
         plan = self.deployment.source_plan()
@@ -1395,7 +1446,7 @@ class ReproducibilityBundleTests(unittest.TestCase):
         )
         self.assertEqual(summary["verification_status"], "verified")
         self.assertEqual(
-            summary["certificate_schema"], "blaschke-deformation-24-contour-hybrid-v3"
+            summary["certificate_schema"], "blaschke-deformation-24-contour-hybrid-v4"
         )
         self.assertEqual(summary["notebook_cell_count"], 141)
         self.assertEqual(summary["executed_code_cell_count"], 68)
@@ -1420,7 +1471,7 @@ class ReproducibilityBundleTests(unittest.TestCase):
             )
             self.assertEqual(
                 effective_plan["precision_settings"]["contour_certificate_schema"],
-                "blaschke-deformation-24-contour-hybrid-v3",
+                "blaschke-deformation-24-contour-hybrid-v4",
             )
             self.assertEqual(
                 readme_stream.read(),

@@ -25,9 +25,17 @@ import numpy as np
 from threadpoolctl import threadpool_info, threadpool_limits
 
 try:
-    from .blaschke_deformation_phase2_geometry import lower_text, upper_text
+    from .blaschke_deformation_phase2_geometry import (
+        require_canonical_selected_hardy_radius,
+        lower_text,
+        upper_text,
+    )
 except ImportError:
-    from blaschke_deformation_phase2_geometry import lower_text, upper_text
+    from blaschke_deformation_phase2_geometry import (
+        require_canonical_selected_hardy_radius,
+        lower_text,
+        upper_text,
+    )
 
 
 MAP_LABEL = "blaschke_mu_0p3"
@@ -486,6 +494,10 @@ Functionality: Certify the finite connection condition number by inverse residua
 
     if config.N < 1:
         raise ValueError("N must be positive.")
+    if config.N == 600:
+        require_canonical_selected_hardy_radius(
+            config.r, label="finite transport Hardy radius"
+        )
     flint.ctx.prec = int(config.precision_bits)
     if hasattr(flint.ctx, "threads"):
         flint.ctx.threads = max(

@@ -54,6 +54,46 @@ def _semantic_code_source(cell: dict[str, object]) -> str:
 
 
 class Phase2ProducerTests(unittest.TestCase):
+    def test_pipeline_output_members_are_portable_and_fail_closed(self) -> None:
+        self.assertEqual(
+            pipeline._canonical_phase2_output_member("data", "geometry.csv"),
+            "Numerics/outputs/blaschke_deformation_certifier/data/geometry.csv",
+        )
+        for area, filename in (
+            ("data", "/tmp/replay/data/geometry.csv"),
+            ("data", "../geometry.csv"),
+            ("data", "nested/geometry.csv"),
+            ("scratch", "geometry.csv"),
+        ):
+            with self.subTest(area=area, filename=filename), self.assertRaises(
+                ValueError
+            ):
+                pipeline._canonical_phase2_output_member(area, filename)
+
+    def test_selected_radius_and_exact_q_gap_contract_reject_short_decimal(self) -> None:
+        r_tau = "2.293091911822557449340820312"
+        contract = geometry.exact_q_gap_contract(
+            r_tau_upper=r_tau,
+            hardy_radius=geometry.CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+            q_gap_target=geometry.CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        )
+        self.assertTrue(contract["q_gap_derived_le_target"])
+        self.assertEqual(contract["q_gap_target_text"], "0.927")
+        self.assertLessEqual(
+            Decimal(contract["q_gap_derived_decimal_text"]), Decimal("0.927")
+        )
+        with self.assertRaisesRegex(ValueError, "canonical selected Hardy radius"):
+            geometry.require_canonical_selected_hardy_radius(
+                "2.473669807791324"
+            )
+        with self.assertRaisesRegex(ArithmeticError, "exceeds"):
+            geometry.exact_q_gap_contract(
+                r_tau_upper=r_tau,
+                hardy_radius="2.473669807791324",
+                q_gap_target="0.927",
+                require_canonical_radius=False,
+            )
+
     def test_production_geometry_grid_has_36_configuration_candidates(self) -> None:
         self.assertEqual(len(geometry.RHO_CANDIDATES), 6)
         self.assertEqual(len(geometry.Q_GAP_CANDIDATES), 6)
@@ -61,6 +101,31 @@ class Phase2ProducerTests(unittest.TestCase):
             len(geometry.RHO_CANDIDATES) * len(geometry.Q_GAP_CANDIDATES),
             36,
         )
+
+    def test_matrix_rejects_short_radius_transport_before_theorem_use(self) -> None:
+        selected = {
+            "configuration_digest": "1" * 64,
+            "r_candidate": geometry.CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+            "rho": "2.725",
+            "r_tau_interval_u": "2.293091911822557449340820312",
+        }
+        short_transport = {
+            "N": 600,
+            "geometry_configuration_digest": selected["configuration_digest"],
+            "r": "2.473669807791324",
+            "rho": selected["rho"],
+            "r_tau": selected["r_tau_interval_u"],
+            "transport_certified": True,
+        }
+        with tempfile.TemporaryDirectory(prefix="phase2-matrix-radius-negative-") as root:
+            with self.assertRaisesRegex(RuntimeError, "different exact Hardy radius"):
+                matrix.certify_matrix_row(
+                    matrix.Phase2MatrixConfig(N=600, M=610),
+                    selected_geometry=selected,
+                    transport_record=short_transport,
+                    data_dir=Path(root) / "data",
+                    report_dir=Path(root) / "reports",
+                )
 
     def test_small_complete_boundary_chain(self) -> None:
         with tempfile.TemporaryDirectory(prefix="phase2-rebuild-test-") as temporary:

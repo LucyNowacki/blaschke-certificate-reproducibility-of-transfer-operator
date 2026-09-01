@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 from fractions import Fraction
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -79,12 +80,108 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
         )
 
     @staticmethod
+    def _persisted_laurent_fixture(
+        *, reference_match: bool
+    ) -> tuple[
+        list[dict[str, str]],
+        list[dict[str, str]],
+        list[dict[str, str]],
+    ]:
+        witnesses: list[dict[str, str]] = []
+        certificate_rows: list[dict[str, str]] = []
+        mode_rows: list[dict[str, str]] = []
+        for rank, name in enumerate(certificate._LAURENT_PROPOSALS, 18):
+            sample_count = certificate._LAURENT_PROPOSALS[name][1]
+            modes = sorted(
+                index if index <= sample_count // 2 else index - sample_count
+                for index in range(sample_count)
+            )
+            reference_digest = certificate._LAURENT_REFERENCE_DIGESTS[name]
+            generated_digest = (
+                reference_digest
+                if reference_match
+                else hashlib.sha256(
+                    f"canonical-radius:{name}".encode("ascii")
+                ).hexdigest()
+            )
+            certificate_rows.append(
+                {
+                    "rank": str(rank),
+                    "name": name,
+                    "moat_method": certificate.MOAT_METHOD_LAURENT,
+                    "laurent_sample_count": str(sample_count),
+                    "minimum_laurent_mode": str(min(modes)),
+                    "maximum_laurent_mode": str(max(modes)),
+                    "coefficient_sha256": generated_digest,
+                    "reference_coefficient_sha256": reference_digest,
+                    "coefficient_digest_matches_recorded_reference": str(
+                        reference_match
+                    ),
+                    "coefficient_digest_used_in_theorem_gate": "False",
+                    "candidate_coefficient_matrix_count": str(sample_count),
+                    "candidate_coefficient_matrix_rows": "600",
+                    "candidate_coefficient_matrix_columns": "600",
+                    "candidate_coefficient_dtype": "complex128",
+                    "candidate_coefficient_layout": (
+                        "C-contiguous signed-mode order"
+                    ),
+                    "candidate_generation_method": (
+                        "FFT of complete-circle binary64 Schur-resolvent samples"
+                    ),
+                    "candidate_generated_in_recorded_run": "True",
+                    "candidate_coefficients_validated_exact_dyadic": "True",
+                    "exact_dyadic_residual_sum_upper": "0.5",
+                    "theorem_precision_bits": "256",
+                    "theorem_certified": "True",
+                }
+            )
+            witnesses.append(
+                {
+                    "rank": str(rank),
+                    "name": name,
+                    "laurent_sample_count": str(sample_count),
+                    "minimum_laurent_mode": str(min(modes)),
+                    "maximum_laurent_mode": str(max(modes)),
+                    "coefficient_matrix_count": str(sample_count),
+                    "coefficient_matrix_rows": "600",
+                    "coefficient_matrix_columns": "600",
+                    "coefficient_dtype": "complex128",
+                    "coefficient_layout": "C-contiguous signed-mode order",
+                    "generation_method": (
+                        "FFT of complete-circle binary64 Schur-resolvent samples"
+                    ),
+                    "coefficient_sha256": generated_digest,
+                    "reference_coefficient_sha256": reference_digest,
+                    "digest_matches_recorded_reference": str(reference_match),
+                    "digest_used_in_theorem_gate": "False",
+                    "generated_in_recorded_run": "True",
+                    "candidate_coefficients_validated_exact_dyadic": "True",
+                    "exact_dyadic_residual_sum_upper": "0.5",
+                    "theorem_certified": "True",
+                }
+            )
+            for mode in (*modes, max(modes) + 1):
+                mode_rows.append(
+                    {
+                        "name": name,
+                        "mode": str(mode),
+                        "coefficient_present": str(mode in modes),
+                        "coefficient_frobenius_upper": "0.25",
+                        "residual_frobenius_upper": "0.01",
+                        "coefficient_sha256": generated_digest,
+                        "precision_bits": "256",
+                    }
+                )
+        return witnesses, certificate_rows, mode_rows
+
+    @staticmethod
     def _schur_report(eta_schur: str = "0.01") -> dict[str, object]:
         return {
             "Q_condition_upper": 1.0,
             "Q_condition_upper_text": "1",
             "eta_schur_upper": float(eta_schur),
             "eta_schur_upper_text": eta_schur,
+            "exact_dyadic_schur_upper_triangular_certified": True,
         }
 
     @staticmethod
@@ -127,6 +224,50 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
             float(diagonal_moat["triangular_inverse_bound"]),
         )
 
+    def test_exact_dyadic_schur_lower_triangle_must_be_identically_zero(self) -> None:
+        triangular = np.asarray(
+            [[1.0, 0.25, -0.5j], [0.0, 2.0, 0.125], [0.0, 0.0, 3.0]],
+            dtype=np.complex128,
+        )
+        audit = certificate._exact_dyadic_schur_upper_triangle_audit(triangular)
+        self.assertEqual(audit["exact_dyadic_schur_below_diagonal_entry_count"], 3)
+        self.assertEqual(audit["exact_dyadic_schur_below_diagonal_zero_count"], 3)
+        self.assertTrue(audit["exact_dyadic_schur_below_diagonal_all_zero"])
+        self.assertTrue(audit["exact_dyadic_schur_upper_triangular_certified"])
+
+        corrupted = triangular.copy()
+        corrupted[2, 0] = np.nextafter(0.0, 1.0)
+        with self.assertRaisesRegex(ArithmeticError, "not upper triangular"):
+            certificate._exact_dyadic_schur_upper_triangle_audit(corrupted)
+
+    def test_cached_schur_reuse_binds_raw_dtype_digest_and_lower_triangle(self) -> None:
+        triangular = np.asarray(
+            [[1.0, 0.25], [0.0, 2.0]], dtype=np.complex128
+        )
+        with tempfile.TemporaryDirectory(prefix="schur-cache-audit-") as root:
+            cache_path = Path(root) / "schur.npz"
+            np.savez_compressed(cache_path, T=triangular)
+            digest = certificate.sha256_file(cache_path)
+            audit = certificate._load_and_audit_exact_dyadic_schur_cache(
+                cache_path, expected_sha256=digest
+            )
+            self.assertTrue(audit["exact_dyadic_schur_below_diagonal_all_zero"])
+
+            np.savez_compressed(cache_path, T=triangular.astype(np.complex64))
+            wrong_dtype_digest = certificate.sha256_file(cache_path)
+            with self.assertRaisesRegex(TypeError, "complex128 dtype"):
+                certificate._load_and_audit_exact_dyadic_schur_cache(
+                    cache_path, expected_sha256=wrong_dtype_digest
+                )
+
+            np.savez_compressed(cache_path, T=triangular)
+            bound_digest = certificate.sha256_file(cache_path)
+            cache_path.write_bytes(cache_path.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(ArithmeticError, "digest"):
+                certificate._load_and_audit_exact_dyadic_schur_cache(
+                    cache_path, expected_sha256=bound_digest
+                )
+
     def test_epsilon_loading_requires_every_fresh_phase2_gate(self) -> None:
         config = certificate.ContourCertificateConfig()
         row: dict[str, object] = {
@@ -134,6 +275,8 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
             "M": config.M,
             "rho": config.rho,
             "r": config.r,
+            "r_tau_interval_u": "2.293091911822557449340820312",
+            "q_gap": "0.927",
             "phase2_aggregation_status": (
                 "authoritative standalone final-aggregation refresh"
             ),
@@ -143,6 +286,13 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
                 for gate in certificate.REQUIRED_EPSILON_CERTIFICATION_GATES
             },
         }
+        row.update(
+            certificate.exact_q_gap_contract(
+                r_tau_upper=row["r_tau_interval_u"],
+                hardy_radius=row["r"],
+                q_gap_target=row["q_gap"],
+            )
+        )
         with tempfile.TemporaryDirectory(prefix="epsilon-gate-test-") as root:
             path = Path(root) / "epsilon.csv"
             self._write_epsilon_row(path, row)
@@ -274,41 +424,15 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
         self.assertTrue(first[1].flags.c_contiguous)
 
     def test_checkpoint_requires_all_seven_reconstruction_records(self) -> None:
-        witnesses = []
-        certificate_rows = []
-        for rank, name in enumerate(certificate._LAURENT_PROPOSALS, 18):
-            sample_count = certificate._LAURENT_PROPOSALS[name][1]
-            digest = certificate._LAURENT_REFERENCE_DIGESTS[name]
-            certificate_rows.append(
-                {
-                    "name": name,
-                    "moat_method": certificate.MOAT_METHOD_LAURENT,
-                    "coefficient_sha256": digest,
-                }
-            )
-            witnesses.append(
-                {
-                    "rank": str(rank),
-                    "name": name,
-                    "laurent_sample_count": str(sample_count),
-                    "coefficient_matrix_count": str(sample_count),
-                    "coefficient_matrix_rows": "600",
-                    "coefficient_matrix_columns": "600",
-                    "coefficient_sha256": digest,
-                    "reference_coefficient_sha256": digest,
-                    "digest_matches_recorded_reference": "True",
-                    "digest_used_in_theorem_gate": "False",
-                    "generated_in_recorded_run": "True",
-                    "candidate_coefficients_validated_exact_dyadic": "True",
-                    "exact_dyadic_residual_sum_upper": "0.5",
-                    "theorem_certified": "True",
-                }
-            )
+        witnesses, certificate_rows, mode_rows = self._persisted_laurent_fixture(
+            reference_match=True
+        )
 
         self.assertTrue(
             certificate._laurent_witness_records_are_reusable(
                 witnesses,
                 certificate_rows,
+                mode_rows,
             )
         )
         witnesses[0]["coefficient_sha256"] = "0" * 64
@@ -316,6 +440,104 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
             certificate._laurent_witness_records_are_reusable(
                 witnesses,
                 certificate_rows,
+                mode_rows,
+            )
+        )
+
+    def test_radius_dependent_laurent_digest_drift_is_diagnostic_only(self) -> None:
+        witnesses, certificate_rows, mode_rows = self._persisted_laurent_fixture(
+            reference_match=False
+        )
+
+        self.assertTrue(
+            certificate._laurent_witness_records_are_reusable(
+                witnesses,
+                certificate_rows,
+                mode_rows,
+            )
+        )
+        witnesses[0]["digest_matches_recorded_reference"] = "True"
+        self.assertFalse(
+            certificate._laurent_witness_records_are_reusable(
+                witnesses,
+                certificate_rows,
+                mode_rows,
+            )
+        )
+
+    def test_persisted_laurent_tables_fail_closed_at_every_binding_seam(self) -> None:
+        mutations = (
+            ("target", "witness", 0, "name", "wrong-target"),
+            ("rank", "certificate", 0, "rank", "24"),
+            ("support", "mode", 0, "mode", "999"),
+            (
+                "dimension",
+                "certificate",
+                0,
+                "candidate_coefficient_matrix_rows",
+                "599",
+            ),
+            ("precision", "mode", 0, "precision_bits", "128"),
+            ("count", "witness", 0, "coefficient_matrix_count", "43"),
+            (
+                "residual",
+                "certificate",
+                0,
+                "exact_dyadic_residual_sum_upper",
+                "0.4",
+            ),
+            (
+                "current-run",
+                "certificate",
+                0,
+                "candidate_generated_in_recorded_run",
+                "False",
+            ),
+            (
+                "exact-dyadic",
+                "certificate",
+                0,
+                "candidate_coefficients_validated_exact_dyadic",
+                "False",
+            ),
+            ("theorem", "certificate", 0, "theorem_certified", "False"),
+            (
+                "digest-not-used",
+                "certificate",
+                0,
+                "coefficient_digest_used_in_theorem_gate",
+                "True",
+            ),
+            ("current-digest", "mode", 0, "coefficient_sha256", "f" * 64),
+        )
+        for label, table_name, index, field, value in mutations:
+            with self.subTest(binding=label):
+                witnesses, certificate_rows, mode_rows = (
+                    self._persisted_laurent_fixture(reference_match=False)
+                )
+                tables = {
+                    "witness": witnesses,
+                    "certificate": certificate_rows,
+                    "mode": mode_rows,
+                }
+                tables[table_name][index][field] = value
+                self.assertFalse(
+                    certificate._laurent_witness_records_are_reusable(
+                        witnesses,
+                        certificate_rows,
+                        mode_rows,
+                    )
+                )
+
+        witnesses, certificate_rows, mode_rows = self._persisted_laurent_fixture(
+            reference_match=False
+        )
+        mode_rows[0]["coefficient_sha256"] = "f" * 64
+        self.assertFalse(
+            certificate._laurent_witness_records_are_reusable(
+                witnesses,
+                certificate_rows,
+                mode_rows,
             )
         )
 
@@ -386,6 +608,7 @@ class CountAndMoatProvenanceTests(unittest.TestCase):
                 "complete_circle_covered": "True",
                 "zero_outside_enclosed_region": "True",
                 "sampled_values_used_in_theorem_gate": "False",
+                "exact_dyadic_schur_upper_triangular_certified": "True",
             }
             for rank, moat_text, _ in _AUTHENTICATED_5C0_LEGACY_SMALL_GAIN_ROWS
         ]

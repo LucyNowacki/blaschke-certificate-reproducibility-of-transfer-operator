@@ -23,15 +23,57 @@ try:
         ResolvedResponseCertificateConfig,
         certify_resolved_response_rows,
     )
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
 except ImportError:
     from blaschke_deformation_certification import (
         ResolvedResponseCertificateConfig,
         certify_resolved_response_rows,
     )
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
 
 
 MAP_LABEL = "blaschke_mu_0p3"
-PRODUCER_SCHEMA = "phase2-resolved-response-completion-v1"
+PRODUCER_SCHEMA = "phase2-resolved-response-completion-v2"
+CERTIFICATION_SOURCE_MEMBER = "Numerics/blaschke_deformation_certification.py"
+
+
+def _canonical_resolved_response_input_member(kind: str, filename: str) -> str:
+    """Return one portable, role-checked resolved-response input key."""
+
+    kind = str(kind)
+    filename_path = Path(str(filename))
+    if (
+        filename_path.is_absolute()
+        or len(filename_path.parts) != 1
+        or filename_path.name in {"", ".", ".."}
+        or "\\" in filename_path.name
+    ):
+        raise ValueError(
+            "A resolved-response input key requires one canonical filename, "
+            f"not {filename!r}."
+        )
+    if kind == "generated":
+        return (
+            "Numerics/outputs/blaschke_deformation_certifier/data/"
+            f"{filename_path.name}"
+        )
+    if kind == "certification_source":
+        if f"Numerics/{filename_path.name}" != CERTIFICATION_SOURCE_MEMBER:
+            raise ValueError(
+                "The resolved-response certification source key is noncanonical."
+            )
+        return CERTIFICATION_SOURCE_MEMBER
+    raise ValueError(f"Unknown resolved-response input kind {kind!r}.")
 
 
 @dataclass(frozen=True)
@@ -39,7 +81,7 @@ class Phase2ResolvedResponseConfig:
     N: int = 600
     M: int = 610
     rho: str = "2.725"
-    r: str = "2.473669807791324"
+    r: str = CANONICAL_SELECTED_HARDY_RADIUS_TEXT
     mu: str = "0.3"
     cells: int = 65536
     precision_bits: int = 192
@@ -112,8 +154,123 @@ def _interval_text(value: arb, digits: int = 60) -> str:
     return value.str(int(digits), radius=True)
 
 
-def _close_decimal(left: Any, right: Any, tolerance: str = "1e-12") -> bool:
-    return abs(Decimal(str(left)) - Decimal(str(right))) <= Decimal(tolerance)
+def _same_decimal(left: Any, right: Any) -> bool:
+    """Compare persisted decimal values without binary or tolerance collapse."""
+
+    return Decimal(str(left)) == Decimal(str(right))
+
+
+def _require_transport_geometry_binding(
+    *,
+    transport: dict[str, str],
+    balanced: dict[str, str],
+    tail: dict[str, str],
+    config: Phase2ResolvedResponseConfig,
+    output_dir: Path,
+) -> None:
+    """Bind the transport lower bound to the selected same-radius geometry."""
+
+    for field, observed, expected in (
+        ("r", transport.get("r", ""), config.r),
+        ("rho", transport.get("rho", ""), config.rho),
+        (
+            "r_tau",
+            transport.get("r_tau", ""),
+            tail.get("r_tau_interval_u", ""),
+        ),
+        (
+            "balanced r_tau",
+            balanced.get("r_tau_interval_u", ""),
+            tail.get("r_tau_interval_u", ""),
+        ),
+        (
+            "lambda_min_cert",
+            transport.get("lambda_min_cert", ""),
+            balanced.get("lambda_min_cert", ""),
+        ),
+    ):
+        try:
+            matches = _same_decimal(observed, expected)
+        except Exception as exc:
+            raise RuntimeError(
+                f"The transport binding has an invalid decimal {field}."
+            ) from exc
+        if not matches:
+            raise RuntimeError(
+                f"The transport binding has a mismatched exact decimal {field}."
+            )
+    require_canonical_selected_hardy_radius(
+        transport.get("r", ""), label="transport certificate Hardy radius"
+    )
+
+    transport_geometry_digest = str(
+        transport.get("geometry_configuration_digest", "")
+    )
+    balanced_geometry_digest = str(
+        balanced.get("geometry_configuration_digest", "")
+    )
+    tail_geometry_digest = str(tail.get("configuration_digest", ""))
+    transport_configuration_digest = str(transport.get("configuration_digest", ""))
+    balanced_transport_digest = str(
+        balanced.get("transport_configuration_digest", "")
+    )
+    for label, digest in (
+        ("transport geometry", transport_geometry_digest),
+        ("balanced geometry", balanced_geometry_digest),
+        ("selected geometry", tail_geometry_digest),
+        ("transport configuration", transport_configuration_digest),
+        ("balanced transport", balanced_transport_digest),
+    ):
+        try:
+            valid_digest = len(digest) == 64 and int(digest, 16) >= 0
+        except ValueError:
+            valid_digest = False
+        if not valid_digest:
+            raise RuntimeError(f"The {label} digest is missing or malformed.")
+    if not (
+        transport_geometry_digest
+        == balanced_geometry_digest
+        == tail_geometry_digest
+    ):
+        raise RuntimeError("The transport and selected geometry digests differ.")
+    if transport_configuration_digest != balanced_transport_digest:
+        raise RuntimeError("The safe row names a different transport configuration.")
+
+    witness_digest = str(transport.get("inverse_witness_sha256", ""))
+    try:
+        valid_witness_digest = len(witness_digest) == 64 and int(witness_digest, 16) >= 0
+    except ValueError:
+        valid_witness_digest = False
+    if not valid_witness_digest:
+        raise RuntimeError("The transport inverse-witness source digest is malformed.")
+    expected_witness_path = (
+        Path(output_dir)
+        / "data"
+        / f"branch_image_balanced_candidate_transport_inverse_witness_N{config.N}.npz"
+    ).resolve()
+    recorded_witness_path = Path(str(transport.get("inverse_witness_path", "")))
+    if recorded_witness_path.is_absolute():
+        resolved_witness_path = recorded_witness_path.resolve()
+    else:
+        candidate_paths = {
+            (Path.cwd() / recorded_witness_path).resolve(),
+            (Path(output_dir).resolve().parent.parent / recorded_witness_path).resolve(),
+        }
+        if expected_witness_path not in candidate_paths:
+            raise RuntimeError(
+                "The transport inverse-witness path is outside the selected output tree."
+            )
+        resolved_witness_path = expected_witness_path
+    if resolved_witness_path != expected_witness_path:
+        raise RuntimeError(
+            "The transport inverse-witness path names a different configuration."
+        )
+    if not expected_witness_path.is_file():
+        raise RuntimeError("The transport inverse-witness payload is missing.")
+    if _sha256(expected_witness_path) != witness_digest:
+        raise RuntimeError(
+            "The transport inverse-witness payload digest does not match its record."
+        )
 
 
 def _tau_phi_extended(branch: int, omega: acb, mu: arb, pi: arb):
@@ -201,6 +358,9 @@ Functionality: Certify and persist the complete resolved-response completion sta
         raise ValueError(f"This producer is restricted to {MAP_LABEL}.")
     if config.N < 1 or config.M < config.N or config.cells < 4:
         raise ValueError("Invalid resolved-response dimensions or boundary cover.")
+    require_canonical_selected_hardy_radius(
+        config.r, label="resolved-response configuration Hardy radius"
+    )
 
     output_dir = Path(output_dir)
     data_dir = output_dir / "data"
@@ -225,10 +385,22 @@ Functionality: Certify and persist the complete resolved-response completion sta
     balanced = _read_one(balanced_path)
     if int(balanced["N"]) != config.N or int(balanced["M"]) != config.M:
         raise RuntimeError("The safe balanced row has the wrong dimensions.")
-    if not _close_decimal(balanced["rho"], config.rho):
+    if not _same_decimal(balanced["rho"], config.rho):
         raise RuntimeError("The safe balanced row has the wrong response radius.")
-    if not _close_decimal(balanced["r"], config.r):
+    if not _same_decimal(balanced["r"], config.r):
         raise RuntimeError("The safe balanced row has the wrong Hardy radius.")
+    require_canonical_selected_hardy_radius(
+        balanced["r"], label="safe balanced-row Hardy radius"
+    )
+    if not _same_decimal(
+        balanced["q_gap"], CANONICAL_SELECTED_Q_GAP_TARGET_TEXT
+    ):
+        raise RuntimeError("The safe balanced row has the wrong q_gap target.")
+    q_gap_contract = exact_q_gap_contract(
+        r_tau_upper=balanced["r_tau_interval_u"],
+        hardy_radius=balanced["r"],
+        q_gap_target=balanced["q_gap"],
+    )
     for flag in (
         "matrix_certificate_arb",
         "tail_components_interval",
@@ -250,13 +422,23 @@ Functionality: Certify and persist the complete resolved-response completion sta
         row
         for row in _read_rows(tail_path)
         if int(row["cells"]) >= config.cells
-        and _close_decimal(row["rho"], config.rho)
-        and _close_decimal(row["r_candidate"], config.r)
+        and _same_decimal(row["rho"], config.rho)
+        and _same_decimal(row["r_candidate"], config.r)
+        and _same_decimal(
+            row["q_gap_target"], CANONICAL_SELECTED_Q_GAP_TARGET_TEXT
+        )
         and str(row.get("status", "")).strip().lower() == "ok"
     ]
     if not tail_candidates:
         raise RuntimeError("No matching certified output-tail row was found.")
     tail = min(tail_candidates, key=lambda row: int(row["cells"]))
+    tail_q_gap_contract = exact_q_gap_contract(
+        r_tau_upper=tail["r_tau_interval_u"],
+        hardy_radius=tail["r_candidate"],
+        q_gap_target=tail["q_gap_target"],
+    )
+    if q_gap_contract != tail_q_gap_contract:
+        raise RuntimeError("The balanced and selected-geometry q_gap contracts differ.")
     for flag in (
         "analytic_branch_sufficient",
         "branch_image_in_Er_sufficient",
@@ -264,6 +446,13 @@ Functionality: Certify and persist the complete resolved-response completion sta
     ):
         if not _is_true(tail.get(flag, False)):
             raise RuntimeError(f"The branch-image row failed {flag}.")
+    _require_transport_geometry_binding(
+        transport=transport,
+        balanced=balanced,
+        tail=tail,
+        config=config,
+        output_dir=output_dir,
+    )
 
     rho = arb(config.rho)
     hardy_radius = arb(config.r)
@@ -285,6 +474,7 @@ Functionality: Certify and persist the complete resolved-response completion sta
         rho=config.rho,
         r=config.r,
         r_tau=tail["r_tau_interval_u"],
+        q_gap_target=str(tail["q_gap_target"]),
         phi_star_upper=tail["phi_star_interval_u"],
         mu=config.mu,
         cells=config.cells,
@@ -421,8 +611,11 @@ Functionality: Certify and persist the complete resolved-response completion sta
     response_summary = {
         "map_label": config.map_label,
         "N": config.N,
-        "rho": float(config.rho),
-        "r": float(config.r),
+        "rho": config.rho,
+        "r": config.r,
+        "r_tau_interval_u": str(tail["r_tau_interval_u"]),
+        "q_gap": str(balanced["q_gap"]),
+        **q_gap_contract,
         "cells": config.cells,
         "precision_bits": config.precision_bits,
         "output_schema_version": 3,
@@ -492,9 +685,11 @@ Functionality: Certify and persist the complete resolved-response completion sta
         ),
         "N": config.N,
         "M": config.M,
-        "rho": float(config.rho),
-        "r": float(config.r),
-        "q_gap": float(balanced["q_gap"]),
+        "rho": config.rho,
+        "r": config.r,
+        "r_tau_interval_u": str(tail["r_tau_interval_u"]),
+        "q_gap": str(balanced["q_gap"]),
+        **q_gap_contract,
         "q_out": float(balanced["q_out"]),
         "q_star": float(balanced["q_star"]),
         "output_schema_version": 3,
@@ -564,10 +759,18 @@ Functionality: Certify and persist the complete resolved-response completion sta
         ),
         "output_schema": {"version": 3, "output_leakage_count": 1},
         "inputs": {
-            str(balanced_path): _sha256(balanced_path),
-            str(transport_path): _sha256(transport_path),
-            str(tail_path): _sha256(tail_path),
-            certification_source.name: _sha256(certification_source),
+            _canonical_resolved_response_input_member(
+                "generated", balanced_path.name
+            ): _sha256(balanced_path),
+            _canonical_resolved_response_input_member(
+                "generated", transport_path.name
+            ): _sha256(transport_path),
+            _canonical_resolved_response_input_member(
+                "generated", tail_path.name
+            ): _sha256(tail_path),
+            _canonical_resolved_response_input_member(
+                "certification_source", certification_source.name
+            ): _sha256(certification_source),
         },
         "source_sha256": _sha256(Path(__file__)),
         "summary": response_summary,
@@ -638,4 +841,3 @@ __all__ = [
     "Phase2ResolvedResponseResult",
     "certify_resolved_response_completion",
 ]
-

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from decimal import Decimal
 import hashlib
 import importlib.util
 import io
@@ -265,6 +266,7 @@ DIAGNOSTIC_AUDIT_PLOT_RELATIVES = tuple(
 )
 
 EXPECTED_MAP_LABEL = "blaschke_mu_0p3"
+EXPECTED_SELECTED_HARDY_RADIUS_TEXT = "2.473669807791324109321273260"
 EXPECTED_TARGET_COUNT = 24
 EXPECTED_MULTIPLICITY = 30
 EXPECTED_SCHUR_MOAT_COUNT = 17
@@ -421,6 +423,9 @@ MAX_NPZ_UNCOMPRESSED_BYTES = 512 * 1024 * 1024
 
 TRUE_THEOREM_GATES = (
     "all_24_targets_theorem_certified",
+    "q_gap_derived_le_target",
+    "exact_dyadic_schur_below_diagonal_all_zero",
+    "exact_dyadic_schur_upper_triangular_certified",
     "all_schur_diagonal_memberships_certified",
     "all_finite_count_transports_certified",
     "all_finite_counts_certified",
@@ -437,11 +442,27 @@ FALSE_THEOREM_GATES = (
     "laurent_digests_used_in_any_theorem_gate",
 )
 PLAN_TRUE_GATES = (
+    "contour_q_gap_derived_le_target",
+    "contour_exact_dyadic_schur_upper_triangular_certified",
     "contour_all_finite_counts_schur_derived",
     "contour_all_schur_diagonal_memberships_certified",
     "contour_all_finite_count_transports_certified",
     "contour_all_finite_counts_match_expected",
     "contour_all_finite_to_exact_rank_transfers_certified",
+)
+RADIUS_DERIVED_SOURCE_SNAPSHOT_FIELDS = (
+    "deterministic_epsilon_rss_upper",
+    "deterministic_epsilon_triangle_check_upper",
+    "response_coherent_packet_upper",
+    "response_scaled_legendre_upper",
+    "response_whole_ellipse_fallback_upper",
+    "response_selected_upper",
+    "hardy_matrix_starting_eta_A_upper",
+    "hardy_matrix_eta_A_upper",
+    "hardy_matrix_midpoint_sha256",
+    "contour_eta_schur_upper",
+    "contour_minimum_lifted_moat_lower",
+    "contour_maximum_small_gain_product_upper",
 )
 GENERATED_FILES = frozenset(
     {
@@ -575,8 +596,20 @@ def _validate_plan_and_report(
     _expect_exact_int(report, "N", 600)
     _expect_exact_int(report, "M", 610)
     for key in ("rho", "r"):
-        if precision.get(key) != report.get(key):
+        try:
+            values_match = Decimal(str(precision.get(key))) == Decimal(
+                str(report.get(key))
+            )
+        except Exception as exc:
+            raise VerificationError(
+                f"Plan/report {key} must be exact finite decimals."
+            ) from exc
+        if not values_match:
             raise VerificationError(f"Plan/report mismatch for {key}.")
+    if Decimal(str(precision.get("r"))) != Decimal(
+        EXPECTED_SELECTED_HARDY_RADIUS_TEXT
+    ):
+        raise VerificationError("The Hardy radius is not the canonical selected decimal.")
 
     schema = precision.get("contour_certificate_schema")
     if not isinstance(schema, str) or not schema:
@@ -652,6 +685,8 @@ def _refresh_plan(
     if not isinstance(source_precision, dict) or not isinstance(source_artifacts, list):
         raise VerificationError("Invalid source-plan field types.")
     precision = dict(source_precision)
+    for field in RADIUS_DERIVED_SOURCE_SNAPSHOT_FIELDS:
+        precision.pop(field, None)
     precision.update(
         {
             "map_label": report.get("map_label"),
@@ -671,6 +706,12 @@ def _refresh_plan(
             ),
             "contour_all_finite_counts_schur_derived": report.get(
                 "all_finite_counts_schur_derived"
+            ),
+            "contour_q_gap_derived_le_target": report.get(
+                "q_gap_derived_le_target"
+            ),
+            "contour_exact_dyadic_schur_upper_triangular_certified": report.get(
+                "exact_dyadic_schur_upper_triangular_certified"
             ),
             "contour_all_schur_diagonal_memberships_certified": report.get(
                 "all_schur_diagonal_memberships_certified"

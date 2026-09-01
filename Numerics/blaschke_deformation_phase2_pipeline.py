@@ -17,9 +17,13 @@ from typing import Any
 
 try:
     from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
         Phase2GeometryConfig,
         Phase2GeometryResult,
         certify_geometry_scan,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
     )
     from .blaschke_deformation_phase2_matrix import (
         Phase2MatrixConfig,
@@ -33,9 +37,13 @@ try:
     )
 except ImportError:
     from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
         Phase2GeometryConfig,
         Phase2GeometryResult,
         certify_geometry_scan,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
     )
     from blaschke_deformation_phase2_matrix import (
         Phase2MatrixConfig,
@@ -50,7 +58,7 @@ except ImportError:
 
 
 MAP_LABEL = "blaschke_mu_0p3"
-PRODUCER_SCHEMA = "phase2-pipeline-v2"
+PRODUCER_SCHEMA = "phase2-pipeline-v3"
 
 
 @dataclass(frozen=True)
@@ -63,7 +71,8 @@ class Phase2RebuildConfig:
     transport_precision_bits: int = 384
     matrix_precision_bits: int = 384
     expected_selected_rho: str = "2.725"
-    expected_selected_q_gap: str = "0.927"
+    expected_selected_r: str = CANONICAL_SELECTED_HARDY_RADIUS_TEXT
+    expected_selected_q_gap: str = CANONICAL_SELECTED_Q_GAP_TARGET_TEXT
 
     @classmethod
     def production_n600_m610(cls) -> "Phase2RebuildConfig":
@@ -122,6 +131,29 @@ def _producer_source_record(runtime_path: Path) -> dict[str, str]:
     }
 
 
+def _canonical_phase2_output_member(area: str, filename: str) -> str:
+    """Map a staged output basename to its canonical archive member."""
+
+    area = str(area)
+    if area not in {"data", "reports"}:
+        raise ValueError("A Phase 2 output member must use data or reports.")
+    filename_path = Path(str(filename))
+    if (
+        filename_path.is_absolute()
+        or len(filename_path.parts) != 1
+        or filename_path.name in {"", ".", ".."}
+        or "\\" in filename_path.name
+    ):
+        raise ValueError(
+            "A Phase 2 output member requires one canonical filename, "
+            f"not {filename!r}."
+        )
+    return (
+        "Numerics/outputs/blaschke_deformation_certifier/"
+        f"{area}/{filename_path.name}"
+    )
+
+
 def rebuild_phase2_inputs(
     config: Phase2RebuildConfig,
     *,
@@ -164,10 +196,25 @@ def rebuild_phase2_inputs(
         raise RuntimeError(
             "The certified 36-row scan selected an unexpected branch-gap target."
         )
+    selected_r = require_canonical_selected_hardy_radius(
+        selected["r_candidate"], label="pipeline selected Hardy radius"
+    )
+    if selected_r != require_canonical_selected_hardy_radius(
+        config.expected_selected_r, label="pipeline expected Hardy radius"
+    ):
+        raise RuntimeError("The certified 36-row scan selected an unexpected Hardy radius.")
+    q_gap_contract = exact_q_gap_contract(
+        r_tau_upper=selected["r_tau_interval_u"],
+        hardy_radius=selected["r_candidate"],
+        q_gap_target=selected["q_gap_target"],
+    )
+    for key, value in q_gap_contract.items():
+        if str(selected.get(key)) != str(value):
+            raise RuntimeError(f"The selected geometry has an inconsistent {key} field.")
 
     transport_config = Phase2TransportConfig(
         N=config.N,
-        r=str(selected["r_candidate"]),
+        r=CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
         rho=str(selected["rho"]),
         r_tau=str(selected["r_tau_interval_u"]),
         geometry_configuration_digest=str(selected["configuration_digest"]),
@@ -194,13 +241,13 @@ def rebuild_phase2_inputs(
     )
 
     output_paths = (
-        geometry.csv_path,
-        geometry.report_path,
-        transport.csv_path,
-        transport.report_path,
-        transport.witness_path,
-        matrix.csv_path,
-        matrix.report_path,
+        ("data", geometry.csv_path),
+        ("reports", geometry.report_path),
+        ("data", transport.csv_path),
+        ("reports", transport.report_path),
+        ("data", transport.witness_path),
+        ("data", matrix.csv_path),
+        ("reports", matrix.report_path),
     )
     runtime_source_paths = {
         "geometry": Path(certify_geometry_scan.__code__.co_filename),
@@ -219,8 +266,8 @@ def rebuild_phase2_inputs(
             for name, path in runtime_source_paths.items()
         },
         "outputs": {
-            str(path): _sha256(path)
-            for path in output_paths
+            _canonical_phase2_output_member(area, path.name): _sha256(path)
+            for area, path in output_paths
         },
         "clean_room_chain": [
             "complete-boundary geometry scan",

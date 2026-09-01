@@ -6,6 +6,7 @@ import argparse
 import ast
 import csv
 from dataclasses import dataclass
+from decimal import Decimal
 import gzip
 import hashlib
 import importlib.metadata
@@ -25,9 +26,15 @@ from typing import Callable, Iterable, Mapping, Sequence
 try:
     from .prepare_blaschke_source_only_replay import make_archive_inventory
     from .normalize_blaschke_publication import assert_publication_portable
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+    )
 except ImportError:
     from prepare_blaschke_source_only_replay import make_archive_inventory
     from normalize_blaschke_publication import assert_publication_portable
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+    )
 
 
 PACKAGE_NAMES = (
@@ -211,6 +218,9 @@ EXPECTED_UPSTREAM_ARTIFACT_NAMES = (
 
 TRUE_THEOREM_GATES = (
     "all_24_targets_theorem_certified",
+    "q_gap_derived_le_target",
+    "exact_dyadic_schur_below_diagonal_all_zero",
+    "exact_dyadic_schur_upper_triangular_certified",
     "all_schur_diagonal_memberships_certified",
     "all_finite_count_transports_certified",
     "all_finite_counts_certified",
@@ -227,11 +237,31 @@ FALSE_THEOREM_GATES = (
     "laurent_digests_used_in_any_theorem_gate",
 )
 PLAN_TRUE_GATES = (
+    "contour_q_gap_derived_le_target",
+    "contour_exact_dyadic_schur_upper_triangular_certified",
     "contour_all_finite_counts_schur_derived",
     "contour_all_schur_diagonal_memberships_certified",
     "contour_all_finite_count_transports_certified",
     "contour_all_finite_counts_match_expected",
     "contour_all_finite_to_exact_rank_transfers_certified",
+)
+
+# These numbers are outputs of the selected-radius replay, not configuration.
+# A source-controlled plan must never carry them across a radius change.  Cell
+# 104 may still write them into its fresh run-local plan for inspection.
+RADIUS_DERIVED_SOURCE_SNAPSHOT_FIELDS = (
+    "deterministic_epsilon_rss_upper",
+    "deterministic_epsilon_triangle_check_upper",
+    "response_coherent_packet_upper",
+    "response_scaled_legendre_upper",
+    "response_whole_ellipse_fallback_upper",
+    "response_selected_upper",
+    "hardy_matrix_starting_eta_A_upper",
+    "hardy_matrix_eta_A_upper",
+    "hardy_matrix_midpoint_sha256",
+    "contour_eta_schur_upper",
+    "contour_minimum_lifted_moat_lower",
+    "contour_maximum_small_gain_product_upper",
 )
 
 MANIFEST_LINE_RE = re.compile(r"([0-9a-f]{64})  (.+)")
@@ -714,11 +744,24 @@ def validate_plan_and_spectral_report(
     _expect_exact_int(report, "N", 600)
     _expect_exact_int(report, "M", 610)
     for key in ("rho", "r"):
-        if precision.get(key) != report.get(key):
+        try:
+            values_match = Decimal(str(precision.get(key))) == Decimal(
+                str(report.get(key))
+            )
+        except Exception as exc:
+            raise ReproducibilityError(
+                f"Plan/report {key} must be exact finite decimals."
+            ) from exc
+        if not values_match:
             raise ReproducibilityError(
                 f"Plan/report mismatch for {key}: {precision.get(key)!r} != "
                 f"{report.get(key)!r}."
             )
+    canonical_radius = Decimal(CANONICAL_SELECTED_HARDY_RADIUS_TEXT)
+    if Decimal(str(precision.get("r"))) != canonical_radius:
+        raise ReproducibilityError(
+            "The plan/report Hardy radius is not the canonical selected decimal."
+        )
 
     schema = precision.get("contour_certificate_schema")
     if not isinstance(schema, str) or not schema:
@@ -823,6 +866,8 @@ def refresh_reproducibility_plan(
         )
 
     precision = dict(source_precision)
+    for field in RADIUS_DERIVED_SOURCE_SNAPSHOT_FIELDS:
+        precision.pop(field, None)
     report_updates = {
         "map_label": report.get("map_label"),
         "N": report.get("N"),
@@ -843,6 +888,12 @@ def refresh_reproducibility_plan(
         ),
         "contour_all_finite_counts_schur_derived": report.get(
             "all_finite_counts_schur_derived"
+        ),
+        "contour_q_gap_derived_le_target": report.get(
+            "q_gap_derived_le_target"
+        ),
+        "contour_exact_dyadic_schur_upper_triangular_certified": report.get(
+            "exact_dyadic_schur_upper_triangular_certified"
         ),
         "contour_all_schur_diagonal_memberships_certified": report.get(
             "all_schur_diagonal_memberships_certified"

@@ -31,9 +31,20 @@ except ImportError as exc:  # pragma: no cover - checked by the notebook
         "blaschke_deformation_spectral_certification requires python-flint"
     ) from exc
 
+try:
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        require_canonical_selected_hardy_radius,
+    )
+except ImportError:
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        require_canonical_selected_hardy_radius,
+    )
+
 
 MAP_LABEL = "blaschke_mu_0p3"
-SCHEMA = "blaschke-deformation-exact-dyadic-hardy-reference-v1"
+SCHEMA = "blaschke-deformation-exact-dyadic-hardy-reference-v2"
 
 
 @dataclass(frozen=True)
@@ -43,7 +54,7 @@ class HardyMatrixCertificateConfig:
     N: int = 600
     M: int = 610
     rho: str = "2.725"
-    r: str = "2.473669807791324"
+    r: str = CANONICAL_SELECTED_HARDY_RADIUS_TEXT
     mu: str = "0.3"
     precision_bits: int = 2048
     flint_threads: int = 24
@@ -259,6 +270,9 @@ Functionality: Assemble the complete mathematical Hardy-gauge block in Arb.'''
     N, M = int(config.N), int(config.M)
     if N < 1 or M < N:
         raise ValueError("The matrix certificate requires M at least N at positive order.")
+    require_canonical_selected_hardy_radius(
+        config.r, label="Hardy-matrix certificate radius"
+    )
     old_precision, old_threads = flint.ctx.prec, flint.ctx.threads
     flint.ctx.prec = int(config.precision_bits)
     flint.ctx.threads = int(config.flint_threads)
@@ -514,6 +528,9 @@ def build_or_load_hardy_matrix_certificate(
 Functionality: Transactionally build or validate the fixed Hardy-matrix certificate.'''
 
     output_dir = Path(output_dir).resolve()
+    require_canonical_selected_hardy_radius(
+        config.r, label="Hardy-matrix build radius"
+    )
     data_dir, report_dir = output_dir / "data", output_dir / "reports"
     data_dir.mkdir(parents=True, exist_ok=True)
     report_dir.mkdir(parents=True, exist_ok=True)

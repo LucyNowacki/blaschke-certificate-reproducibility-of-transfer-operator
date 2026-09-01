@@ -110,7 +110,7 @@ diagnostics and never enter promotion.
 
 
 CELL103_PROVENANCE = '''# notebook-provenance: begin
-# helpers: blaschke_deformation_contour_certification: certify_all_target_contours; blaschke_deformation_contour_certification: ContourCertificateConfig; CERTIFICATE_ROUTE_LAURENT; CERTIFICATE_ROUTE_SCHUR; COUNT_METHOD_SCHUR_DIAGONAL; MOAT_METHOD_LAURENT; MOAT_METHOD_SCHUR_TRIANGULAR; SCHEMA; direct imports in this cell: Numerics.blaschke_deformation_contour_certification: CERTIFICATE_ROUTE_LAURENT, CERTIFICATE_ROUTE_SCHUR, COUNT_METHOD_SCHUR_DIAGONAL, MOAT_METHOD_LAURENT, MOAT_METHOD_SCHUR_TRIANGULAR, SCHEMA as CONTOUR_CERTIFICATE_SCHEMA, ContourCertificateConfig, certify_all_target_contours; blaschke_deformation_contour_certification: CERTIFICATE_ROUTE_LAURENT, CERTIFICATE_ROUTE_SCHUR, COUNT_METHOD_SCHUR_DIAGONAL, MOAT_METHOD_LAURENT, MOAT_METHOD_SCHUR_TRIANGULAR, SCHEMA as CONTOUR_CERTIFICATE_SCHEMA, ContourCertificateConfig, certify_all_target_contours; functions defined in this cell: _directional_endpoint_text
+# helpers: blaschke_deformation_contour_certification: certify_all_target_contours; blaschke_deformation_contour_certification: ContourCertificateConfig; _laurent_witness_records_are_reusable; CERTIFICATE_ROUTE_LAURENT; CERTIFICATE_ROUTE_SCHUR; COUNT_METHOD_SCHUR_DIAGONAL; MOAT_METHOD_LAURENT; MOAT_METHOD_SCHUR_TRIANGULAR; SCHEMA; direct imports in this cell: Numerics.blaschke_deformation_contour_certification: CERTIFICATE_ROUTE_LAURENT, CERTIFICATE_ROUTE_SCHUR, COUNT_METHOD_SCHUR_DIAGONAL, MOAT_METHOD_LAURENT, MOAT_METHOD_SCHUR_TRIANGULAR, SCHEMA as CONTOUR_CERTIFICATE_SCHEMA, ContourCertificateConfig, _laurent_witness_records_are_reusable, certify_all_target_contours; blaschke_deformation_contour_certification: CERTIFICATE_ROUTE_LAURENT, CERTIFICATE_ROUTE_SCHUR, COUNT_METHOD_SCHUR_DIAGONAL, MOAT_METHOD_LAURENT, MOAT_METHOD_SCHUR_TRIANGULAR, SCHEMA as CONTOUR_CERTIFICATE_SCHEMA, ContourCertificateConfig, _laurent_witness_records_are_reusable, certify_all_target_contours; functions defined in this cell: _directional_endpoint_text
 # data_sources: Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE.payload_path; Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE.midpoint_path; Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE.report_path; DATA_DIR/branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv; INLINE_MODULE_PATHS/blaschke_deformation_contour_certification; INLINE_MODULE_PATHS/blaschke_deformation_spectral_certification; DATA_DIR/blaschke_deformation_24_target_N600_M610_contour_plan.csv, conditional cache input; DATA_DIR/blaschke_deformation_24_target_N600_M610_validated_schur.npz, conditional cache input; REPORT_DIR/blaschke_deformation_24_target_N600_M610_validated_schur.json, conditional cache input; DATA_DIR/blaschke_deformation_24_target_N600_M610_schur_attempts.csv, conditional cache input; DATA_DIR/blaschke_deformation_24_target_N600_M610_laurent_mode_bounds.csv, conditional cache input; DATA_DIR/blaschke_deformation_24_target_N600_M610_laurent_witness_reconstruction.csv, conditional cache input; DATA_DIR/blaschke_deformation_24_target_N600_M610_spectral_certificate.csv, conditional cache input; REPORT_DIR/blaschke_deformation_24_target_N600_M610_spectral_certificate.json, conditional cache input
 # prior_results: Cell 102A::BALANCED_HARDY_MATRIX_CERTIFICATE; Cell 102A::_hardy_gate_path; Cell 24C::PHASE2_FINAL_CERT; structural Phase 4 provenance tests::_phase4_test_result; Cell 4A::CERTIFIER_PROCESS_WORKERS
 # execution_mode: arithmetic: 256-bit Arb, exact-dyadic Schur count transport, complete-circle Schur or Laurent moat bounds, exact lifting of binary64 Laurent coefficients and outward decimal display; cache_policy: reuse only after source hashes, matrix hashes, geometry, seven-row Laurent reconstruction manifest and proof-route gates pass; BLASCHKE_FORCE_CONTOURS forces source reconstruction; kind: transactional_complete_contour_certificate; parallelism: 24 python-flint threads
@@ -125,6 +125,24 @@ CELL103_LAURENT_GATE = '''_laurent_witness_path = Path(
     SPECTRAL_CONTOUR_CERTIFICATE["artifacts"]["laurent_witnesses"]
 )
 laurent_witness_reconstruction_df = pd.read_csv(_laurent_witness_path)
+laurent_witness_reconstruction_text_df = pd.read_csv(
+    _laurent_witness_path, dtype=str, keep_default_na=False
+)
+_laurent_mode_bounds_path = Path(
+    SPECTRAL_CONTOUR_CERTIFICATE["artifacts"]["laurent_modes"]
+)
+laurent_mode_bounds_df = pd.read_csv(
+    _laurent_mode_bounds_path, dtype=str, keep_default_na=False
+)
+if not _laurent_witness_records_are_reusable(
+    laurent_witness_reconstruction_text_df.to_dict("records"),
+    spectral_contour_certificate_text_df.to_dict("records"),
+    laurent_mode_bounds_df.to_dict("records"),
+    expected_precision_bits=CONTOUR_CERTIFICATE_BITS,
+):
+    raise AssertionError(
+        "The Laurent mode, witness, and certificate tables are not internally bound."
+    )
 _laurent_manifest_bool = lambda field: (
     laurent_witness_reconstruction_df[field]
     .astype(str).str.lower().eq("true").all()
@@ -148,18 +166,35 @@ if not (
 for _field in (
     "generated_in_recorded_run",
     "candidate_coefficients_validated_exact_dyadic",
-    "digest_matches_recorded_reference",
     "theorem_certified",
 ):
     if not _laurent_manifest_bool(_field):
         raise AssertionError(f"The Laurent reconstruction gate failed for {_field}.")
+_laurent_manifest_digest_parity = (
+    laurent_witness_reconstruction_df["coefficient_sha256"].astype(str).eq(
+        laurent_witness_reconstruction_df["reference_coefficient_sha256"].astype(str)
+    )
+)
+_laurent_manifest_recorded_parity = (
+    laurent_witness_reconstruction_df["digest_matches_recorded_reference"]
+    .astype(str).str.lower().eq("true")
+)
+if not _laurent_manifest_recorded_parity.eq(
+    _laurent_manifest_digest_parity
+).all():
+    raise AssertionError("The Laurent reference-digest parity flags are inconsistent.")
+CELL103_LAURENT_ALL_REFERENCE_DIGESTS_MATCH = bool(
+    _laurent_manifest_digest_parity.all()
+)
 if _laurent_manifest_any("digest_used_in_theorem_gate"):
     raise AssertionError("Historical Laurent digest parity entered a theorem gate.")
 if not (
     int(SPECTRAL_CONTOUR_CERTIFICATE["laurent_witness_count"]) == 7
     and int(SPECTRAL_CONTOUR_CERTIFICATE["laurent_coefficient_matrix_count"]) == 300
     and bool(SPECTRAL_CONTOUR_CERTIFICATE["all_laurent_witnesses_reconstructed_in_recorded_run"])
+    and bool(SPECTRAL_CONTOUR_CERTIFICATE["laurent_internal_digest_bindings_certified"])
     and bool(SPECTRAL_CONTOUR_CERTIFICATE["all_laurent_digests_match_recorded_reference"])
+    == CELL103_LAURENT_ALL_REFERENCE_DIGESTS_MATCH
     and not bool(SPECTRAL_CONTOUR_CERTIFICATE["laurent_digests_used_in_any_theorem_gate"])
 ):
     raise AssertionError("The Laurent reconstruction report failed its aggregate gates.")
@@ -348,7 +383,21 @@ def _update_cell103(notebook: dict[str, Any], *, current: bool) -> None:
     markdown = _cell_by_id(notebook, "md-73443732")
     code = _cell_by_id(notebook, "code-b33b0f47")
     _set_source(markdown, CELL103_MARKDOWN)
-    source = _replace_cell103_laurent_gate(_source(code))
+    source = _source(code)
+    import_marker = (
+        "        ContourCertificateConfig,\n"
+        "        certify_all_target_contours,\n"
+    )
+    import_replacement = (
+        "        ContourCertificateConfig,\n"
+        "        _laurent_witness_records_are_reusable,\n"
+        "        certify_all_target_contours,\n"
+    )
+    if "        _laurent_witness_records_are_reusable,\n" not in source:
+        if source.count(import_marker) != 2:
+            raise RuntimeError("The Cell 103 contour import block changed.")
+        source = source.replace(import_marker, import_replacement)
+    source = _replace_cell103_laurent_gate(source)
     source = source.replace(
         "display(laurent_witness_reconstruction_display_df)\n",
         "",

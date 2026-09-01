@@ -81,6 +81,7 @@ class GeneratedClosureTests(unittest.TestCase):
             "test_blaschke_deformation_contour_certification.py",
             "blaschke_deformation_contour_certification.py",
             "blaschke_deformation_spectral_certification.py",
+            "blaschke_deformation_phase2_geometry.py",
         )
         with tempfile.TemporaryDirectory(
             prefix="detached-contour-test-harness-"
@@ -119,7 +120,7 @@ class GeneratedClosureTests(unittest.TestCase):
                 0,
                 msg=f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}",
             )
-            self.assertIn("Ran 13 tests", completed.stderr)
+            self.assertIn("Ran 17 tests", completed.stderr)
             self.assertIn("OK", completed.stderr)
             self.assertFalse(outputs.exists())
 
@@ -346,7 +347,7 @@ class GeneratedClosureTests(unittest.TestCase):
             ),
         )
         self.assertIsNone(result)
-        self.assertIsInstance(error, preparation.SourceOnlyReplayError)
+        self.assertIsInstance(error, replay.SourceOnlyReplayError)
         self.assertRegex(str(error), pattern)
         self.assertEqual(len(commands), 5)
         self.assertFalse((root / "clean-room-compute-only-evidence.json").exists())
@@ -549,7 +550,7 @@ class GeneratedClosureTests(unittest.TestCase):
             self._assert_unprepared_authority_failure(
                 root,
                 expected_inventory_sha256="0" * 64,
-                error_type=preparation.SourceOnlyReplayError,
+                error_type=replay.SourceOnlyReplayError,
                 pattern=r"refusing source-only preparation",
             )
 
@@ -736,7 +737,7 @@ class GeneratedClosureTests(unittest.TestCase):
                 raw_comparison_receipt=raw_comparison_receipt,
             )
             self.assertIsNone(result)
-            self.assertIsInstance(error, preparation.SourceOnlyReplayError)
+            self.assertIsInstance(error, replay.SourceOnlyReplayError)
             self.assertFalse(
                 any(
                     "Numerics/normalize_blaschke_publication.py" in command

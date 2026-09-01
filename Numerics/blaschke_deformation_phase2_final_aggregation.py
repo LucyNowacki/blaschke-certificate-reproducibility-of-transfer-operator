@@ -23,15 +23,27 @@ try:
         InputTailCertificateConfig,
         certify_input_tail_rows,
     )
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
 except ImportError:
     from blaschke_deformation_certification import (
         InputTailCertificateConfig,
         certify_input_tail_rows,
     )
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
 
 
 MAP_LABEL = "blaschke_mu_0p3"
-PRODUCER_SCHEMA = "phase2-final-aggregation-v2"
+PRODUCER_SCHEMA = "phase2-final-aggregation-v3"
 
 INPUT_CERTIFICATION_GATES = (
     "input_boundary_cover_certified",
@@ -49,6 +61,7 @@ FINAL_CERTIFICATION_GATES = (
     "transport_certified",
     "matrix_certified",
     "tail_components_interval",
+    "q_gap_derived_le_target",
     *INPUT_CERTIFICATION_GATES,
     "response_prefactor_certified",
     *RESPONSE_CERTIFICATION_GATES,
@@ -61,7 +74,7 @@ class Phase2FinalAggregationConfig:
     N: int = 600
     M: int = 610
     rho: str = "2.725"
-    r: str = "2.473669807791324"
+    r: str = CANONICAL_SELECTED_HARDY_RADIUS_TEXT
     mu: str = "0.3"
     cells: int = 65536
     precision_bits: int = 192
@@ -92,6 +105,50 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _canonical_input_tail_profile_member(N: int) -> str:
+    """Return the portable archive member for the input-tail boundary profile."""
+
+    N = int(N)
+    if N < 1:
+        raise ValueError("The input-tail profile dimension must be positive.")
+    return (
+        "Numerics/outputs/blaschke_deformation_certifier/data/"
+        f"blaschke_deformation_input_tail_boundary_profile_N{N}.csv"
+    )
+
+
+def _require_canonical_input_tail_profile_member(value: Any, *, N: int) -> str:
+    """Reject absolute, traversal, or otherwise noncanonical profile members."""
+
+    expected = _canonical_input_tail_profile_member(N)
+    observed = str(value)
+    path = Path(observed)
+    if path.is_absolute() or ".." in path.parts or path.as_posix() != expected:
+        raise ValueError(
+            "The input-tail profile_path must be the canonical project-relative "
+            f"member {expected!r}; got {observed!r}."
+        )
+    return expected
+
+
+def _bind_refreshed_candidate_exact_exports(
+    candidate: dict[str, Any],
+    final_certificate: dict[str, Any],
+) -> dict[str, Any]:
+    """Cross-bind theorem-facing candidate endpoints to final exact text."""
+
+    b_out_text = str(final_certificate.get("B_out", ""))
+    try:
+        b_out_decimal = Decimal(b_out_text)
+    except Exception as exc:
+        raise ValueError("The final B_out endpoint is not a decimal.") from exc
+    if not b_out_decimal.is_finite() or b_out_decimal <= 0:
+        raise ValueError("The final B_out endpoint must be positive and finite.")
+    refreshed = dict(candidate)
+    refreshed["B_out_response_prefactor_cert"] = b_out_text
+    return refreshed
+
+
 def _read_rows(path: Path) -> list[dict[str, str]]:
     with Path(path).open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
@@ -102,6 +159,107 @@ def _read_one(path: Path) -> dict[str, str]:
     if len(rows) != 1:
         raise RuntimeError(f"Expected exactly one row in {path}; found {len(rows)}.")
     return rows[0]
+
+
+def _validate_response_artifact_geometry_contract(
+    *,
+    config: Phase2FinalAggregationConfig,
+    safe_row: dict[str, str],
+    candidate: dict[str, str],
+    response_summary: dict[str, str],
+    coherent_summary: dict[str, str],
+) -> dict[str, Any]:
+    """Exact-bind every response artifact before any theorem endpoint is used."""
+
+    dimension_contracts = (
+        ("safe balanced row", safe_row, True),
+        ("resolved-response candidate", candidate, True),
+        ("resolved-response summary", response_summary, False),
+        ("coherent-response summary", coherent_summary, False),
+    )
+    for label, row, has_m in dimension_contracts:
+        try:
+            dimensions_match = int(row.get("N", -1)) == config.N and (
+                not has_m or int(row.get("M", -1)) == config.M
+            )
+        except (TypeError, ValueError):
+            dimensions_match = False
+        if not dimensions_match:
+            raise RuntimeError(f"The {label} has the wrong dimensions.")
+
+        for field, expected in (("rho", config.rho), ("r", config.r)):
+            try:
+                matches = Decimal(str(row.get(field, ""))) == Decimal(str(expected))
+            except Exception as exc:
+                raise RuntimeError(
+                    f"The {label} has an invalid exact decimal {field}."
+                ) from exc
+            if not matches:
+                raise RuntimeError(f"The {label} has the wrong exact decimal {field}.")
+        require_canonical_selected_hardy_radius(
+            row.get("r", ""), label=f"{label} Hardy radius"
+        )
+
+    if response_summary.get("map_label") != config.map_label:
+        raise RuntimeError("The resolved-response summary has the wrong map label.")
+    if coherent_summary.get("map_label") != config.map_label:
+        raise RuntimeError("The coherent-response summary has the wrong map label.")
+
+    radius_and_target_contracts = (
+        (
+            "safe balanced row",
+            safe_row,
+            "r_tau_interval_u",
+            "q_gap",
+        ),
+        (
+            "resolved-response candidate",
+            candidate,
+            "r_tau_interval_u",
+            "q_gap",
+        ),
+        (
+            "resolved-response summary",
+            response_summary,
+            "r_tau_interval_u",
+            "q_gap",
+        ),
+        (
+            "coherent-response summary",
+            coherent_summary,
+            "r_tau",
+            "q_gap_target",
+        ),
+    )
+    reference_r_tau = Decimal(str(safe_row.get("r_tau_interval_u", "")))
+    reference_target = Decimal(str(CANONICAL_SELECTED_Q_GAP_TARGET_TEXT))
+    reference_contract: dict[str, Any] | None = None
+    for label, row, r_tau_key, target_key in radius_and_target_contracts:
+        try:
+            observed_r_tau = Decimal(str(row.get(r_tau_key, "")))
+            observed_target = Decimal(str(row.get(target_key, "")))
+        except Exception as exc:
+            raise RuntimeError(
+                f"The {label} has an invalid r_tau/q_gap decimal contract."
+            ) from exc
+        if observed_r_tau != reference_r_tau:
+            raise RuntimeError(f"The {label} has a different exact r_tau endpoint.")
+        if observed_target != reference_target:
+            raise RuntimeError(f"The {label} has a different exact q_gap target.")
+        contract = exact_q_gap_contract(
+            r_tau_upper=row.get(r_tau_key, ""),
+            hardy_radius=row.get("r", ""),
+            q_gap_target=row.get(target_key, ""),
+        )
+        for key, value in contract.items():
+            if str(row.get(key, "")) != str(value):
+                raise RuntimeError(f"The {label} has an inconsistent {key} field.")
+        if reference_contract is None:
+            reference_contract = contract
+        elif contract != reference_contract:
+            raise RuntimeError(f"The {label} has a different exact q_gap contract.")
+    assert reference_contract is not None
+    return reference_contract
 
 
 def _is_true(value: Any) -> bool:
@@ -215,8 +373,8 @@ def _summary_rows(
             "source": "branch-image balanced candidate",
             "N": int(safe_row["N"]),
             "M": int(safe_row["M"]),
-            "rho": float(safe_row["rho"]),
-            "r": float(safe_row["r"]),
+            "rho": str(safe_row["rho"]),
+            "r": str(safe_row["r"]),
             "r_tau": float(safe_row["r_tau_interval_u"]),
             "q_star": float(safe_row["q_star"]),
             "B_out": float(_b_out(safe_row)),
@@ -237,8 +395,8 @@ def _summary_rows(
             "source": "branch-image plus response-prefactor row",
             "N": int(final_certificate["N"]),
             "M": int(final_certificate["M"]),
-            "rho": float(final_certificate["rho"]),
-            "r": float(final_certificate["r"]),
+            "rho": str(final_certificate["rho"]),
+            "r": str(final_certificate["r"]),
             "r_tau": float(final_certificate["r_tau"]),
             "q_star": float(final_certificate["q_star"]),
             "B_out": float(final_certificate["B_out"]),
@@ -265,6 +423,9 @@ Functionality: Aggregate the unresolved-input, resolved-response, output-leakage
         raise ValueError(f"This producer is restricted to {MAP_LABEL}.")
     if config.N < 1 or config.M < config.N or config.cells < 4:
         raise ValueError("Invalid final Phase 2 dimensions or boundary cover.")
+    require_canonical_selected_hardy_radius(
+        config.r, label="final Phase 2 configuration Hardy radius"
+    )
 
     output_dir = Path(output_dir)
     data_dir = output_dir / "data"
@@ -309,12 +470,13 @@ Functionality: Aggregate the unresolved-input, resolved-response, output-leakage
     candidate = _read_one(candidate_csv_path)
     response_summary = _read_one(response_summary_path)
     coherent_summary = _read_one(coherent_summary_path)
-    if int(safe_row["N"]) != config.N or int(safe_row["M"]) != config.M:
-        raise RuntimeError("The safe balanced row has the wrong dimensions.")
-    if abs(Decimal(safe_row["rho"]) - Decimal(config.rho)) > Decimal("1e-12"):
-        raise RuntimeError("The final Phase 2 response radius does not match.")
-    if abs(Decimal(safe_row["r"]) - Decimal(config.r)) > Decimal("1e-12"):
-        raise RuntimeError("The final Phase 2 Hardy radius does not match.")
+    q_gap_contract = _validate_response_artifact_geometry_contract(
+        config=config,
+        safe_row=safe_row,
+        candidate=candidate,
+        response_summary=response_summary,
+        coherent_summary=coherent_summary,
+    )
 
     input_config = InputTailCertificateConfig(
         N=config.N,
@@ -359,12 +521,13 @@ Functionality: Aggregate the unresolved-input, resolved-response, output-leakage
         "N": config.N,
         "M": config.M,
         "m": config.M - config.N,
-        "rho": mp.mpf(config.rho),
-        "r": mp.mpf(config.r),
-        "r_tau": mp.mpf(str(safe_row["r_tau_interval_u"])),
+        "rho": config.rho,
+        "r": config.r,
+        "r_tau": str(safe_row["r_tau_interval_u"]),
         "q_out": mp.mpf(str(safe_row["q_out"])),
         "q_gap": mp.mpf(str(safe_row["q_gap"])),
         "q_star": mp.mpf(str(safe_row["q_star"])),
+        **q_gap_contract,
         "B_out": _mpf_upper(b_out_arb),
         "B_in": _mpf_upper(b_in_arb),
         "B_in_selection": input_source,
@@ -457,12 +620,19 @@ Functionality: Aggregate the unresolved-input, resolved-response, output-leakage
         bool(final_certificate[key]) for key in FINAL_CERTIFICATION_GATES
     )
 
-    refreshed_candidate = dict(candidate)
+    refreshed_candidate = _bind_refreshed_candidate_exact_exports(
+        candidate,
+        final_certificate,
+    )
     refreshed_candidate.update(
         {
             "phase2_aggregation_status": (
                 "authoritative standalone final-aggregation refresh"
             ),
+            "rho": config.rho,
+            "r": config.r,
+            "q_gap": str(safe_row["q_gap"]),
+            **q_gap_contract,
             "B_in_branch_image_interval_u": _upper_float(
                 final_certificate["B_in"]
             ),
@@ -533,7 +703,10 @@ Functionality: Aggregate the unresolved-input, resolved-response, output-leakage
         "source_sha256": _sha256(Path(__file__)),
         "summary": input_certificate["summary"],
         "interval_enclosures": input_certificate["intervals"],
-        "profile_path": str(input_profile_csv_path),
+        "profile_path": _require_canonical_input_tail_profile_member(
+            _canonical_input_tail_profile_member(config.N),
+            N=config.N,
+        ),
     }
     _atomic_text(
         input_report_json_path, json.dumps(input_provenance, indent=2) + "\n"
@@ -542,6 +715,8 @@ Functionality: Aggregate the unresolved-input, resolved-response, output-leakage
     response_provenance = json.loads(response_report_json_path.read_text(encoding="utf-8"))
     response_provenance["final_phase2_refresh"] = {
         "producer_helper": Path(__file__).name,
+        "r": config.r,
+        **q_gap_contract,
         "B_in_selection": input_source,
         "B_in_selected_cert_text": str(final_certificate["B_in"]),
         "matrix_selection": matrix_source,

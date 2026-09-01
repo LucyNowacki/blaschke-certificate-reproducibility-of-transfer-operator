@@ -21,6 +21,76 @@ import build_blaschke_deformation_certifier as builder
 
 
 class LockedTemplateTests(unittest.TestCase):
+    def test_historical_phase4_has_explicit_theorem_only_skip_contract(self) -> None:
+        notebook = json.loads(builder.TEMPLATE.read_text(encoding="utf-8"))
+        cell35 = builder._source(
+            builder._unique_cell(notebook["cells"], "# Cell 35\n")
+        )
+        for marker in (
+            'os.environ.get("BLASCHKE_SKIP_HISTORICAL_PHASE4", "0")',
+            "elif HISTORICAL_PHASE4_DIAGNOSTIC_SKIPPED:",
+            '"execution_status": "diagnostic_skipped"',
+            '"diagnostic_skipped": True',
+            '"theorem_authoritative": False',
+            "historical_phase4_result = rebuild_historical_phase4(",
+        ):
+            self.assertIn(marker, cell35)
+
+    def test_hardy_starting_audit_has_explicit_theorem_only_skip_contract(self) -> None:
+        notebook = json.loads(builder.TEMPLATE.read_text(encoding="utf-8"))
+        hardy = builder._source(
+            builder._unique_cell(notebook["cells"], "# Cell 102A\n")
+        )
+        summary = builder._source(
+            builder._unique_cell(notebook["cells"], "# Cell 104\n")
+        )
+        for marker in (
+            'os.environ.get("BLASCHKE_SKIP_HARDY_STARTING_AUDIT", "0")',
+            "STARTING_HARDY_MATRIX_AUDIT = None",
+            "if not HARDY_MATRIX_SKIP_STARTING_AUDIT:",
+        ):
+            self.assertIn(marker, hardy)
+        for marker in (
+            '"hardy_starting_audit_skipped": bool(HARDY_MATRIX_SKIP_STARTING_AUDIT)',
+            '"hardy_starting_audit_authoritative": False',
+            "None if HARDY_MATRIX_SKIP_STARTING_AUDIT else int(HARDY_MATRIX_STARTING_BITS)",
+            "None if HARDY_MATRIX_SKIP_STARTING_AUDIT else str(STARTING_HARDY_MATRIX_AUDIT",
+        ):
+            self.assertIn(marker, summary)
+
+    def test_builder_rejects_short_theorem_config_without_policing_prose(self) -> None:
+        short_config = {
+            "cells": [
+                {
+                    "cell_type": "markdown",
+                    "source": "Historical presentation-only radius: 2.47367.",
+                },
+                {
+                    "cell_type": "code",
+                    "source": 'r_target: str = "2.473669807791324"\n',
+                },
+            ]
+        }
+        with self.assertRaisesRegex(AssertionError, "canonical selected Hardy radius"):
+            builder._validate_exact_radius_comparators(short_config)
+
+    def test_builder_rejects_tolerant_inline_radius_selection(self) -> None:
+        tolerant = {
+            "cells": [
+                {
+                    "cell_type": "code",
+                    "source": (
+                        'r_target: str = "2.473669807791324109321273260"\n'
+                        "def _rp_close_decimal(left, right, tolerance='1e-12'):\n"
+                        "    return abs(left - right) <= tolerance\n"
+                        "_rp_tail_candidates = []\n"
+                    ),
+                }
+            ]
+        }
+        with self.assertRaisesRegex(AssertionError, "tolerance/float comparator"):
+            builder._validate_exact_radius_comparators(tolerant)
+
     def test_checked_in_template_matches_builder_lock(self) -> None:
         self.assertEqual(
             builder._sha256(builder.TEMPLATE),

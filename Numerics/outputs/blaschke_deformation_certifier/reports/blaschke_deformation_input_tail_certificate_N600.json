@@ -1,25 +1,25 @@
 {
   "producer_helper": "blaschke_deformation_phase2_final_aggregation.py",
-  "producer_schema": "phase2-final-aggregation-v2",
-  "module_sha256": "32c117c9f6d4f78046b9a463784f4c1550ee5653714cc488deb76d299afb453f",
-  "source_sha256": "af06689e7fdd1daa5ce57e938d7237ae44eddd23418fb3ad23c68f789e2487b8",
+  "producer_schema": "phase2-final-aggregation-v3",
+  "module_sha256": "af7f5883679bf7a516f521f6542e4678fb7af1137c548ab3c4badcbf6d8f098d",
+  "source_sha256": "17616d14d108faa13b09bd1c7ee39531ce4160d4d125cdf917d09ff85cb94076",
   "summary": {
     "map_label": "blaschke_mu_0p3",
     "N": 600,
     "rho": "2.725",
-    "r": "2.473669807791324",
+    "r": "2.473669807791324109321273260",
     "mu": "0.3",
     "cells": 65536,
     "precision_bits": 192,
     "prefix_terms": 24,
     "J": 623,
-    "branchwise_profile_cert_u": 3.3264421486719304e-20,
-    "combined_row_cert_u": 3.3264421486719304e-20,
+    "branchwise_profile_cert_u": 3.3264421486718413e-20,
+    "combined_row_cert_u": 3.3264421486718413e-20,
     "combined_over_branchwise_u": 1.0000000000000002,
     "maximum_branch_radius_u": 2.292888073691716,
     "branchwise_max_cell": 25445,
     "combined_max_cell": 25445,
-    "seconds": 20.819618701934814,
+    "seconds": 20.598970651626587,
     "boundary_cover_certified": true,
     "exact_prefix_certified": true,
     "geometric_remainder_certified": true,
@@ -28,9 +28,9 @@
     "status": "complete Arb boundary cover with exact Chebyshev prefix and certified geometric remainder"
   },
   "interval_enclosures": {
-    "branchwise_profile": "[3.32644214867192972737608184506590966251370579874511722611017e-20 +/- 1.21e-80]",
-    "combined_row": "[3.32644214867192972737608184506590966251370579874511722611017e-20 +/- 1.21e-80]",
+    "branchwise_profile": "[3.32644214867184062527445943980960295941961974478827721170327e-20 +/- 3.62e-80]",
+    "combined_row": "[3.32644214867184062527445943980960295941961974478827721170327e-20 +/- 3.62e-80]",
     "maximum_branch_radius": "[2.29288807369171559606068152519121229350676698774438197227981 +/- 4.06e-60]"
   },
-  "profile_path": "outputs/blaschke_deformation_certifier/data/blaschke_deformation_input_tail_boundary_profile_N600.csv"
+  "profile_path": "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_input_tail_boundary_profile_N600.csv"
 }

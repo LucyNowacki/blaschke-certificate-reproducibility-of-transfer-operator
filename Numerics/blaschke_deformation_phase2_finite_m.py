@@ -17,6 +17,19 @@ import flint
 from flint import arb
 import pandas as pd
 
+try:
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
+except ImportError:
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
+
 
 MAP_LABEL = "blaschke_mu_0p3"
 PRODUCER_SCHEMA = "phase2-finite-m-completion-v1"
@@ -151,8 +164,19 @@ Functionality: Certify the safe finite-M prefactor from the raw balanced matrix 
     input_row = _read_one(input_path)
     if int(input_row["N"]) != config.N or int(input_row["M"]) != config.M:
         raise RuntimeError("The raw balanced row has the wrong finite dimensions.")
-    if abs(Decimal(input_row["rho"]) - Decimal(config.rho)) > Decimal("1e-14"):
+    if Decimal(input_row["rho"]) != Decimal(config.rho):
         raise RuntimeError("The raw balanced row uses a different response radius.")
+    production_contract = bool(config.N == 600 and config.M == 610)
+    q_gap_contract: dict[str, Any] = {}
+    if production_contract:
+        require_canonical_selected_hardy_radius(
+            input_row["r"], label="finite-M input Hardy radius"
+        )
+        q_gap_contract = exact_q_gap_contract(
+            r_tau_upper=input_row["r_tau_interval_u"],
+            hardy_radius=input_row["r"],
+            q_gap_target=input_row["q_gap"],
+        )
     for flag in (
         "analytic_branch_sufficient",
         "branch_image_in_Er_sufficient",
@@ -229,7 +253,13 @@ Functionality: Certify the safe finite-M prefactor from the raw balanced matrix 
                 "branch-image balanced row with unconditional finite-M "
                 f"prefactor N={config.N}"
             ),
-            "rho": float(config.rho),
+            "rho": config.rho,
+            "r": (
+                CANONICAL_SELECTED_HARDY_RADIUS_TEXT
+                if production_contract
+                else str(input_row["r"])
+            ),
+            **q_gap_contract,
             "B_mat_star_D_M_1_diagnostic_u": _upper_float(bmat_star_d1),
             "B_mat_unstar_D_M_1_diagnostic_u": _upper_float(bmat_unstar_d1),
             "kappa_Bmat_star_D_M_1_diagnostic_u": _upper_float(
@@ -334,4 +364,3 @@ __all__ = [
     "Phase2FiniteMResult",
     "certify_finite_m_completion",
 ]
-

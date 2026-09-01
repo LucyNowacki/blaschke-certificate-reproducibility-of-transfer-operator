@@ -4,3 +4,6 @@ Numerics/outputs/blaschke_deformation_certifier/reproducibility/
 Numerics/outputs/blaschke_deformation_certifier/data/.historical_phase4_cache/
 __pycache__/
 *.pyc
+.certificate-replay-env/
+.certificate-replay-work/
+certificate-equivalence-receipt.json

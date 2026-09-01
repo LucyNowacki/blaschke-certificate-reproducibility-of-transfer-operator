@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import base64
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -65,6 +65,24 @@ class InlineHelperProvenanceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+
+    @staticmethod
+    def _synthetic_executed_notebook(notebook: dict) -> dict:
+        """Give an output-free fixture minimal execution state for merge tests."""
+
+        executed = deepcopy(notebook)
+        code_cell = next(
+            cell for cell in executed["cells"] if cell.get("cell_type") == "code"
+        )
+        code_cell["execution_count"] = 1
+        code_cell["outputs"] = [
+            {
+                "name": "stdout",
+                "output_type": "stream",
+                "text": ["synthetic preserved execution\n"],
+            }
+        ]
+        return executed
 
     def test_current_notebook_matches_all_standalone_helpers(self) -> None:
         validate_inline_helper_sync(
@@ -332,14 +350,13 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             self.assertNotIn(delimiter, source)
 
         certificate_cell = cells["code-b33b0f47"]
-        certificate_output = "\n".join(
-            "".join(output.get("text", []))
-            for output in certificate_cell.get("outputs", [])
-            if output.get("output_type") == "stream"
-        )
+        self.assertIsNone(certificate_cell.get("execution_count"))
+        self.assertEqual(certificate_cell.get("outputs", []), [])
+        certificate_source = "".join(certificate_cell.get("source", []))
         self.assertIn(
-            "Twenty-four-target spectral certificate: computed_and_certified",
-            certificate_output,
+            'print("Twenty-four-target spectral certificate:", '
+            'SPECTRAL_CONTOUR_CERTIFICATE["execution_status"])',
+            certificate_source,
         )
         for terminal_id, label in (
             ("3e8b784c", "#108N\n"),
@@ -390,7 +407,7 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         self.assertIn("$\\tau_b$", source)
         self.assertGreaterEqual(source.count("$$"), 4)
 
-    def test_cell_80n_embeds_the_alpha11_sampled_profile(self) -> None:
+    def test_cell_80n_declares_the_alpha11_sampled_profile(self) -> None:
         cell = next(
             cell for cell in self.notebook["cells"]
             if cell.get("id") == "32961420"
@@ -402,22 +419,13 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             / "figures"
             / "branch_image_wide_candidate_sampled_hardy_moat_profile_alpha11_N600_M610.png"
         )
-        embedded_pngs = [
-            base64.b64decode(output["data"]["image/png"])
-            for output in cell.get("outputs", [])
-            if "image/png" in output.get("data", {})
-        ]
-        self.assertEqual(len(embedded_pngs), 2)
-        self.assertIn(alpha11_path.read_bytes(), embedded_pngs)
-        output_text = "".join(
-            str(output.get("text", ""))
-            + str(output.get("data", {}).get("text/plain", ""))
-            + str(output.get("data", {}).get("text/html", ""))
-            for output in cell.get("outputs", [])
-        )
-        self.assertIn("alpha^11", output_text)
+        source = "".join(cell.get("source", []))
+        self.assertIsNone(cell.get("execution_count"))
+        self.assertEqual(cell.get("outputs", []), [])
+        self.assertIn("phase4_alpha11_target = 'alpha^11'", source)
+        self.assertIn(alpha11_path.stem, source)
 
-    def test_provenance_png_contract_includes_the_restored_alpha11_profile(self) -> None:
+    def test_legacy_png_provenance_is_diagnostic_while_source_is_output_free(self) -> None:
         provenance = json.loads(
             (HERE / "notebook_cell_provenance.json").read_text(encoding="utf-8")
         )
@@ -434,15 +442,15 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             )
             for cell in self.notebook["cells"]
         )
-        self.assertEqual(actual_png_count, 34)
-        self.assertEqual(actual_visual_cells, 20)
-        self.assertEqual(
-            provenance["notebook"]["expected_stored_png_output_count"],
-            actual_png_count,
+        self.assertEqual(actual_png_count, 0)
+        self.assertEqual(actual_visual_cells, 0)
+        self.assertGreater(
+            provenance["notebook"]["expected_stored_png_output_count"], 0
         )
-        self.assertEqual(
-            provenance["notebook"]["expected_visual_cell_count"],
-            actual_visual_cells,
+        self.assertGreater(provenance["notebook"]["expected_visual_cell_count"], 0)
+        self.assertNotEqual(
+            provenance["notebook"]["sha256_at_manifest_creation"],
+            hashlib.sha256(NOTEBOOK.read_bytes()).hexdigest(),
         )
         self.assertIn("alpha^11", provenance["notebook"]["stored_png_count_note"])
 
@@ -473,10 +481,11 @@ class InlineHelperProvenanceTests(unittest.TestCase):
 
     def test_source_refresh_preserves_execution_state_by_stable_id(self) -> None:
         current, _ = build_curated()
-        merged = _merge_preserved_execution_state(current, self.notebook)
+        preserved = self._synthetic_executed_notebook(self.notebook)
+        merged = _merge_preserved_execution_state(current, preserved)
         validate_curated_counterpart(merged)
         for expected, actual in zip(
-            self.notebook["cells"], merged["cells"], strict=True
+            preserved["cells"], merged["cells"], strict=True
         ):
             self.assertEqual(actual.get("id"), expected.get("id"))
             self.assertEqual(actual.get("cell_type"), expected.get("cell_type"))
@@ -501,16 +510,16 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             self.assertEqual(actual.get("outputs", []), expected.get("outputs", []))
         self.assertEqual(
             merged["metadata"].get("source_sync_after_execution"),
-            self.notebook["metadata"].get("source_sync_after_execution"),
+            None,
         )
         self.assertEqual(
             merged["metadata"].get("widgets"),
-            self.notebook["metadata"].get("widgets"),
+            preserved["metadata"].get("widgets"),
         )
 
     def test_source_refresh_can_append_terminal_auditor_to_legacy_execution(self) -> None:
         current, _ = build_curated()
-        legacy = deepcopy(self.notebook)
+        legacy = self._synthetic_executed_notebook(self.notebook)
         self.assertEqual(
             legacy["cells"].pop().get("id"), TERMINAL_AUDITOR_CELL_ID
         )
@@ -524,7 +533,10 @@ class InlineHelperProvenanceTests(unittest.TestCase):
     def test_builder_refuses_implicit_executed_notebook_overwrite(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / NOTEBOOK.name
-            output.write_bytes(NOTEBOOK.read_bytes())
+            output.write_text(
+                json.dumps(self._synthetic_executed_notebook(self.notebook)),
+                encoding="utf-8",
+            )
             before = output.read_bytes()
             with self.assertRaisesRegex(RuntimeError, "Refusing to overwrite"):
                 builder_main(["--output", str(output)])

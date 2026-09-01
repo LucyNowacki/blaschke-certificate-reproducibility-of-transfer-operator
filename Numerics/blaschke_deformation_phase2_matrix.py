@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 import csv
 import hashlib
 import json
@@ -15,9 +16,19 @@ import flint
 from flint import arb
 
 try:
-    from .blaschke_deformation_phase2_geometry import upper_text
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+        upper_text,
+    )
 except ImportError:
-    from blaschke_deformation_phase2_geometry import upper_text
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+        upper_text,
+    )
 
 
 MAP_LABEL = "blaschke_mu_0p3"
@@ -90,6 +101,38 @@ def _is_true(value: Any) -> bool:
     if isinstance(value, bool):
         return value
     return str(value).strip().lower() in {"true", "1", "yes", "y"}
+
+
+def _require_transport_same_geometry(
+    *,
+    config: Phase2MatrixConfig,
+    selected_geometry: dict[str, Any],
+    transport_record: dict[str, Any],
+) -> None:
+    """Reject a transport certificate computed at any different exact radius."""
+
+    for field, transport_field, geometry_field in (
+        ("Hardy radius", "r", "r_candidate"),
+        ("response radius", "rho", "rho"),
+        ("branch-image radius", "r_tau", "r_tau_interval_u"),
+    ):
+        try:
+            matches = Decimal(str(transport_record.get(transport_field, ""))) == Decimal(
+                str(selected_geometry.get(geometry_field, ""))
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"The matrix transport has an invalid exact {field}."
+            ) from exc
+        if not matches:
+            raise RuntimeError(
+                f"The matrix transport has a different exact {field}."
+            )
+    if config.N == 600 and config.M == 610:
+        require_canonical_selected_hardy_radius(
+            transport_record.get("r", ""),
+            label="Phase 2 matrix transport Hardy radius",
+        )
 
 
 def _theta_sum(N: int, value: arb) -> arb:
@@ -179,8 +222,25 @@ Functionality: Certify the starred and ordinary raw matrix factors in Arb.'''
         selected_geometry["configuration_digest"]
     ):
         raise RuntimeError("The transport and geometry configuration digests differ.")
+    _require_transport_same_geometry(
+        config=config,
+        selected_geometry=selected_geometry,
+        transport_record=transport_record,
+    )
     if not _is_true(transport_record.get("transport_certified", False)):
         raise RuntimeError("The matrix row cannot use an uncertified transport factor.")
+    production_contract = bool(config.N == 600 and config.M == 610)
+    q_gap_contract: dict[str, Any] = {}
+    if production_contract:
+        require_canonical_selected_hardy_radius(
+            selected_geometry["r_candidate"],
+            label="Phase 2 matrix selected Hardy radius",
+        )
+        q_gap_contract = exact_q_gap_contract(
+            r_tau_upper=selected_geometry["r_tau_interval_u"],
+            hardy_radius=selected_geometry["r_candidate"],
+            q_gap_target=selected_geometry["q_gap_target"],
+        )
 
     flint.ctx.prec = int(config.precision_bits)
     rho = arb(str(selected_geometry["rho"]))
@@ -217,10 +277,15 @@ Functionality: Certify the starred and ordinary raw matrix factors in Arb.'''
         "M": int(config.M),
         "m": int(config.M - config.N),
         "rho": str(selected_geometry["rho"]),
-        "r": str(selected_geometry["r_candidate"]),
+        "r": (
+            CANONICAL_SELECTED_HARDY_RADIUS_TEXT
+            if production_contract
+            else str(selected_geometry["r_candidate"])
+        ),
         "r_tau_interval_u": upper_text(r_tau),
         "q_out": upper_text(q_out),
         "q_gap": str(selected_geometry["q_gap_target"]),
+        **q_gap_contract,
         "q_star": upper_text(q_star),
         "two_B_out_star_interval_u": upper_text(two_output),
         "B_in_branch_image_interval_u": upper_text(input_tail),

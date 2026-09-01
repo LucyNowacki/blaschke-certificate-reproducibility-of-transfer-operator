@@ -30,6 +30,21 @@ except ImportError as exc:  # pragma: no cover - exercised in notebook setup
         "blaschke_deformation_certification requires python-flint"
     ) from exc
 
+try:
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
+except ImportError:
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+        require_canonical_selected_hardy_radius,
+    )
+
 
 MAP_LABEL = "blaschke_mu_0p3"
 
@@ -40,7 +55,7 @@ class InputTailCertificateConfig:
 
     N: int = 600
     rho: str = "2.725"
-    r: str = "2.473669807791324"
+    r: str = CANONICAL_SELECTED_HARDY_RADIUS_TEXT
     mu: str = "0.3"
     cells: int = 65536
     precision_bits: int = 192
@@ -162,6 +177,9 @@ Functionality: Certify branchwise and combined unresolved-input rows on the boun
         raise ValueError("prefix_terms must be positive")
     if config.cells < 4:
         raise ValueError("At least four boundary cells are required")
+    require_canonical_selected_hardy_radius(
+        config.r, label="input-tail Hardy radius"
+    )
 
     flint.ctx.prec = int(config.precision_bits)
     getcontext().prec = 100
@@ -335,8 +353,9 @@ class ResolvedResponseCertificateConfig:
 
     N: int = 600
     rho: str = "2.725"
-    r: str = "2.473669807791324"
-    r_tau: str = "2.2930919118225574"
+    r: str = CANONICAL_SELECTED_HARDY_RADIUS_TEXT
+    r_tau: str = "2.293091911822557449340820312"
+    q_gap_target: str = CANONICAL_SELECTED_Q_GAP_TARGET_TEXT
     phi_star_upper: str = "4.728315062820911"
     mu: str = "0.3"
     cells: int = 65536
@@ -381,6 +400,14 @@ Functionality: Certify the coherent resolved Chebyshev-packet row on the boundar
         raise ValueError("prefix_terms must be positive")
     if config.cells < 4:
         raise ValueError("At least four boundary cells are required")
+    require_canonical_selected_hardy_radius(
+        config.r, label="resolved-response Hardy radius"
+    )
+    q_gap_contract = exact_q_gap_contract(
+        r_tau_upper=config.r_tau,
+        hardy_radius=config.r,
+        q_gap_target=config.q_gap_target,
+    )
 
     flint.ctx.prec = int(config.precision_bits)
     getcontext().prec = 100
@@ -489,6 +516,7 @@ Functionality: Certify the coherent resolved Chebyshev-packet row on the boundar
     summary = {
         "map_label": MAP_LABEL,
         **asdict(config),
+        **q_gap_contract,
         "K": K,
         "C_resp_coherent_packet_cert_u": upper_float(coherent_max),
         "C_resp_whole_ellipse_fallback_u": upper_float(

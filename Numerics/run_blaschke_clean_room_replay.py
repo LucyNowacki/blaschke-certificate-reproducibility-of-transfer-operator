@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -12,20 +13,39 @@ import stat
 import subprocess
 import sys
 import time
+from typing import Mapping
 
-from prepare_blaschke_source_only_replay import (
-    BUNDLE_ROOT_NAME,
-    GENERATED_CLASSES,
-    IMMUTABLE_CLASSES,
-    INTERNAL_MANIFEST_NAME,
-    INVENTORY_NAME,
-    POLICY_RELATIVE,
-    RECEIPT_NAME,
-    SourceOnlyReplayError,
-    check_prepared_bundle,
-    prepare_bundle,
-    sha256_file,
-)
+
+def _load_preparation_helper() -> object:
+    """Load the exact sibling helper without trusting ambient import paths."""
+
+    helper_path = Path(__file__).resolve(strict=True).with_name(
+        "prepare_blaschke_source_only_replay.py"
+    )
+    if helper_path.is_symlink() or not helper_path.is_file():
+        raise ImportError(f"Replay preparation helper is not a regular file: {helper_path}.")
+    specification = importlib.util.spec_from_file_location(
+        "_blaschke_authenticated_preparation_helper", helper_path
+    )
+    if specification is None or specification.loader is None:
+        raise ImportError(f"Cannot load replay preparation helper: {helper_path}.")
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    return module
+
+
+_PREPARATION_HELPER = _load_preparation_helper()
+BUNDLE_ROOT_NAME = _PREPARATION_HELPER.BUNDLE_ROOT_NAME
+GENERATED_CLASSES = _PREPARATION_HELPER.GENERATED_CLASSES
+IMMUTABLE_CLASSES = _PREPARATION_HELPER.IMMUTABLE_CLASSES
+INTERNAL_MANIFEST_NAME = _PREPARATION_HELPER.INTERNAL_MANIFEST_NAME
+INVENTORY_NAME = _PREPARATION_HELPER.INVENTORY_NAME
+POLICY_RELATIVE = _PREPARATION_HELPER.POLICY_RELATIVE
+RECEIPT_NAME = _PREPARATION_HELPER.RECEIPT_NAME
+SourceOnlyReplayError = _PREPARATION_HELPER.SourceOnlyReplayError
+check_prepared_bundle = _PREPARATION_HELPER.check_prepared_bundle
+prepare_bundle = _PREPARATION_HELPER.prepare_bundle
+sha256_file = _PREPARATION_HELPER.sha256_file
 
 
 BLAS_THREAD_ENVIRONMENT = (
@@ -36,7 +56,138 @@ BLAS_THREAD_ENVIRONMENT = (
     "NUMEXPR_NUM_THREADS",
 )
 
-BLAS_RUNTIME_PREFLIGHT = r"""
+THEOREM_REQUIRED_GENERATED_PATHS = (
+    # Phase 2 clean upstream reconstruction (7) and its manifest (1).
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_radius_reoptimisation_balanced_highcell_scan.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/branch_image_radius_reoptimisation_balanced_highcell_scan.json",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_cert_N600.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_transport_cert_N600.json",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_single_space_row_N600_M610.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_single_space_row_N600_M610.json",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/phase2_clean_room_rebuild_manifest.json",
+    # Safe finite-M, resolved response, unresolved input, and final aggregation (7).
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_single_space_row_N600_M610_safe_GL.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/data/output_response_branch_image_prefactor_interval_cert_balanced_N600.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/data/output_response_coherent_packet_interval_cert_balanced_N600.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/output_response_branch_image_prefactor_interval_cert_balanced_N600.json",
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_input_tail_certificate_N600.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_input_tail_certificate_N600.json",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_response_prefactor_candidate_row_N600_M610.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_phase2_certified_single_space_row_N600_M610.csv",
+    # Authoritative 2048-bit Hardy enclosure (4).
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_certificate.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_certificate.json",
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048.pkl.gz",
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_balanced_hardy_reference_N600_M610_bits2048_diagnostic_midpoint.npz",
+    # Exact contour geometry, Schur proof, spectral rows, and Laurent witnesses (7).
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_24_target_N600_M610_contour_plan.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_24_target_N600_M610_validated_schur.npz",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_24_target_N600_M610_validated_schur.json",
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_24_target_N600_M610_spectral_certificate.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/blaschke_deformation_24_target_N600_M610_spectral_certificate.json",
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_24_target_N600_M610_laurent_mode_bounds.csv",
+    "Numerics/outputs/blaschke_deformation_certifier/data/blaschke_deformation_24_target_N600_M610_laurent_witness_reconstruction.csv",
+)
+
+
+def final_certificate_compatibility_row(
+    final_certificate: Mapping[str, object],
+) -> dict[str, object]:
+    """Build the notebook-compatible final Phase 2 row as a safe superset."""
+
+    def compatibility_value(value: object) -> object:
+        if value.__class__.__module__.startswith("mpmath"):
+            # Preserve the exact decimal serialization used by the Phase 2
+            # aggregation.  Binary64 conversion is reserved for the separate
+            # outward ``*_u`` diagnostic fields produced upstream.
+            return str(value)
+        return value
+
+    required = ("kappa_hat", "tail_components_interval", "certified")
+    missing = [key for key in required if key not in final_certificate]
+    if missing:
+        raise SourceOnlyReplayError(
+            f"Final Phase 2 certificate lacks compatibility fields: {missing}."
+        )
+    row = {
+        key: compatibility_value(value)
+        for key, value in final_certificate.items()
+    }
+    row.update(
+        {
+            "C_tr": row["kappa_hat"],
+            "output_tail_mode": "response-prefactor branch-image certificate",
+            "transport_route": "certified finite Chebyshev-gauge transport factor",
+            "tail_mismatch_certified": bool(row["tail_components_interval"]),
+            "branch_data_certified": True,
+            "certified": bool(row["certified"]),
+        }
+    )
+    return row
+
+
+PROJECT_IMPORT_PREFLIGHT = r"""
+import importlib.util
+import os
+from pathlib import Path
+
+authenticated_root = Path(os.environ["BLASCHKE_AUTHENTICATED_REPLAY_ROOT"]).resolve(strict=True)
+expected_origins = {
+    "Numerics.blaschke_deformation_phase2_pipeline": authenticated_root / "Numerics/blaschke_deformation_phase2_pipeline.py",
+    "Numerics.blaschke_deformation_spectral_certification": authenticated_root / "Numerics/blaschke_deformation_spectral_certification.py",
+    "Numerics.blaschke_deformation_contour_certification": authenticated_root / "Numerics/blaschke_deformation_contour_certification.py",
+    "blaschke_deformation_phase2_geometry": authenticated_root / "Numerics/blaschke_deformation_phase2_geometry.py",
+}
+authenticated_project_import_origins = {}
+for module_name, expected_origin in expected_origins.items():
+    specification = importlib.util.find_spec(module_name)
+    if specification is None or specification.origin is None:
+        raise RuntimeError(f"Cannot resolve authenticated project module {module_name!r}")
+    observed_origin = Path(specification.origin).resolve(strict=True)
+    if observed_origin != expected_origin.resolve(strict=True):
+        raise RuntimeError(
+            f"Project module {module_name!r} resolved outside the authenticated staged root: "
+            f"{observed_origin}"
+        )
+    authenticated_project_import_origins[module_name] = str(observed_origin)
+""".strip()
+
+THEOREM_ONLY_DRIVER = r"""
+from pathlib import Path
+import os
+import pandas as pd
+from Numerics.blaschke_deformation_phase2_pipeline import Phase2RebuildConfig, rebuild_phase2_inputs
+from Numerics.blaschke_deformation_phase2_finite_m import Phase2FiniteMConfig, certify_finite_m_completion
+from Numerics.blaschke_deformation_phase2_resolved_response import Phase2ResolvedResponseConfig, certify_resolved_response_completion
+from Numerics.blaschke_deformation_phase2_final_aggregation import Phase2FinalAggregationConfig, certify_final_phase2_aggregation
+from Numerics.blaschke_deformation_spectral_certification import HardyMatrixCertificateConfig, build_or_load_hardy_matrix_certificate
+from Numerics.run_blaschke_clean_room_replay import final_certificate_compatibility_row
+
+root = Path.cwd()
+output = root / "Numerics/outputs/blaschke_deformation_certifier"
+data = output / "data"
+reports = output / "reports"
+rebuild_phase2_inputs(Phase2RebuildConfig.production_n600_m610(), data_dir=data, report_dir=reports, process_workers=int(__import__("os").environ["MPMATH_PF_ASSEMBLY_WORKERS"]))
+certify_finite_m_completion(Phase2FiniteMConfig.production_n600_m610(), output_dir=output)
+certify_resolved_response_completion(Phase2ResolvedResponseConfig.production_n600_m610(), output_dir=output)
+final = certify_final_phase2_aggregation(Phase2FinalAggregationConfig.production_n600_m610(), output_dir=output)
+final_path = data / "branch_image_phase2_certified_single_space_row_N600_M610.csv"
+final_temporary = final_path.with_suffix(final_path.suffix + ".tmp")
+certificate = final_certificate_compatibility_row(final.final_certificate)
+pd.DataFrame([certificate]).to_csv(final_temporary, index=False)
+os.replace(final_temporary, final_path)
+hardy = build_or_load_hardy_matrix_certificate(
+    config=HardyMatrixCertificateConfig(),
+    output_dir=output,
+    source_files=(root / "Numerics/blaschke_deformation_spectral_certification.py",),
+    force=True,
+)
+if not bool(hardy.get("spectral_use_ready")):
+    raise RuntimeError("The authoritative 2048-bit Hardy certificate is not ready.")
+""".strip()
+
+BLAS_RUNTIME_PREFLIGHT = PROJECT_IMPORT_PREFLIGHT + "\n" + r"""
 import json
 import numpy as np
 import scipy.linalg as spla
@@ -59,6 +210,7 @@ if not records or invalid:
 print(json.dumps({
     "status": "single-threaded BLAS runtime verified",
     "blas": records,
+    "authenticated_project_import_origins": authenticated_project_import_origins,
 }, sort_keys=True))
 """.strip()
 
@@ -186,6 +338,8 @@ def _verify_generated_closure(
     root: Path,
     preparation: dict[str, object],
     expected_inventory_sha256: str,
+    theorem_only: bool = False,
+    not_before_ns: int | None = None,
 ) -> dict[str, object]:
     """Require every archive-declared generated member before finalization."""
 
@@ -321,20 +475,34 @@ def _verify_generated_closure(
         raise SourceOnlyReplayError(
             "The source-only replay inventory counts are malformed or inconsistent."
         )
-    generated_paths = sorted(relative.as_posix() for relative in generated)
-    if not generated_paths:
+    all_generated_paths = sorted(relative.as_posix() for relative in generated)
+    if not all_generated_paths:
         raise SourceOnlyReplayError(
             "The source-only replay inventory declares no generated members."
         )
+    if theorem_only:
+        generated_paths = list(THEOREM_REQUIRED_GENERATED_PATHS)
+        if len(generated_paths) != 27 or len(set(generated_paths)) != 27:
+            raise AssertionError("The fixed theorem-only closure must contain 27 paths.")
+        omitted = sorted(set(all_generated_paths) - set(generated_paths))
+        missing_declarations = sorted(set(generated_paths) - set(all_generated_paths))
+        if missing_declarations:
+            raise SourceOnlyReplayError(
+                "The source-only inventory omits theorem-required generated paths: "
+                f"{missing_declarations}."
+            )
+    else:
+        generated_paths = all_generated_paths
+        omitted = []
 
     if (
         type(on_disk_receipt.get("schema_version")) is not int
         or on_disk_receipt.get("schema_version") != 1
         or on_disk_receipt.get("status") != "source-only replay root prepared"
         or on_disk_receipt.get("bundle_root_name") != BUNDLE_ROOT_NAME
-        or on_disk_receipt.get("removed_paths") != generated_paths
+        or on_disk_receipt.get("removed_paths") != all_generated_paths
         or type(on_disk_receipt.get("removed_file_count")) is not int
-        or on_disk_receipt.get("removed_file_count") != len(generated_paths)
+        or on_disk_receipt.get("removed_file_count") != len(all_generated_paths)
         or type(on_disk_receipt.get("immutable_external_input_count")) is not int
         or on_disk_receipt.get("immutable_external_input_count")
         != observed_counts["immutable_external_input"]
@@ -370,15 +538,31 @@ def _verify_generated_closure(
         )
 
     missing: list[str] = []
+    generated_files: list[dict[str, object]] = []
     for value in generated_paths:
         relative = PurePosixPath(value)
-        if _regular_bundle_file(
+        path = _regular_bundle_file(
             root,
             relative,
             label="declared generated member",
             allow_missing=True,
-        ) is None:
+        )
+        if path is None:
             missing.append(value)
+            continue
+        stat_result = path.stat()
+        if not_before_ns is not None and stat_result.st_mtime_ns < not_before_ns:
+            raise SourceOnlyReplayError(
+                f"The theorem output was not freshly recreated in this run: {value}."
+            )
+        generated_files.append(
+            {
+                "path": value,
+                "bytes": stat_result.st_size,
+                "sha256": sha256_file(path),
+                "mtime_ns": stat_result.st_mtime_ns,
+            }
+        )
     if missing:
         raise SourceOnlyReplayError(
             f"Generated output closure is incomplete; missing={missing}."
@@ -408,6 +592,10 @@ def _verify_generated_closure(
         "generated_path_count": len(generated_paths),
         "generated_paths": generated_paths,
         "generated_paths_sha256": fingerprint,
+        "generated_files": generated_files,
+        "theorem_only": theorem_only,
+        "omitted_generated_paths": omitted,
+        "historical_diagnostics_authoritative": False if theorem_only else None,
         "fingerprint_serialization": (
             "UTF-8 JSON object with count and paths; ensure_ascii=true; "
             "separators=(',',':'); sort_keys=true"
@@ -429,6 +617,7 @@ def run_replay(
     prepare_only: bool,
     published_archive: Path | None,
     compute_only: bool = False,
+    theorem_only_compute: bool = False,
     expected_inventory_sha256: str | None = None,
     raw_comparison_receipt: Path | None = None,
 ) -> dict[str, object]:
@@ -437,17 +626,18 @@ def run_replay(
         raise RuntimeError(
             "The replay root must be the exact extracted scratch bundle, never a Git working tree."
         )
-    if compute_only and published_archive is not None:
+    compute_stop = compute_only or theorem_only_compute
+    if compute_stop and published_archive is not None:
         raise ValueError(
             "Compute-only replay cannot compare a published archive before "
             "normalization and provenance refresh."
         )
-    if compute_only and raw_comparison_receipt is not None:
+    if compute_stop and raw_comparison_receipt is not None:
         raise ValueError(
             "Compute-only replay stops before raw comparison and cannot consume "
             "a comparison receipt."
         )
-    if not prepare_only and not compute_only and raw_comparison_receipt is None:
+    if not prepare_only and not compute_stop and raw_comparison_receipt is None:
         raise ValueError(
             "Full publication replay requires an external hash-bound raw "
             "comparison receipt."
@@ -465,33 +655,81 @@ def run_replay(
         return {"status": "prepared", "preparation": preparation, "commands": []}
     assert expected_inventory_sha256 is not None
 
+    if theorem_only_compute:
+        stale = [
+            value
+            for value in THEOREM_REQUIRED_GENERATED_PATHS
+            if _regular_bundle_file(
+                root,
+                PurePosixPath(value),
+                label="pre-compute theorem output",
+                allow_missing=True,
+            )
+            is not None
+        ]
+        if stale:
+            raise SourceOnlyReplayError(
+                "Theorem-only replay did not begin from absent generated evidence: "
+                f"{stale}."
+            )
+
     if assembly_workers < 1 or surface_workers < 1:
         raise ValueError("Worker counts must be positive.")
     environment = dict(os.environ)
     environment.update({
         "BLASCHKE_FORCE_HARDY_MATRIX": "1",
         "BLASCHKE_FORCE_CONTOURS": "1",
-        "BLASCHKE_FORCE_HISTORICAL_PHASE4": "1",
         "MPMATH_PF_ASSEMBLY_WORKERS": str(assembly_workers),
+        # PYTHONSAFEPATH prevents the interpreter from implicitly trusting the
+        # current working directory or a script directory.  These are the only
+        # two project import roots supplied to child processes, and ``root`` has
+        # already been bound to the caller-authenticated replay inventory.
+        "PYTHONSAFEPATH": "1",
+        "PYTHONPATH": os.pathsep.join((str(root), str(root / "Numerics"))),
+        "BLASCHKE_AUTHENTICATED_REPLAY_ROOT": str(root),
         **{key: "1" for key in BLAS_THREAD_ENVIRONMENT},
     })
+    if theorem_only_compute:
+        environment["BLASCHKE_SKIP_HARDY_STARTING_AUDIT"] = "1"
+        environment["BLASCHKE_SKIP_HISTORICAL_PHASE4"] = "1"
+        environment.pop("BLASCHKE_FORCE_HISTORICAL_PHASE4", None)
+    else:
+        environment["BLASCHKE_FORCE_HISTORICAL_PHASE4"] = "1"
     python = sys.executable
-    commands = [
-        [python, "-B", "-c", BLAS_RUNTIME_PREFLIGHT],
-        [python, "-B", "Numerics/build_blaschke_deformation_certifier.py"],
-        [python, "-B", "Numerics/build_blaschke_deformation_thesis_math_notebook.py"],
-        [
-            python, "-u", "-B",
-            "Numerics/blaschke_deformation_historical_phase4.py",
-            "--production", "--assembly-workers", str(assembly_workers),
-            "--surface-workers", str(surface_workers), "--force",
-        ],
-        [
-            python, "-u", "-B", "Numerics/execute_notebook_incremental.py",
-            "Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-            "--kernel-name", kernel_name,
-        ],
-    ]
+    if theorem_only_compute:
+        commands = [
+            [python, "-B", "-c", BLAS_RUNTIME_PREFLIGHT],
+            [python, "-B", "Numerics/build_blaschke_deformation_certifier.py"],
+            [python, "-B", "Numerics/build_blaschke_deformation_thesis_math_notebook.py"],
+            [python, "-u", "-B", "-c", THEOREM_ONLY_DRIVER],
+            [
+                python,
+                "-u",
+                "-B",
+                "Numerics/blaschke_deformation_contour_certification.py",
+                "--root",
+                ".",
+                "--force",
+            ],
+        ]
+    else:
+        commands = [
+            [python, "-B", "-c", BLAS_RUNTIME_PREFLIGHT],
+            [python, "-B", "Numerics/build_blaschke_deformation_certifier.py"],
+            [python, "-B", "Numerics/build_blaschke_deformation_thesis_math_notebook.py"],
+            [
+                python, "-u", "-B",
+                "Numerics/blaschke_deformation_historical_phase4.py",
+                "--production", "--assembly-workers", str(assembly_workers),
+                "--surface-workers", str(surface_workers), "--force",
+            ],
+            [
+                python, "-u", "-B", "Numerics/execute_notebook_incremental.py",
+                "Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
+                "--kernel-name", kernel_name,
+            ],
+        ]
+    run_started_ns = time.time_ns()
     command_records = [
         _run(command, root=root, environment=environment) for command in commands
     ]
@@ -506,30 +744,56 @@ def run_replay(
         root=root,
         preparation=preparation,
         expected_inventory_sha256=expected_inventory_sha256,
+        theorem_only=theorem_only_compute,
+        not_before_ns=run_started_ns if theorem_only_compute else None,
     )
-    forced_environment = {
-        key: environment[key]
-        for key in (
-            "BLASCHKE_FORCE_HARDY_MATRIX",
-            "BLASCHKE_FORCE_CONTOURS",
-            "BLASCHKE_FORCE_HISTORICAL_PHASE4",
-            "MPMATH_PF_ASSEMBLY_WORKERS",
-            *BLAS_THREAD_ENVIRONMENT,
+    forced_keys = [
+        "BLASCHKE_FORCE_HARDY_MATRIX",
+        "BLASCHKE_FORCE_CONTOURS",
+        "MPMATH_PF_ASSEMBLY_WORKERS",
+        "PYTHONSAFEPATH",
+        "PYTHONPATH",
+        "BLASCHKE_AUTHENTICATED_REPLAY_ROOT",
+        *BLAS_THREAD_ENVIRONMENT,
+    ]
+    if theorem_only_compute:
+        forced_keys.extend(
+            (
+                "BLASCHKE_SKIP_HARDY_STARTING_AUDIT",
+                "BLASCHKE_SKIP_HISTORICAL_PHASE4",
+            )
         )
-    }
-    if compute_only:
+    else:
+        forced_keys.append("BLASCHKE_FORCE_HISTORICAL_PHASE4")
+    forced_environment = {key: environment[key] for key in forced_keys}
+    if compute_stop:
         receipt_path = root / "clean-room-compute-only-evidence.json"
         result = {
-            "receipt_schema": "blaschke-clean-room-compute-only-v1",
-            "status": "compute-only source reconstruction complete",
-            "stage": "compute-only",
+            "receipt_schema": (
+                "blaschke-theorem-only-compute-v1"
+                if theorem_only_compute
+                else "blaschke-clean-room-compute-only-v1"
+            ),
+            "status": (
+                "theorem-only source reconstruction complete"
+                if theorem_only_compute
+                else "compute-only source reconstruction complete"
+            ),
+            "stage": "theorem-only-compute" if theorem_only_compute else "compute-only",
             "normalization_run": False,
             "provenance_refresh_run": False,
             "published_comparison_run": False,
             "preparation": preparation,
             "python_executable": python,
             "kernel_name": kernel_name,
+            "kernel_used_for_theorem_compute": False if theorem_only_compute else True,
             "forced_rebuild_environment": forced_environment,
+            "historical_phase4_diagnostics_skipped": theorem_only_compute,
+            "historical_phase4_diagnostics_authoritative": False,
+            "hardy_1024_diagnostic_skipped": theorem_only_compute,
+            "hardy_1024_diagnostic_authoritative": False,
+            "run_started_ns": run_started_ns,
+            "run_finished_ns": time.time_ns(),
             "commands": command_records,
             "reproducibility_plan_alias": plan_alias.relative_to(root).as_posix(),
             "generated_closure": generated_closure,
@@ -601,6 +865,14 @@ def main() -> None:
             "explicit receipt, before normalization, provenance, or comparison."
         ),
     )
+    stage.add_argument(
+        "--theorem-only-compute",
+        action="store_true",
+        help=(
+            "Recompute only the 27 theorem-required artifacts, skipping historical "
+            "Phase 4 and the non-authoritative 1024-bit starting audit."
+        ),
+    )
     parser.add_argument("--published-archive", type=Path)
     parser.add_argument(
         "--raw-comparison-receipt",
@@ -626,6 +898,7 @@ def main() -> None:
         prepare_only=args.prepare_only,
         published_archive=args.published_archive,
         compute_only=args.compute_only,
+        theorem_only_compute=args.theorem_only_compute,
         expected_inventory_sha256=args.expected_inventory_sha256,
         raw_comparison_receipt=args.raw_comparison_receipt,
     )

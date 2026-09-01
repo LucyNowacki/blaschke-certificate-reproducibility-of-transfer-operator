@@ -265,7 +265,7 @@ class Config:
     rho: str = "2.725"
     R: str = "2.725"
     eta: str = "2.725"
-    r_target: str = "2.47367"
+    r_target: str = "2.473669807791324109321273260"
     selected_map_label: str = "blaschke_mu_0p3"
     smoke_mode: bool = os.environ.get("TRANSFER_LAB_SMOKE", "0") in {"1", "true", "True"}
     max_power: int = 25

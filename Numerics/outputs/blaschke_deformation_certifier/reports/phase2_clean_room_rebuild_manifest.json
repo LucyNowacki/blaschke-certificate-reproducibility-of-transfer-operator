@@ -9,6 +9,7 @@
     "N": 600,
     "cells": 65536,
     "expected_selected_q_gap": "0.927",
+    "expected_selected_r": "2.473669807791324109321273260",
     "expected_selected_rho": "2.725",
     "geometry_precision_bits": 192,
     "matrix_precision_bits": 384,
@@ -18,32 +19,32 @@
   "legacy_seed_dependency": false,
   "map_label": "blaschke_mu_0p3",
   "outputs": {
-    "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_single_space_row_N600_M610.csv": "88d23d2033b76f314eb34a56a31dc6f91c2963dcb5da922410c21d8e637cf145",
-    "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_cert_N600.csv": "6f4a6c124b0247c3957fc03fb4ae7f338abcf637ef811e3212753c91f78d96ba",
-    "outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz": "9f3d39154217340b36c7067095f52ead46c4aa6bac4145ff6499db0c4270db58",
-    "outputs/blaschke_deformation_certifier/data/branch_image_radius_reoptimisation_balanced_highcell_scan.csv": "85ed4ba755d808884391de5f7208ae1a126bcad6a8a92602001dae2cfe57afbe",
-    "outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_single_space_row_N600_M610.json": "46a4507aa7a3f15ff755f22885745baac9b5a377d236d2513ebe8a3566e41851",
-    "outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_transport_cert_N600.json": "394b627869384d23a36db2eb9dc44aeee64babf7ed6a3b3f584e8d91ec2cdd87",
-    "outputs/blaschke_deformation_certifier/reports/branch_image_radius_reoptimisation_balanced_highcell_scan.json": "38dcf3cc61341ead08323871c4e75bc9a55d892e290646fbeec671cd9536da9a"
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_single_space_row_N600_M610.csv": "ad1a86dbc66c0bbc4f5091b6e44366b3bc77b07ce650fb1b1e54eae875032f19",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_cert_N600.csv": "38fe938da9bb99f7450831a9f8cf1280de631c3f858d6ffd38f57f42499eee1c",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_balanced_candidate_transport_inverse_witness_N600.npz": "90de31fdc3624d759220c89aae69fdb8e5949faf961da6aac3e5b31dc07caa30",
+    "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_radius_reoptimisation_balanced_highcell_scan.csv": "b34b93c32a947747416f050aca05ed2070e659d0166738844b193722986a96bd",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_single_space_row_N600_M610.json": "5cf3356c7e8de70573c21653e6db669e3a2dff2cec86dd44ec9fb548dc8e6822",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/branch_image_balanced_candidate_transport_cert_N600.json": "cd6f9adbcd58dd63895f71a0f73b0c371c221c852c12f943b8b48c8f097e434c",
+    "Numerics/outputs/blaschke_deformation_certifier/reports/branch_image_radius_reoptimisation_balanced_highcell_scan.json": "83f9f946ddb0cff0dab717932a0ff2b8f5d937561d7640771ec7dfd172cc9d30"
   },
   "process_workers": 24,
-  "producer_schema": "phase2-pipeline-v2",
+  "producer_schema": "phase2-pipeline-v3",
   "producer_sources": {
     "geometry": {
       "path": "Numerics/blaschke_deformation_phase2_geometry.py",
-      "sha256": "d72256c46cd89d6b65f19a9ce7f913a7b087271550c9d755b67e85d108b45813"
+      "sha256": "32acf4126e12ad954f4362e47fb2eaec80aa42e1981236d638a94741238a74e8"
     },
     "matrix": {
       "path": "Numerics/blaschke_deformation_phase2_matrix.py",
-      "sha256": "23d87bcdfb12dc13fc47160b1231b324fc2a7b82ba21a66b429a655df9b57bce"
+      "sha256": "3d76d72ae71e3970d35c19eba5a5dbc9b848e95eb99e40700437c1500683d3a3"
     },
     "pipeline": {
       "path": "Numerics/blaschke_deformation_phase2_pipeline.py",
-      "sha256": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5"
+      "sha256": "f91794e2f5d62199682108d1484e747c2d938224613d9aec5b1dbb3aa47567d9"
     },
     "transport": {
       "path": "Numerics/blaschke_deformation_phase2_transport.py",
-      "sha256": "4f38bcdbcc78ffeceacc895227c13c5e59449f8339dc4dca13387d9c594bc89a"
+      "sha256": "5f8fee9557a1728a736b3536998b53603a6d50daadb5b7b9c6813dd4c4532658"
     }
   },
   "resolved_response_stage": "blaschke_deformation_phase2_resolved_response.py, invoked by Cell 24B",
@@ -64,17 +65,22 @@
     "branch_image_B_in_u": "3.52279983991245203840646592600000000000000000000000000000000000000000000000000000E-20",
     "branch_image_in_Er_sufficient": true,
     "cells": 65536,
-    "configuration_digest": "8bd24292d75f65571d0f5b8027c16c6d6eb43f0f9ba0cd1d8e361074f8baf66c",
+    "configuration_digest": "1f375f3ebbce49a3f49d0fc969019fca7e15e14819be7275e2212bb07a7cf4dd",
     "input_over_output": "7.46862185057023728984871159200000000000000000000000000000000000000000000000000000E-1",
     "max_abs_mu_cos_u": "9.79412461173394977009820650000000000000000000000000000000000000000000000000000000E-1",
     "max_input_cell": 25350,
     "min_abs_1_minus_y2_l": "4.07502769376151263713836669900000000000000000000000000000000000000000000000000000E-2",
     "nearest_basic_singularity_radius": "2.74952165887108587733433227500000000000000000000000000000000000000000000000000000E+0",
     "phi_star_interval_u": "4.72831506282091140747070312500000000000000000000000000000000000000000000000000000E+0",
-    "producer_schema": "phase2-geometry-v2",
+    "producer_schema": "phase2-geometry-v3",
     "q_gap_certified_u": "9.27000000000000000000000000000000000000000000000000000000000000000000000000000000E-1",
+    "q_gap_derived_decimal_text": "9.26999999999999999999999999991914846542167451396937859056592947604137622546055505279316299766874860285573953029E-1",
+    "q_gap_derived_exact_denominator": "618417451947831027330318315",
+    "q_gap_derived_exact_numerator": "573272977955639362335205078",
+    "q_gap_derived_le_target": true,
     "q_gap_grid_index": 2,
     "q_gap_target": "0.927",
+    "q_gap_target_text": "0.927",
     "q_out": "9.07768736804155636448173673400000000000000000000000000000000000000000000000000000E-1",
     "q_star": "9.27000000000000000000000000000000000000000000000000000000000000000000000000000000E-1",
     "r_candidate": "2.47366980779132410932127326000000000000000000000000000000000000000000000000000000E+0",

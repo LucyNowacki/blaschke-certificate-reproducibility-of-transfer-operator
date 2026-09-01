@@ -1,0 +1,78 @@
+name: certificate-equivalent replay
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13.2"
+          cache: pip
+      - name: Install focused-test dependency
+        run: python -m pip install --only-binary=:all: numpy==2.3.2
+      - name: Validate release JSON and lock syntax
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for name in (
+              "release/blaschke-certificate-semantic-policy.json",
+              "release/source-only-replay-inventory.json",
+              "release/reproducibility_manifest.json",
+          ):
+              json.loads(Path(name).read_text(encoding="utf-8"))
+          for name in ("conda-explicit-lock.txt", "pip-requirements-lock.txt"):
+              if not Path(name).read_text(encoding="utf-8").strip():
+                  raise SystemExit(f"empty lock: {name}")
+          PY
+      - name: Compile certificate workflow sources
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/certificate-pycache
+        run: |
+          python -m py_compile \
+            Numerics/verify_blaschke_certificate_equivalence.py \
+            Numerics/run_blaschke_certificate_reproduction.py \
+            Numerics/run_blaschke_clean_room_replay.py \
+            Numerics/stage_blaschke_certificate_replay.py \
+            Numerics/test_verify_blaschke_certificate_equivalence.py
+      - name: Run focused semantic tests
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -B -m unittest -v Numerics/test_verify_blaschke_certificate_equivalence.py
+      - name: Authenticate finite Git release inventory
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: >-
+          python -B Numerics/stage_blaschke_certificate_replay.py
+          --source-root . --check-only
+          --expected-git-commit "${{ github.sha }}"
+      - name: Check wrapper syntax
+        run: bash -n reproduce-certificate.sh
+
+  full-replay:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recompute and verify certificate
+        run: >-
+          ./reproduce-certificate.sh full
+          --expected-git-commit "${{ github.sha }}"
+          --receipt "$RUNNER_TEMP/certificate-equivalence-receipt.json"
+      - name: Upload canonical receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: certificate-equivalence-receipt
+          path: ${{ runner.temp }}/certificate-equivalence-receipt.json
+          if-no-files-found: error

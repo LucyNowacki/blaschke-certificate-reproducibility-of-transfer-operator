@@ -20,6 +20,10 @@ EXCLUDED_PATHS = frozenset(
         "MANIFEST.sha256",
         "Numerics/blaschke_deformation_certifier_thesis_math_backup_pre_appendix_20260823.ipynb",
         "Numerics/blaschke_deformation_certifier_thesis_math_dist.ipynb",
+        # These two generated release-authentication files bind MANIFEST.sha256.
+        # Excluding them here prevents an impossible cross-manifest hash cycle.
+        "release/reproducibility_manifest.json",
+        "release/source-only-replay-inventory.json",
     }
 )
 EXCLUDED_PREFIXES = (

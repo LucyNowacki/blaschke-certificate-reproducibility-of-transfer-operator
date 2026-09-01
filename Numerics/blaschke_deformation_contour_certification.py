@@ -16,10 +16,12 @@ import argparse
 from contextlib import contextmanager
 import csv
 from dataclasses import asdict, dataclass
+from decimal import Decimal
 from fractions import Fraction
 import gc
 import gzip
 import hashlib
+import io
 import json
 import math
 from pathlib import Path
@@ -43,16 +45,28 @@ except ImportError as exc:  # pragma: no cover - checked by the notebook
     ) from exc
 
 from blaschke_deformation_spectral_certification import (
+    CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
     logical_source_hashes,
     load_exact_dyadic_midpoint,
     normalise_source_hashes,
+    require_canonical_selected_hardy_radius,
     sha256_file,
 )
+try:
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+    )
+except ImportError:
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT,
+        exact_q_gap_contract,
+    )
 
 
 MAP_LABEL = "blaschke_mu_0p3"
-SCHEMA = "blaschke-deformation-24-contour-hybrid-v3"
-SCHUR_SCHEMA = "blaschke-deformation-exact-dyadic-schur-v1"
+SCHEMA = "blaschke-deformation-24-contour-hybrid-v4"
+SCHUR_SCHEMA = "blaschke-deformation-exact-dyadic-schur-v2"
 
 COUNT_METHOD_SCHUR_DIAGONAL = "certified Schur-diagonal algebraic count"
 MOAT_METHOD_SCHUR_TRIANGULAR = (
@@ -73,6 +87,7 @@ REQUIRED_EPSILON_CERTIFICATION_GATES = (
     "transport_certified",
     "matrix_certified",
     "tail_components_interval",
+    "q_gap_derived_le_target",
     "input_boundary_cover_certified",
     "input_exact_prefix_certified",
     "input_geometric_remainder_certified",
@@ -96,7 +111,7 @@ class ContourCertificateConfig:
     N: int = 600
     M: int = 610
     rho: str = "2.725"
-    r: str = "2.473669807791324"
+    r: str = CANONICAL_SELECTED_HARDY_RADIUS_TEXT
     mu_numerator: int = 3
     mu_denominator: int = 10
     alpha_numerator: int = 13
@@ -406,6 +421,27 @@ def _csv_bool(value: object) -> bool:
     return str(value).strip().lower() in {"true", "1", "yes", "y"}
 
 
+def _is_sha256_text(value: object) -> bool:
+    text = str(value)
+    if len(text) != 64:
+        return False
+    try:
+        int(text, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def _is_finite_nonnegative_number(value: object) -> bool:
+    """Reject malformed persisted numeric fields without raising on cache reuse."""
+
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return False
+    return bool(math.isfinite(numeric) and numeric >= 0.0)
+
+
 def _runtime_fingerprint() -> dict[str, object]:
     """Record the binary64 toolchain that determines proposal tensor bytes."""
 
@@ -534,7 +570,6 @@ def _load_epsilon(
         "N": str(config.N),
         "M": str(config.M),
         "rho": str(config.rho),
-        "r": str(config.r),
         "phase2_aggregation_status": (
             "authoritative standalone final-aggregation refresh"
         ),
@@ -542,6 +577,28 @@ def _load_epsilon(
     for key, value in expected.items():
         if str(row.get(key, "")) != value:
             raise ValueError(f"Deterministic epsilon geometry mismatch for {key}.")
+    require_canonical_selected_hardy_radius(
+        config.r, label="contour configuration Hardy radius"
+    )
+    require_canonical_selected_hardy_radius(
+        row.get("r", ""), label="deterministic epsilon Hardy radius"
+    )
+    if Decimal(str(row.get("r", ""))) != Decimal(config.r):
+        raise ValueError("Deterministic epsilon geometry mismatch for r.")
+    if Decimal(str(row.get("q_gap", ""))) != Decimal(
+        CANONICAL_SELECTED_Q_GAP_TARGET_TEXT
+    ):
+        raise ValueError("Deterministic epsilon geometry mismatch for q_gap.")
+    q_gap_contract = exact_q_gap_contract(
+        r_tau_upper=row.get("r_tau_interval_u", ""),
+        hardy_radius=row.get("r", ""),
+        q_gap_target=row.get("q_gap", ""),
+    )
+    for key, expected_value in q_gap_contract.items():
+        if str(row.get(key, "")) != str(expected_value):
+            raise ValueError(
+                f"Deterministic epsilon q_gap contract mismatch for {key}."
+            )
     failed_gates = tuple(
         gate
         for gate in REQUIRED_EPSILON_CERTIFICATION_GATES
@@ -575,11 +632,15 @@ def _load_matrix_report(
         "N": int(config.N),
         "M": int(config.M),
         "rho": str(config.rho),
-        "r": str(config.r),
     }
     for key, value in expected.items():
         if str(report.get(key)) != str(value):
             raise ValueError(f"Hardy matrix geometry mismatch for {key}.")
+    require_canonical_selected_hardy_radius(
+        report.get("r", ""), label="Hardy matrix report radius"
+    )
+    if Decimal(str(report.get("r", ""))) != Decimal(config.r):
+        raise ValueError("Hardy matrix geometry mismatch for r.")
     if not bool(report.get("matrix_enclosure_certified")):
         raise ArithmeticError("The mathematical Hardy matrix is not certified.")
     if not bool(report.get("reference_is_exact_dyadic")):
@@ -598,6 +659,79 @@ def _load_exact_payload_metadata(payload_path: Path) -> dict[str, object]:
     return payload
 
 
+def _exact_dyadic_schur_upper_triangle_audit(
+    triangular: np.ndarray,
+) -> dict[str, object]:
+    """Prove that every exact-binary entry strictly below Schur ``T`` is zero."""
+
+    triangular = np.asarray(triangular)
+    if triangular.dtype != np.dtype(np.complex128):
+        raise TypeError(
+            "The exact-dyadic Schur T array must already have complex128 dtype; "
+            f"observed {triangular.dtype}."
+        )
+    if triangular.ndim != 2 or triangular.shape[0] != triangular.shape[1]:
+        raise ValueError("The Schur factor must be a square complex128 matrix.")
+    if not np.isfinite(triangular).all():
+        raise ArithmeticError("The Schur factor contains a non-finite exact dyadic.")
+
+    order = int(triangular.shape[0])
+    entry_count = order * (order - 1) // 2
+    zero_count = 0
+    first_nonzero: tuple[int, int, complex] | None = None
+    for row in range(1, order):
+        for column in range(row):
+            value = complex(triangular[row, column])
+            if value == 0j:
+                zero_count += 1
+            elif first_nonzero is None:
+                first_nonzero = (row, column, value)
+    if zero_count != entry_count:
+        assert first_nonzero is not None
+        row, column, value = first_nonzero
+        raise ArithmeticError(
+            "The exact-dyadic Schur factor is not upper triangular: "
+            f"T[{row},{column}]={value!r}; verified {zero_count} of "
+            f"{entry_count} below-diagonal entries as exact zero."
+        )
+    return {
+        "exact_dyadic_schur_below_diagonal_entry_count": entry_count,
+        "exact_dyadic_schur_below_diagonal_zero_count": zero_count,
+        "exact_dyadic_schur_below_diagonal_all_zero": True,
+        "exact_dyadic_schur_upper_triangular_certified": True,
+    }
+
+
+def _load_and_audit_exact_dyadic_schur_cache(
+    cache_path: Path,
+    *,
+    expected_sha256: object,
+) -> dict[str, object]:
+    """Bind a cached Schur factor to its bytes, dtype, and exact zero pattern."""
+
+    if not isinstance(expected_sha256, str) or len(expected_sha256) != 64:
+        raise ValueError("The cached Schur report has no valid cache_sha256 field.")
+    try:
+        int(expected_sha256, 16)
+    except ValueError as exc:
+        raise ValueError("The cached Schur report has an invalid cache_sha256 field.") from exc
+
+    cache_bytes = Path(cache_path).read_bytes()
+    observed_sha256 = hashlib.sha256(cache_bytes).hexdigest()
+    if observed_sha256 != expected_sha256:
+        raise ArithmeticError("The cached Schur NPZ digest does not match its report.")
+    with np.load(io.BytesIO(cache_bytes), allow_pickle=False) as payload:
+        triangular = payload["T"]
+        if triangular.dtype != np.dtype(np.complex128):
+            raise TypeError(
+                "The cached Schur T array must already have exact complex128 dtype; "
+                f"observed {triangular.dtype}."
+            )
+        if triangular.ndim != 2 or triangular.shape[0] != triangular.shape[1]:
+            raise ValueError("The cached Schur T array must be square.")
+        return _exact_dyadic_schur_upper_triangle_audit(triangular)
+
+
 def _validate_schur_similarity(
     A_float: np.ndarray,
     A_exact: acb_mat,
@@ -613,6 +747,7 @@ Functionality: Validate an exact-binary Schur intertwining against exact A_N^cir
             output="complex",
             check_finite=True,
         )
+    triangle_audit = _exact_dyadic_schur_upper_triangle_audit(triangular)
     transform_exact = _numpy_to_acb_exact(transform)
     triangular_exact = _numpy_to_acb_exact(triangular)
     identity = acb_mat(int(config.N), int(config.N), 1)
@@ -652,6 +787,7 @@ Functionality: Validate an exact-binary Schur intertwining against exact A_N^cir
         "eta_schur_upper": _upper_float(eta_schur),
         "eta_schur_upper_text": _upper_text(eta_schur),
         "schur_similarity_certified": True,
+        **triangle_audit,
         "similarity_identity": "A_N_circ Q = Q T + R",
         "elapsed_seconds": time.time() - started,
         "status": "interval-certified exact-binary Schur similarity",
@@ -769,6 +905,12 @@ def _schur_contour_attempt(
 ) -> dict[str, object]:
     '''Explanation: This is the finite-to-infinite bridge: the Schur diagonal gives the finite count, the triangular inverse gives the moat, and a strict small-gain inequality prevents the exact operator homotopy from crossing the contour.
 Functionality: Derive one Schur-diagonal count, triangular complete-circle moat, perturbation transports, and finite-to-exact small-gain verdict.'''
+    if not bool(
+        schur_report.get("exact_dyadic_schur_upper_triangular_certified")
+    ):
+        raise ArithmeticError(
+            "The exact-dyadic Schur lower-triangle zero gate is absent or false."
+        )
     diagonal_geometry = _certified_schur_diagonal_geometry(
         triangular, contour
     )
@@ -839,6 +981,7 @@ Functionality: Derive one Schur-diagonal count, triangular complete-circle moat,
         "schur_diagonal_membership_certified": bool(
             diagonal_geometry["schur_diagonal_membership_certified"]
         ),
+        "exact_dyadic_schur_upper_triangular_certified": True,
         "minimum_schur_diagonal_boundary_distance_lower": _lower_float(
             triangular_data["minimum_diagonal_boundary_distance"]
         ),
@@ -951,6 +1094,12 @@ def _laurent_contour_certificate(
     '''Explanation: If a Laurent matrix polynomial has residual norm below one everywhere on the circle, a Neumann argument proves the true resolvent exists there. This supplies the rigorous moat when the triangular Schur bound is too pessimistic.
 Functionality: Validate a complete-circle Laurent approximate inverse in Arb. The Laurent approximate inverse certifies the complete-circle resolvent moat only. The finite algebraic count is obtained from the validated Schur diagonal and transported through the matrix homotopies.'''
 
+    if not bool(
+        schur_report.get("exact_dyadic_schur_upper_triangular_certified")
+    ):
+        raise ArithmeticError(
+            "The exact-dyadic Schur lower-triangle zero gate is absent or false."
+        )
     started = time.time()
     diagonal_geometry = _certified_schur_diagonal_geometry(
         triangular, contour
@@ -1075,6 +1224,7 @@ Functionality: Validate a complete-circle Laurent approximate inverse in Arb. Th
         "schur_diagonal_membership_certified": bool(
             diagonal_geometry["schur_diagonal_membership_certified"]
         ),
+        "exact_dyadic_schur_upper_triangular_certified": True,
         "minimum_schur_diagonal_boundary_distance_lower": _lower_float(
             diagonal_geometry["minimum_diagonal_boundary_distance"]
         ),
@@ -1226,42 +1376,160 @@ def _laurent_witness_rows(
 def _laurent_witness_records_are_reusable(
     witness_rows: list[dict[str, str]],
     certificate_rows: list[dict[str, str]],
+    mode_rows: list[dict[str, str]],
+    *,
+    expected_precision_bits: int = 256,
 ) -> bool:
-    """Check the persisted evidence for all seven reconstructed tensors."""
+    """Bind all persisted Laurent tables without requiring historical byte parity."""
 
-    if len(witness_rows) != len(_LAURENT_PROPOSALS):
+    expected_mode_row_count = sum(
+        sample_count + 1 for _, sample_count in _LAURENT_PROPOSALS.values()
+    )
+    if (
+        len(witness_rows) != len(_LAURENT_PROPOSALS)
+        or len(mode_rows) != expected_mode_row_count
+        or {row.get("name", "") for row in witness_rows}
+        != set(_LAURENT_PROPOSALS)
+    ):
+        return False
+    laurent_certificate_rows = [
+        row
+        for row in certificate_rows
+        if row.get("moat_method") == MOAT_METHOD_LAURENT
+    ]
+    if len(laurent_certificate_rows) != len(_LAURENT_PROPOSALS):
         return False
     certificate_by_name = {
         row.get("name", ""): row
-        for row in certificate_rows
-        if row.get("moat_method") == MOAT_METHOD_LAURENT
+        for row in laurent_certificate_rows
     }
     if set(certificate_by_name) != set(_LAURENT_PROPOSALS):
         return False
+    modes_by_name: dict[str, list[dict[str, str]]] = {
+        name: [] for name in _LAURENT_PROPOSALS
+    }
+    for mode_row in mode_rows:
+        name = mode_row.get("name", "")
+        if name not in modes_by_name:
+            return False
+        modes_by_name[name].append(mode_row)
+    expected_rank_by_name = {
+        name: rank for rank, name in enumerate(_LAURENT_PROPOSALS, 18)
+    }
     for witness in witness_rows:
         name = witness.get("name", "")
         certificate = certificate_by_name.get(name)
         if certificate is None:
             return False
-        expected_digest = _LAURENT_REFERENCE_DIGESTS.get(name)
-        observed_digest = witness.get("coefficient_sha256")
+        try:
+            proposal_sample_count = int(_LAURENT_PROPOSALS[name][1])
+            expected_modes = tuple(
+                sorted(
+                    index
+                    if index <= proposal_sample_count // 2
+                    else index - proposal_sample_count
+                    for index in range(proposal_sample_count)
+                )
+            )
+            expected_mode_support = set(expected_modes) | {max(expected_modes) + 1}
+            target_mode_rows = modes_by_name[name]
+            mode_by_index = {
+                int(row.get("mode", "")): row for row in target_mode_rows
+            }
+            witness_residual = Decimal(
+                str(witness.get("exact_dyadic_residual_sum_upper", ""))
+            )
+            certificate_residual = Decimal(
+                str(certificate.get("exact_dyadic_residual_sum_upper", ""))
+            )
+            theorem_precision_bits = int(
+                certificate.get("theorem_precision_bits", 0)
+            )
+            expected_digest = _LAURENT_REFERENCE_DIGESTS.get(name)
+            observed_digest = witness.get("coefficient_sha256")
+            reference_digest = witness.get("reference_coefficient_sha256")
+            reference_matches = bool(
+                expected_digest and observed_digest == expected_digest
+            )
+        except (ArithmeticError, KeyError, TypeError, ValueError):
+            return False
         if not (
-            expected_digest
-            and observed_digest == expected_digest
+            _is_sha256_text(expected_digest)
+            and _is_sha256_text(observed_digest)
+            and int(witness.get("rank", 0)) == expected_rank_by_name[name]
+            and int(certificate.get("rank", -1)) == expected_rank_by_name[name]
+            and int(witness.get("laurent_sample_count", 0))
+            == proposal_sample_count
+            and int(certificate.get("laurent_sample_count", 0))
+            == proposal_sample_count
+            and int(witness.get("minimum_laurent_mode", 0))
+            == min(expected_modes)
+            and int(certificate.get("minimum_laurent_mode", 0))
+            == min(expected_modes)
+            and int(witness.get("maximum_laurent_mode", 0))
+            == max(expected_modes)
+            and int(certificate.get("maximum_laurent_mode", 0))
+            == max(expected_modes)
+            and len(mode_by_index) == proposal_sample_count + 1
+            and set(mode_by_index) == expected_mode_support
+            and all(
+                _csv_bool(row.get("coefficient_present"))
+                == (mode in expected_modes)
+                and row.get("coefficient_sha256") == observed_digest
+                and int(row.get("precision_bits", 0)) == theorem_precision_bits
+                and _is_finite_nonnegative_number(
+                    row.get("coefficient_frobenius_upper")
+                )
+                and _is_finite_nonnegative_number(
+                    row.get("residual_frobenius_upper")
+                )
+                for mode, row in mode_by_index.items()
+            )
             and observed_digest == certificate.get("coefficient_sha256")
-            and witness.get("reference_coefficient_sha256") == expected_digest
+            and reference_digest == expected_digest
+            and certificate.get("reference_coefficient_sha256")
+            == expected_digest
             and _csv_bool(witness.get("digest_matches_recorded_reference"))
+            == reference_matches
+            and _csv_bool(
+                certificate.get("coefficient_digest_matches_recorded_reference")
+            )
+            == reference_matches
             and not _csv_bool(witness.get("digest_used_in_theorem_gate"))
+            and not _csv_bool(
+                certificate.get("coefficient_digest_used_in_theorem_gate")
+            )
             and _csv_bool(witness.get("generated_in_recorded_run"))
+            and _csv_bool(certificate.get("candidate_generated_in_recorded_run"))
             and _csv_bool(
                 witness.get("candidate_coefficients_validated_exact_dyadic")
             )
+            and _csv_bool(
+                certificate.get("candidate_coefficients_validated_exact_dyadic")
+            )
             and _csv_bool(witness.get("theorem_certified"))
+            and _csv_bool(certificate.get("theorem_certified"))
             and int(witness.get("coefficient_matrix_count", 0))
-            == int(witness.get("laurent_sample_count", -1))
+            == proposal_sample_count
+            and int(certificate.get("candidate_coefficient_matrix_count", 0))
+            == proposal_sample_count
             and int(witness.get("coefficient_matrix_rows", 0)) == 600
             and int(witness.get("coefficient_matrix_columns", 0)) == 600
-            and float(witness.get("exact_dyadic_residual_sum_upper", 1.0)) < 1.0
+            and int(certificate.get("candidate_coefficient_matrix_rows", 0)) == 600
+            and int(certificate.get("candidate_coefficient_matrix_columns", 0))
+            == 600
+            and witness.get("coefficient_dtype") == "complex128"
+            and witness.get("coefficient_dtype")
+            == certificate.get("candidate_coefficient_dtype")
+            and witness.get("coefficient_layout")
+            == certificate.get("candidate_coefficient_layout")
+            == "C-contiguous signed-mode order"
+            and witness.get("generation_method")
+            == certificate.get("candidate_generation_method")
+            == "FFT of complete-circle binary64 Schur-resolvent samples"
+            and theorem_precision_bits == int(expected_precision_bits)
+            and witness_residual == certificate_residual
+            and Decimal(0) <= witness_residual < Decimal(1)
         ):
             return False
     return True
@@ -1305,13 +1573,28 @@ def _existing_geometry_is_reusable(
     existing: dict[str, object],
     rows: list[dict[str, str]],
     witness_rows: list[dict[str, str]],
+    mode_rows: list[dict[str, str]],
+    schur_cache_path: Path,
     source_hashes: dict[str, str],
     geometry_input_hashes: dict[str, str],
+    expected_precision_bits: int = 256,
 ) -> bool:
     '''Explanation: Finite Schur counts and finite-matrix moats do not depend on a later refinement of the exact-operator perturbation radius. Hash and geometry checks justify retaining those proved facts while recomputing only the changed small-gain step.
 Functionality: Validate cached counts and moats independently of the current epsilon.'''
 
     if existing.get("certificate_schema") != SCHEMA or len(rows) != 24:
+        return False
+    try:
+        decoded_triangle_audit = _load_and_audit_exact_dyadic_schur_cache(
+            schur_cache_path,
+            expected_sha256=existing.get("cache_sha256"),
+        )
+    except (ArithmeticError, KeyError, OSError, TypeError, ValueError):
+        return False
+    if any(
+        existing.get(key) != value
+        for key, value in decoded_triangle_audit.items()
+    ):
         return False
     precision_roles = existing.get("small_gain_precision_roles")
     if not isinstance(precision_roles, dict):
@@ -1346,6 +1629,9 @@ Functionality: Validate cached counts and moats independently of the current eps
         return False
     if not (
         bool(existing.get("all_finite_counts_schur_derived"))
+        and bool(existing.get("q_gap_derived_le_target"))
+        and bool(existing.get("exact_dyadic_schur_below_diagonal_all_zero"))
+        and bool(existing.get("exact_dyadic_schur_upper_triangular_certified"))
         and bool(existing.get("all_schur_diagonal_memberships_certified"))
         and bool(existing.get("all_finite_count_transports_certified"))
         and bool(existing.get("all_finite_counts_certified"))
@@ -1358,6 +1644,9 @@ Functionality: Validate cached counts and moats independently of the current eps
         return False
     if not all(
         row.get("count_method") == COUNT_METHOD_SCHUR_DIAGONAL
+        and _csv_bool(
+            row.get("exact_dyadic_schur_upper_triangular_certified")
+        )
         and _csv_bool(row.get("finite_count_certified"))
         and _csv_bool(row.get("finite_count_matches_expected"))
         and _csv_bool(row.get("complete_circle_covered"))
@@ -1379,13 +1668,23 @@ Functionality: Validate cached counts and moats independently of the current eps
         for row in rows
     ):
         return False
-    if not _laurent_witness_records_are_reusable(witness_rows, rows):
+    if not _laurent_witness_records_are_reusable(
+        witness_rows,
+        rows,
+        mode_rows,
+        expected_precision_bits=expected_precision_bits,
+    ):
         return False
     if not (
         int(existing.get("laurent_witness_count", 0)) == 7
         and int(existing.get("laurent_coefficient_matrix_count", 0)) == 300
         and bool(existing.get("all_laurent_witnesses_reconstructed_in_recorded_run"))
+        and bool(existing.get("laurent_internal_digest_bindings_certified"))
         and bool(existing.get("all_laurent_digests_match_recorded_reference"))
+        == all(
+            _csv_bool(row.get("digest_matches_recorded_reference"))
+            for row in witness_rows
+        )
         and not bool(existing.get("laurent_digests_used_in_any_theorem_gate"))
     ):
         return False
@@ -1438,6 +1737,9 @@ def _reaggregate_small_gain_rows(
         no_sampled_gate = not _csv_bool(
             stored.get("sampled_values_used_in_theorem_gate")
         )
+        schur_triangle_verified = _csv_bool(
+            stored.get("exact_dyadic_schur_upper_triangular_certified")
+        )
         laurent_gate = True
         if stored.get("moat_method") == MOAT_METHOD_LAURENT:
             laurent_gate = bool(
@@ -1455,6 +1757,7 @@ def _reaggregate_small_gain_rows(
             and complete_circle
             and zero_excluded
             and no_sampled_gate
+            and schur_triangle_verified
             and laurent_gate
         )
         row.update(
@@ -1555,6 +1858,9 @@ def certify_all_target_contours(
     '''Explanation: The thesis conclusion is obtained only after every target circle has both a certified finite count and a certified moat satisfying small gain. Their 24 transferred ranks then give the complete nonzero algebraic multiplicity total.
 Functionality: Build and transactionally promote all twenty-four contour certificates.'''
 
+    require_canonical_selected_hardy_radius(
+        config.r, label="contour certificate Hardy radius"
+    )
     output_dir = Path(output_dir).resolve()
     paths = _certificate_paths(output_dir, config)
     source_hashes = logical_source_hashes(source_files)
@@ -1572,16 +1878,21 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
         and paths["report"].exists()
         and paths["certificate"].exists()
         and paths["laurent_witnesses"].exists()
+        and paths["laurent_modes"].exists()
     ):
         existing = json.loads(paths["report"].read_text(encoding="utf-8"))
         existing_rows = _read_csv(paths["certificate"])
         existing_witness_rows = _read_csv(paths["laurent_witnesses"])
+        existing_mode_rows = _read_csv(paths["laurent_modes"])
         if _existing_geometry_is_reusable(
             existing=existing,
             rows=existing_rows,
             witness_rows=existing_witness_rows,
+            mode_rows=existing_mode_rows,
+            schur_cache_path=paths["schur_cache"],
             source_hashes=source_hashes,
             geometry_input_hashes=geometry_input_hashes,
+            expected_precision_bits=config.precision_bits,
         ):
             if (
                 existing.get("source_hashes") == source_hashes
@@ -1777,6 +2088,10 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
             bool(row["schur_diagonal_membership_certified"])
             for row in final_rows
         )
+        all_exact_dyadic_upper_triangular = all(
+            bool(row["exact_dyadic_schur_upper_triangular_certified"])
+            for row in final_rows
+        )
         all_count_transports = all(
             bool(row["mathematical_finite_count_transport_certified"])
             for row in final_rows
@@ -1813,6 +2128,7 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
         )
         if not (
             all_theorem
+            and all_exact_dyadic_upper_triangular
             and all_memberships
             and all_count_transports
             and all_counts
@@ -1836,9 +2152,12 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
         _write_csv(paths["laurent_witnesses"], witness_rows)
         persisted_witness_rows = _read_csv(paths["laurent_witnesses"])
         persisted_certificate_rows = _read_csv(paths["certificate"])
+        persisted_mode_rows = _read_csv(paths["laurent_modes"])
         if not _laurent_witness_records_are_reusable(
             persisted_witness_rows,
             persisted_certificate_rows,
+            persisted_mode_rows,
+            expected_precision_bits=config.precision_bits,
         ):
             raise AssertionError(
                 "The persisted Laurent reconstruction manifest failed validation."
@@ -1850,9 +2169,9 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
             bool(row["digest_matches_recorded_reference"])
             for row in witness_rows
         )
-        if coefficient_matrix_count != 300 or not all_digest_matches:
+        if coefficient_matrix_count != 300:
             raise AssertionError(
-                "The clean-room Laurent tensors did not reproduce the recorded bytes."
+                "The clean-room Laurent reconstruction has the wrong tensor count."
             )
         report = {
             "certificate_schema": SCHEMA,
@@ -1874,8 +2193,14 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
             "laurent_witness_count": len(witness_rows),
             "laurent_coefficient_matrix_count": coefficient_matrix_count,
             "all_laurent_witnesses_reconstructed_in_recorded_run": True,
+            "laurent_internal_digest_bindings_certified": True,
             "all_laurent_digests_match_recorded_reference": all_digest_matches,
             "laurent_digests_used_in_any_theorem_gate": False,
+            "laurent_reference_digest_policy": (
+                "diagnostic historical byte parity only; generated coefficient "
+                "bytes are bound internally to the persisted certificate and the "
+                "theorem uses the exact-dyadic residual gate"
+            ),
             "laurent_candidate_storage_policy": (
                 "transient coefficient tensors; persisted full-tensor digests "
                 "and exact-dyadic modewise validation bounds"
@@ -1887,6 +2212,19 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
             ),
             "binary64_candidate_runtime": _runtime_fingerprint(),
             "all_finite_counts_schur_derived": True,
+            "q_gap_derived_le_target": True,
+            "exact_dyadic_schur_below_diagonal_entry_count": schur_report[
+                "exact_dyadic_schur_below_diagonal_entry_count"
+            ],
+            "exact_dyadic_schur_below_diagonal_zero_count": schur_report[
+                "exact_dyadic_schur_below_diagonal_zero_count"
+            ],
+            "exact_dyadic_schur_below_diagonal_all_zero": schur_report[
+                "exact_dyadic_schur_below_diagonal_all_zero"
+            ],
+            "exact_dyadic_schur_upper_triangular_certified": schur_report[
+                "exact_dyadic_schur_upper_triangular_certified"
+            ],
             "all_24_targets_theorem_certified": all_theorem,
             "all_schur_diagonal_memberships_certified": all_memberships,
             "all_finite_count_transports_certified": all_count_transports,
@@ -1899,6 +2237,7 @@ Functionality: Build and transactionally promote all twenty-four contour certifi
             "all_complete_circle_moats_positive": all_positive_moats,
             "zero_excluded_from_every_contour": all_zero_excluded,
             "sampled_values_used_in_any_theorem_gate": not no_sampled_gate,
+            "cache_sha256": schur_report["cache_sha256"],
             "matrix_midpoint_sha256": matrix_report["midpoint_sha256"],
             "matrix_payload_schema": payload_metadata.get("schema"),
             "matrix_precision_bits": matrix_report["precision_bits"],

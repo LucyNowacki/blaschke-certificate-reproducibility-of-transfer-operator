@@ -13,6 +13,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from decimal import Decimal, localcontext
 import csv
+from fractions import Fraction
 import hashlib
 import json
 import math
@@ -27,9 +28,86 @@ from flint import arb, acb
 
 
 MAP_LABEL = "blaschke_mu_0p3"
-PRODUCER_SCHEMA = "phase2-geometry-v2"
+PRODUCER_SCHEMA = "phase2-geometry-v3"
 RHO_CANDIDATES = ("2.700", "2.7125", "2.725", "2.735", "2.740", "2.745")
 Q_GAP_CANDIDATES = ("0.925", "0.926", "0.927", "0.928", "0.929", "0.930")
+CANONICAL_SELECTED_HARDY_RADIUS_TEXT = "2.473669807791324109321273260"
+CANONICAL_SELECTED_Q_GAP_TARGET_TEXT = "0.927"
+
+
+def _finite_decimal(value: Any, *, label: str) -> Decimal:
+    """Parse one finite decimal without passing through binary floating point."""
+
+    parsed = Decimal(str(value))
+    if not parsed.is_finite():
+        raise ValueError(f"{label} must be a finite decimal, got {value!r}.")
+    return parsed
+
+
+def require_canonical_selected_hardy_radius(
+    value: Any,
+    *,
+    label: str = "Hardy radius",
+) -> Decimal:
+    """Require exact decimal identity with the selected Phase 2 radius.
+
+    Equivalent decimal spellings (including the geometry producer's scientific
+    notation and trailing zeros) are accepted.  A shortened decimal is not.
+    """
+
+    observed = _finite_decimal(value, label=label)
+    expected = Decimal(CANONICAL_SELECTED_HARDY_RADIUS_TEXT)
+    if observed != expected:
+        raise ValueError(
+            f"{label} does not equal the canonical selected Hardy radius: "
+            f"expected {CANONICAL_SELECTED_HARDY_RADIUS_TEXT}, got {value!r}."
+        )
+    return observed
+
+
+def exact_q_gap_contract(
+    *,
+    r_tau_upper: Any,
+    hardy_radius: Any,
+    q_gap_target: Any,
+    require_canonical_radius: bool = True,
+) -> dict[str, Any]:
+    """Recompute ``r_tau_upper / r`` as an exact rational and gate it.
+
+    The theorem uses the conservative target ``q_gap_target``.  It does not
+    identify that target with the generally non-terminating derived quotient.
+    The comparison is performed by exact integer cross multiplication, while a
+    high-precision decimal rendering is retained only for inspection.
+    """
+
+    r_tau_decimal = _finite_decimal(r_tau_upper, label="r_tau upper endpoint")
+    radius_decimal = (
+        require_canonical_selected_hardy_radius(hardy_radius)
+        if require_canonical_radius
+        else _finite_decimal(hardy_radius, label="Hardy radius")
+    )
+    target_decimal = _finite_decimal(q_gap_target, label="q_gap target")
+    if r_tau_decimal <= 0 or radius_decimal <= 0 or target_decimal <= 0:
+        raise ValueError("The q_gap contract requires three positive decimals.")
+
+    derived = Fraction(r_tau_decimal) / Fraction(radius_decimal)
+    target = Fraction(target_decimal)
+    if derived > target:
+        raise ArithmeticError(
+            "The exact derived branch-gap ratio exceeds the conservative "
+            f"target: r_tau/r={derived.numerator}/{derived.denominator}, "
+            f"target={q_gap_target}."
+        )
+    with localcontext() as context:
+        context.prec = 120
+        derived_decimal = Decimal(derived.numerator) / Decimal(derived.denominator)
+    return {
+        "q_gap_target_text": str(q_gap_target),
+        "q_gap_derived_decimal_text": format(derived_decimal, ".110E"),
+        "q_gap_derived_exact_numerator": str(derived.numerator),
+        "q_gap_derived_exact_denominator": str(derived.denominator),
+        "q_gap_derived_le_target": True,
+    }
 
 
 @dataclass(frozen=True)
@@ -504,13 +582,16 @@ Functionality: Certify and persist the fixed 36-point Phase 2 radius scan.'''
             chain_ok = bool(1 < r_tau and r_tau < hardy_radius and hardy_radius < rho)
             status = "ok" if analytic_ok and branch_image_ok and chain_ok else "inadmissible"
 
+            r_candidate_text = upper_text(hardy_radius)
+            r_tau_text = upper_text(r_tau)
+
             row = {
                 "rho": str(rho_text),
                 "q_gap_target": str(q_text),
-                "r_candidate": upper_text(hardy_radius),
+                "r_candidate": r_candidate_text,
                 "q_out": upper_text(q_out),
                 "q_star": upper_text(q_star),
-                "r_tau_interval_u": upper_text(r_tau),
+                "r_tau_interval_u": r_tau_text,
                 "phi_star_interval_u": upper_text(phi_star),
                 "two_B_out_u": upper_text(two_output),
                 "branch_image_B_in_u": upper_text(input_upper),
@@ -557,6 +638,26 @@ Functionality: Certify and persist the fixed 36-point Phase 2 radius scan.'''
         )
     )
     selected = dict(admissible[0])
+    production_geometry = bool(
+        config.N == 600
+        and config.M == 610
+        and config.cells == 65536
+        and config.precision_bits == 192
+        and tuple(config.rho_candidates) == RHO_CANDIDATES
+        and tuple(config.q_gap_candidates) == Q_GAP_CANDIDATES
+    )
+    if production_geometry:
+        require_canonical_selected_hardy_radius(
+            selected["r_candidate"], label="selected Phase 2 Hardy radius"
+        )
+        if str(selected["q_gap_target"]) != CANONICAL_SELECTED_Q_GAP_TARGET_TEXT:
+            raise RuntimeError("The selected Phase 2 q_gap target is not canonical.")
+        selected_q_gap_contract = exact_q_gap_contract(
+            r_tau_upper=selected["r_tau_interval_u"],
+            hardy_radius=selected["r_candidate"],
+            q_gap_target=selected["q_gap_target"],
+        )
+        selected.update(selected_q_gap_contract)
     selected["selected"] = True
     selected["selection_rank"] = 1
     selected["selection_rule"] = (
@@ -566,6 +667,8 @@ Functionality: Certify and persist the fixed 36-point Phase 2 radius scan.'''
     ordered_rows = []
     for rank, row in enumerate(admissible, start=1):
         item = dict(row)
+        if rank == 1 and production_geometry:
+            item.update(selected_q_gap_contract)
         item["selected"] = rank == 1
         item["selection_rank"] = rank
         item["selection_rule"] = selected["selection_rule"]
@@ -607,13 +710,17 @@ Functionality: Certify and persist the fixed 36-point Phase 2 radius scan.'''
 
 
 __all__ = [
+    "CANONICAL_SELECTED_HARDY_RADIUS_TEXT",
+    "CANONICAL_SELECTED_Q_GAP_TARGET_TEXT",
     "MAP_LABEL",
     "PRODUCER_SCHEMA",
     "Phase2GeometryConfig",
     "Phase2GeometryResult",
     "certify_geometry_scan",
+    "exact_q_gap_contract",
     "lower_float",
     "lower_text",
+    "require_canonical_selected_hardy_radius",
     "upper_float",
     "upper_text",
 ]

@@ -14,9 +14,19 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 import nbformat as nbf
+
+try:
+    from .blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+    )
+except ImportError:  # Direct script execution from ``Numerics``.
+    from blaschke_deformation_phase2_geometry import (
+        CANONICAL_SELECTED_HARDY_RADIUS_TEXT,
+    )
 
 
 HERE = Path(__file__).resolve().parent
@@ -26,7 +36,7 @@ TARGET = HERE / "blaschke_deformation_certifier.ipynb"
 # Updated after the deployment template is refreshed deliberately with
 # ``--refresh-template``. Ordinary builds refuse unreviewed template drift.
 LOCKED_TEMPLATE_SHA256 = (
-    "007512db9aee76c3d5b9183c11c12941f9827850786a2e69a41a86b73189767a"
+    "7e8a7b156f329665ff2f4673e0bcb6b3362408ab8c0d5a48256adef6129cfc31"
 )
 
 
@@ -412,7 +422,6 @@ phase2_resolved_response_result = certify_resolved_response_completion(
         N=600,
         M=610,
         rho="2.725",
-        r="2.473669807791324",
         mu="0.3",
         cells=RESPONSE_PREF_CELLS,
         precision_bits=RESPONSE_PREF_BITS,
@@ -500,7 +509,6 @@ phase2_final_aggregation_result = certify_final_phase2_aggregation(
         N=600,
         M=610,
         rho="2.725",
-        r="2.473669807791324",
         mu="0.3",
         cells=INPUT_TAIL_CERT_CELLS,
         precision_bits=INPUT_TAIL_CERT_BITS,
@@ -701,6 +709,26 @@ selected_map_certification_audit_df.to_csv(audit_path, index=False)
         "        _contour_deterministic_module_path,\n",
         "",
     )
+    if '    "exact_dyadic_schur_upper_triangular_certified",\n' not in source:
+        source = source.replace(
+            '    "schur_diagonal_membership_certified",\n',
+            '    "schur_diagonal_membership_certified",\n'
+            '    "exact_dyadic_schur_upper_triangular_certified",\n',
+            1,
+        )
+    schur_triangle_message = (
+        '    raise AssertionError("The exact-dyadic Schur lower triangle was not proved zero.")\n'
+    )
+    if schur_triangle_message not in source:
+        source = source.replace(
+            'if not bool(SPECTRAL_CONTOUR_CERTIFICATE["all_24_targets_theorem_certified"]):\n'
+            '    raise AssertionError("The terminal Riesz-rank package was not promoted.")\n',
+            'if not bool(SPECTRAL_CONTOUR_CERTIFICATE["all_24_targets_theorem_certified"]):\n'
+            '    raise AssertionError("The terminal Riesz-rank package was not promoted.")\n'
+            'if not bool(SPECTRAL_CONTOUR_CERTIFICATE["exact_dyadic_schur_upper_triangular_certified"]):\n'
+            + schur_triangle_message,
+            1,
+        )
     _set_source(contour_cell, source)
 
     reproducibility_cell = _unique_cell(cells, "# Cell 104\n")
@@ -811,12 +839,59 @@ def _clear_runtime_state(notebook: dict[str, Any]) -> dict[str, Any]:
     return notebook
 
 
+def _validate_exact_radius_comparators(notebook: dict[str, Any]) -> None:
+    """Reject tolerance-based radius selection in any executable notebook cell."""
+
+    code_source = "\n".join(
+        _source(cell)
+        for cell in notebook.get("cells", [])
+        if cell.get("cell_type") == "code"
+    )
+    for forbidden in (
+        "_rp_close_decimal",
+        'float(PHASE2_FINAL_CERT["r"])',
+        "math.isclose(Decimal",
+    ):
+        if forbidden in code_source:
+            raise AssertionError(
+                f"A notebook radius path still uses a tolerance/float comparator: {forbidden}."
+            )
+    configured_radii = re.findall(
+        r"\br_target\s*:\s*str\s*=\s*['\"]([^'\"]+)['\"]",
+        code_source,
+    )
+    if not configured_radii or any(
+        radius != CANONICAL_SELECTED_HARDY_RADIUS_TEXT
+        for radius in configured_radii
+    ):
+        raise AssertionError(
+            "The executable theorem configuration must use the canonical selected "
+            f"Hardy radius {CANONICAL_SELECTED_HARDY_RADIUS_TEXT}; found "
+            f"{configured_radii!r}. Presentation-only prose is not inspected by this gate."
+        )
+    if "_rp_tail_candidates" in code_source:
+        for required in (
+            "def _rp_same_decimal(left, right):",
+            "return Decimal(str(left)) == Decimal(str(right))",
+            "require_canonical_selected_hardy_radius(",
+            "exact_q_gap_contract(",
+            'row["r_candidate"], _rp_balanced["r"]',
+        ):
+            if required not in code_source:
+                raise AssertionError(
+                    "The inline response path lacks its exact selected-radius gate: "
+                    f"{required}."
+                )
+
+
 def _validate(notebook: dict[str, Any]) -> None:
+    _validate_exact_radius_comparators(notebook)
     cells = notebook["cells"]
     kappa = _source(_unique_cell(cells, "def kappa_T_numeric"))
     cell24a = _source(_unique_cell(cells, "# Cell 24A\n"))
     cell24b = _source(_unique_cell(cells, "# Cell 24B\n"))
     cell24c = _source(_unique_cell(cells, "# Cell 24C\n"))
+    cell35 = _source(_unique_cell(cells, "# Cell 35\n"))
     hardy = _source(_unique_cell(cells, "# Cell 102A\n"))
     contour = _source(_unique_cell(cells, "# Cell 103\n"))
     cell104 = _source(_unique_cell(cells, "# Cell 104\n"))
@@ -868,8 +943,52 @@ def _validate(notebook: dict[str, Any]) -> None:
             raise AssertionError(
                 "A Phase 2 completion implementation remains embedded in the notebook."
             )
+    if not all(
+        marker in cell35
+        for marker in (
+            "BLASCHKE_SKIP_HISTORICAL_PHASE4",
+            "elif HISTORICAL_PHASE4_DIAGNOSTIC_SKIPPED:",
+            '"execution_status": "diagnostic_skipped"',
+            '"theorem_authoritative": False',
+            "historical_phase4_result = rebuild_historical_phase4(",
+        )
+    ):
+        raise AssertionError(
+            "Cell 35 lacks its explicit theorem-only historical diagnostic skip "
+            "while preserving the default rebuild path."
+        )
     if "_hardy_source_files = (_spectral_cert_module_path,)" not in hardy:
         raise AssertionError("The Hardy checkpoint has extraneous source dependencies.")
+    if not all(
+        marker in hardy
+        for marker in (
+            "CANONICAL_SELECTED_HARDY_RADIUS_TEXT",
+            "_phase2_selected_r_decimal != _hardy_r_decimal",
+            'Decimal(str(PHASE2_FINAL_CERT["r"])) != _hardy_r_decimal',
+            'PHASE2_FINAL_CERT["q_gap_derived_le_target"]',
+            "BLASCHKE_SKIP_HARDY_STARTING_AUDIT",
+            "STARTING_HARDY_MATRIX_AUDIT = None",
+        )
+    ):
+        raise AssertionError(
+            "The Hardy checkpoint lacks the exact radius/q_gap or optional "
+            "non-authoritative 1024-audit contract."
+        )
+    if not all(
+        marker in cell104
+        for marker in (
+            '"hardy_starting_audit_skipped": bool(HARDY_MATRIX_SKIP_STARTING_AUDIT)',
+            '"hardy_starting_audit_authoritative": False',
+            "None if HARDY_MATRIX_SKIP_STARTING_AUDIT else int(HARDY_MATRIX_STARTING_BITS)",
+            "None if HARDY_MATRIX_SKIP_STARTING_AUDIT else str(STARTING_HARDY_MATRIX_AUDIT",
+        )
+    ):
+        raise AssertionError(
+            "Cell 104 does not mark the optional 1024-bit audit as omitted and "
+            "non-authoritative without weakening the 2048-bit theorem summary."
+        )
+    if "ROUND_HALF_EVEN" in hardy or 'float(PHASE2_FINAL_CERT["r"])' in hardy:
+        raise AssertionError("The Hardy checkpoint still uses a rounded radius comparison.")
     if "_contour_deterministic_module_path" in contour:
         raise AssertionError("The contour moat cache depends on deterministic epsilon code.")
     if "epsilon_report_path" in contour:
@@ -892,6 +1011,11 @@ def _validate(notebook: dict[str, Any]) -> None:
             "ROUND_CEILING",
             "CELL103_MINIMUM_CERTIFIED_MOAT_TEXT",
             "CELL103_MAXIMUM_SMALL_GAIN_TEXT",
+            "exact_dyadic_schur_upper_triangular_certified",
+            "_laurent_witness_records_are_reusable",
+            "laurent_mode_bounds_df",
+            "laurent_internal_digest_bindings_certified",
+            "CELL103_LAURENT_ALL_REFERENCE_DIGESTS_MATCH",
         )
     ):
         raise AssertionError(
@@ -939,6 +1063,7 @@ def refresh_template() -> None:
     if not TARGET.exists():
         raise FileNotFoundError(f"Cannot refresh from missing source notebook {TARGET}.")
     notebook = json.loads(TARGET.read_text(encoding="utf-8"))
+    _validate_exact_radius_comparators(notebook)
     notebook = _clear_runtime_state(_normalise_notebook(notebook))
     _validate(notebook)
     _write_notebook(TEMPLATE, notebook)
@@ -956,6 +1081,7 @@ def build() -> None:
             f"expected {LOCKED_TEMPLATE_SHA256}, obtained {digest}."
         )
     notebook = json.loads(TEMPLATE.read_text(encoding="utf-8"))
+    _validate_exact_radius_comparators(notebook)
     notebook = _clear_runtime_state(_normalise_notebook(notebook))
     _validate(notebook)
     _write_notebook(TARGET, notebook)
