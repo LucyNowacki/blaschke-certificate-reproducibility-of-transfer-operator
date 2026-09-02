@@ -14,6 +14,25 @@ EXPECTED_RELEASE_COMMIT='<40-hex commit from the GitHub tag or Release>'
 ./reproduce-certificate.sh full --expected-git-commit "$EXPECTED_RELEASE_COMMIT"
 ```
 
+## Notebook, plots and dependency map
+
+- [Executed thesis-mathematics notebook with all plot previews](Numerics/blaschke_deformation_certifier_thesis_math.ipynb)
+- [Notebook dependency map and explanation](Numerics/blaschke_deformation_notebook_dependency_map.md)
+- [Standalone dependency-map SVG](Numerics/blaschke_deformation_notebook_dependency_map.svg)
+- [Full-resolution plot files](Numerics/outputs/blaschke_deformation_certifier/figures/)
+
+![Blaschke certifier notebook dependency map](Numerics/blaschke_deformation_notebook_dependency_map.svg)
+
+The committed thesis-mathematics notebook is a generated display artifact. Its
+code-cell sources are checked against the locked output-free builder, while its
+stored plots are presentation evidence only and do not enter a theorem gate.
+Non-visual runtime chatter is omitted from the GitHub copy; the execution
+counts and all 34 plot positions are retained.
+The source-only replay removes that generated notebook in its scratch tree and
+rebuilds the certificate from authenticated source. The smaller
+`Numerics/blaschke_deformation_certifier.ipynb` remains the canonical
+output-free source notebook.
+
 For an extracted source archive without `.git`, use the inventory SHA-256
 published alongside the Release with
 `--expected-release-inventory-sha256`.  Never derive either expected value

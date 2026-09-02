@@ -263,6 +263,7 @@ Functionality: Rebuild both retained historical-design comparison rows from sour
         ),
         data_dir=historical_internal_data,
         report_dir=historical_internal_reports,
+        require_canonical_radius=False,
     )
     kappa = arb(str(transport_result.record["kappa_hat"])).upper()
     raw_matrix = matrix._matrix_bound(

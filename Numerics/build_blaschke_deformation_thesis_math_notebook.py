@@ -17,7 +17,6 @@ always locked template to source to curated counterpart.
 from __future__ import annotations
 
 import argparse
-import base64
 from copy import deepcopy
 from functools import lru_cache
 import hashlib
@@ -36,7 +35,7 @@ OUTPUT = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
 DEPENDENCY_MAP = HERE / "blaschke_deformation_notebook_dependency_map.md"
 DEPENDENCY_MAP_SVG = HERE / "blaschke_deformation_notebook_dependency_map.svg"
 DEPENDENCY_MAP_CELL_ID = "dependency-map-0m"
-DEPENDENCY_MAP_ATTACHMENT = "blaschke-deformation-dependency-map.svg"
+DEPENDENCY_MAP_STANDALONE_LINK = "./blaschke_deformation_notebook_dependency_map.svg"
 CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
 CHAPTER_MATH_MARKER = "<!-- NUMERICS_1_CHAPTER_MATH -->"
 CHAPTER_MATH_LABEL = "chap:numerical-certification-transfer"
@@ -438,18 +437,11 @@ def dependency_map_cell() -> dict[str, Any]:
     svg = DEPENDENCY_MAP_SVG.read_text(encoding="utf-8")
     if not source.startswith("0M\n\n# Reproducibility dependency map\n"):
         raise AssertionError("The dependency-map source must begin with Cell 0M.")
-    if f"attachment:{DEPENDENCY_MAP_ATTACHMENT}" not in source:
-        raise AssertionError("Cell 0M must display its attached dependency-map SVG.")
+    if DEPENDENCY_MAP_STANDALONE_LINK not in source:
+        raise AssertionError("The standalone dependency map must link its sibling SVG.")
     if not svg.startswith("<svg ") or not svg.rstrip().endswith("</svg>"):
-        raise AssertionError("The dependency-map attachment is not a complete SVG.")
+        raise AssertionError("The dependency-map SVG is not complete.")
     return {
-        "attachments": {
-            DEPENDENCY_MAP_ATTACHMENT: {
-                "image/svg+xml": [
-                    base64.b64encode(svg.encode("utf-8")).decode("ascii")
-                ],
-            },
-        },
         "cell_type": "markdown",
         "id": DEPENDENCY_MAP_CELL_ID,
         "metadata": {"thesis_math_dependency_map": True},
@@ -1301,7 +1293,7 @@ def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
         or actual_map.get("id") != expected_map["id"]
         or actual_map.get("metadata", {}) != expected_map["metadata"]
         or _normalise_attachments(actual_map.get("attachments", {}))
-        != _normalise_attachments(expected_map["attachments"])
+        != _normalise_attachments(expected_map.get("attachments", {}))
         or _normalise_source(actual_map.get("source", ""))
         != _normalise_source(expected_map["source"])
     ):

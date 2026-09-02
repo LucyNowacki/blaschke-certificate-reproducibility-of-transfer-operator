@@ -350,8 +350,13 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             self.assertNotIn(delimiter, source)
 
         certificate_cell = cells["code-b33b0f47"]
-        self.assertIsNone(certificate_cell.get("execution_count"))
-        self.assertEqual(certificate_cell.get("outputs", []), [])
+        self.assertIsInstance(certificate_cell.get("execution_count"), int)
+        self.assertFalse(
+            any(
+                output.get("output_type") == "error"
+                for output in certificate_cell.get("outputs", [])
+            )
+        )
         certificate_source = "".join(certificate_cell.get("source", []))
         self.assertIn(
             'print("Twenty-four-target spectral certificate:", '
@@ -420,34 +425,51 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             / "branch_image_wide_candidate_sampled_hardy_moat_profile_alpha11_N600_M610.png"
         )
         source = "".join(cell.get("source", []))
-        self.assertIsNone(cell.get("execution_count"))
-        self.assertEqual(cell.get("outputs", []), [])
+        self.assertIsInstance(cell.get("execution_count"), int)
+        self.assertTrue(
+            any(
+                "image/jpeg" in output.get("data", {})
+                for output in cell.get("outputs", [])
+            )
+        )
         self.assertIn("phase4_alpha11_target = 'alpha^11'", source)
         self.assertIn(alpha11_path.stem, source)
 
-    def test_legacy_png_provenance_is_diagnostic_while_source_is_output_free(self) -> None:
+    def test_github_display_notebook_has_the_complete_plot_contract(self) -> None:
         provenance = json.loads(
             (HERE / "notebook_cell_provenance.json").read_text(encoding="utf-8")
         )
-        actual_png_count = sum(
-            "image/png" in output.get("data", {})
+        actual_preview_count = sum(
+            "image/jpeg" in output.get("data", {})
             for cell in self.notebook["cells"]
             for output in cell.get("outputs", [])
         )
         actual_visual_cells = sum(
             cell.get("cell_type") == "code"
             and any(
-                "image/png" in output.get("data", {})
+                "image/jpeg" in output.get("data", {})
                 for output in cell.get("outputs", [])
             )
             for cell in self.notebook["cells"]
         )
-        self.assertEqual(actual_png_count, 0)
-        self.assertEqual(actual_visual_cells, 0)
-        self.assertGreater(
-            provenance["notebook"]["expected_stored_png_output_count"], 0
+        self.assertEqual(actual_preview_count, 34)
+        self.assertEqual(actual_visual_cells, 20)
+        self.assertEqual(
+            provenance["notebook"]["expected_stored_png_output_count"], 34
         )
-        self.assertGreater(provenance["notebook"]["expected_visual_cell_count"], 0)
+        self.assertEqual(provenance["notebook"]["expected_visual_cell_count"], 20)
+        self.assertFalse(
+            any(
+                "image/png" in output.get("data", {})
+                for cell in self.notebook["cells"]
+                for output in cell.get("outputs", [])
+            )
+        )
+        display = self.notebook.get("metadata", {}).get("github_display_artifact", {})
+        self.assertEqual(display.get("plot_count"), 34)
+        self.assertEqual(display.get("visual_cell_count"), 20)
+        self.assertTrue(display.get("presentation_only"))
+        self.assertFalse(display.get("theorem_gate"))
         self.assertNotEqual(
             provenance["notebook"]["sha256_at_manifest_creation"],
             hashlib.sha256(NOTEBOOK.read_bytes()).hexdigest(),

@@ -113,6 +113,23 @@ not regenerate the theorem witnesses and therefore cannot claim an independent
 proof.  In particular, stored gate booleans, sampled extrema, and provenance
 digests are not accepted as substitutes for primitive theorem evidence.
 
+## Display notebook and dependency map
+
+The checked-in
+[`blaschke_deformation_certifier_thesis_math.ipynb`](../Numerics/blaschke_deformation_certifier_thesis_math.ipynb)
+is a generated presentation copy with all plot positions retained as compact
+GitHub previews. Full-resolution images are stored in the adjacent
+[`figures`](../Numerics/outputs/blaschke_deformation_certifier/figures/) directory.
+Non-visual runtime chatter is omitted from that GitHub-facing copy so scratch
+paths cannot become publication metadata.
+The [dependency-map explanation](../Numerics/blaschke_deformation_notebook_dependency_map.md)
+and [standalone SVG](../Numerics/blaschke_deformation_notebook_dependency_map.svg)
+record which branches are theorem-facing and which are diagnostic.
+
+Those stored notebook outputs are never accepted as proof input. Source replay
+deletes the generated display notebook in its scratch tree, rebuilds the locked
+output-free source counterpart, and recreates the theorem closure independently.
+
 ## Receipt interpretation
 
 Semantic equivalence requires the same exact radius and q-gap inequality,

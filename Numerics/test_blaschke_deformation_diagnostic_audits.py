@@ -52,6 +52,40 @@ def _sha256(path: Path) -> str:
 
 
 class DiagnosticAuditPureGeneratorTests(unittest.TestCase):
+    def test_geometry_lock_uses_full_canonical_radius(self) -> None:
+        radius = 2.473669807791324
+        r_tau = 2.2926584027370747
+        rho = 2.725
+        geometry = pd.DataFrame(
+            [
+                {
+                    "map_label": audits.MAP_LABEL,
+                    "rho": rho,
+                    "r_tau": r_tau,
+                    "r": radius,
+                    "Phi": 4.763076532415687,
+                    "Phi_star": 4.7255168399801315,
+                    "q_out": radius / rho,
+                    "q_gap": r_tau / radius,
+                    "q_star": r_tau / radius,
+                }
+            ]
+        )
+
+        normalised = audits._normalise_geometry(geometry)
+        self.assertEqual(normalised["r"], radius)
+
+        rounded = geometry.copy(deep=True)
+        rounded.loc[0, "r"] = 2.47367
+        rounded.loc[0, "q_out"] = 2.47367 / rho
+        rounded.loc[0, "q_gap"] = r_tau / 2.47367
+        rounded.loc[0, "q_star"] = r_tau / 2.47367
+        with self.assertRaisesRegex(
+            audits.DiagnosticAuditValidationError,
+            "geometry violates.*lock for r",
+        ):
+            audits._normalise_geometry(rounded)
+
     def test_pure_generators_preserve_schema_bytes_and_inputs(self) -> None:
         frames = _source_frames()
         originals = {name: frame.copy(deep=True) for name, frame in frames.items()}

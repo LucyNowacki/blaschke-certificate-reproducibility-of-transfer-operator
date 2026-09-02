@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import re
 import unittest
@@ -11,6 +12,7 @@ import xml.etree.ElementTree as ET
 HERE = Path(__file__).resolve().parent
 MARKDOWN = HERE / "blaschke_deformation_notebook_dependency_map.md"
 SVG = HERE / "blaschke_deformation_notebook_dependency_map.svg"
+NOTEBOOK = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 NS = {"svg": SVG_NAMESPACE}
 NUMBER = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)"
@@ -58,6 +60,7 @@ class NotebookDependencyMapTests(unittest.TestCase):
         cls.tree = ET.parse(SVG)
         cls.root = cls.tree.getroot()
         cls.markdown = " ".join(MARKDOWN.read_text(encoding="utf-8").split())
+        cls.notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
 
     def test_root_accessibility_contract_is_complete_and_unique(self) -> None:
         self.assertEqual(self.root.tag, f"{{{SVG_NAMESPACE}}}svg")
@@ -127,6 +130,35 @@ class NotebookDependencyMapTests(unittest.TestCase):
             "dotted grey arrows are build or provenance dependencies",
             self.markdown.lower(),
         )
+
+    def test_standalone_markdown_links_the_sibling_svg(self) -> None:
+        markdown = MARKDOWN.read_text(encoding="utf-8")
+        target = "./blaschke_deformation_notebook_dependency_map.svg"
+        self.assertIn(f"]({target})", markdown)
+        self.assertNotIn("attachment:", markdown)
+        self.assertTrue((MARKDOWN.parent / target).is_file())
+
+    def test_map_describes_the_current_semantic_release(self) -> None:
+        text = " ".join(self.root.itertext())
+        self.assertIn("release inventory; semantic verifier", text)
+        self.assertIn("authoritative 2048-bit enclosure", text)
+        self.assertIn("optional 1024-bit audit is diagnostic", text)
+        self.assertIn("rho=2.725; r=2.473669807791324109321273260", text)
+        self.assertIn("schema 1.4.0", text)
+        self.assertNotIn("archive verifier", text)
+        self.assertNotIn("24N--30N", text)
+
+    def test_published_notebook_is_really_executed_when_map_says_so(self) -> None:
+        code_cells = [
+            cell
+            for cell in self.notebook.get("cells", [])
+            if cell.get("cell_type") == "code"
+        ]
+        self.assertEqual(len(code_cells), 68)
+        self.assertTrue(
+            all(isinstance(cell.get("execution_count"), int) for cell in code_cells)
+        )
+        self.assertTrue(any(cell.get("outputs") for cell in code_cells))
 
     def test_phase1_retained_producer_branch_is_diagnostic_only(self) -> None:
         self.assertIn(

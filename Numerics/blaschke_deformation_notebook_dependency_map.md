@@ -8,6 +8,8 @@ amber arrows are diagnostic-only dependencies, and dotted grey arrows are build 
 dependencies. Plotting products are shown separately because they present results but do not
 enter a theorem gate. The final builder contract is 141 cells, including 68 code cells, 18
 digest-checked inline helper modules and the visible terminal auditor Markdown Cell 110M.
+This release uses mathematics-map schema `1.4.0` and the certified single-space configuration
+`rho = 2.725`, `r = 2.473669807791324109321273260`.
 
 **Chapter-mathematics mapping boundary.** The source-controlled contract
 `Numerics/numerical_certification_transfer_markdown.toml` maps the mathematics established and
@@ -21,7 +23,7 @@ visible below the stored output. The contract also keeps sampled diagnostics, pr
 producers distinct. Its regression rejects an unmapped code cell, a duplicated owner, a missing
 chapter label or an evidence-class drift.
 
-![Effective dependency graph for the Blaschke deformation thesis certifier](attachment:blaschke-deformation-dependency-map.svg)
+![Effective dependency graph for the Blaschke deformation thesis certifier](./blaschke_deformation_notebook_dependency_map.svg)
 
 **Principal persisted paths.** Phase outputs are stored under
 `Numerics/outputs/blaschke_deformation_certifier`. The theorem-facing chain ends in
@@ -59,15 +61,12 @@ mathematical implementations are the visible standalone helpers
 directory and communicates with the next stage only through the named CSV and JSON artefacts shown
 in the diagram. No private Cell 24B state is required by Cell 24C.
 
-**Archive boundary.** Packaging is outside the notebook dependency graph and is always a separate
-clean-worktree operation after the deployment evidence has been committed. For NUMERICS_1 that
-operation has completed; its external release manifest and checksum, rather than this notebook,
-authenticate the published archive. A replay from an extracted archive must first run
-`run_blaschke_clean_room_replay.py` with `--expected-inventory-sha256` set to the exact
-`bundle.source_only_replay.inventory_sha256` value from the already verified external manifest.
-Its preparation stage removes the inventory-declared generated notebook counterparts and
-`Numerics/outputs` evidence while hash-preserving all immutable source and environment records.
-After computation, the independently bound inventory requires every declared generated member as
-a regular file before a COMPLETE receipt or normalization. The final Phase 2 row carries every
-fresh input-tail and response component gate; contour loading fails closed if any component gate
-is missing or false.
+**Release boundary.** The public release is authenticated as a finite Git tree, independently of
+this generated display notebook and its plots. Run `reproduce-certificate.sh full` with either the
+Git commit published by GitHub or the externally published SHA-256 of
+`release/source-only-replay-inventory.json`. The wrapper stages a new source-only scratch tree,
+removes generated notebook/output evidence there, recreates the fixed 27-file theorem closure and
+accepts the result only when the semantic verifier returns `CERTIFICATION_CONFIRMED`. Stored plots,
+notebook execution metadata and diagnostic-only Phase 1/Phase 4 products do not enter that theorem
+gate. The final Phase 2 row still carries every fresh input-tail and response component gate, and
+contour loading fails closed if any component gate is missing or false.

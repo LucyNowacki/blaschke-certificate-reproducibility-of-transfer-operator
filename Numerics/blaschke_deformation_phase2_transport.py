@@ -488,13 +488,14 @@ def certify_transport(
     *,
     data_dir: Path,
     report_dir: Path,
+    require_canonical_radius: bool = True,
 ) -> Phase2TransportResult:
     '''Explanation: The pure matrix defect must be multiplied by the conditioning of the Legendre-to-packet map. Residual-based inverse certification proves this finite condition factor and therefore makes the transported thesis defect rigorous.
 Functionality: Certify the finite connection condition number by inverse residual.'''
 
     if config.N < 1:
         raise ValueError("N must be positive.")
-    if config.N == 600:
+    if config.N == 600 and require_canonical_radius:
         require_canonical_selected_hardy_radius(
             config.r, label="finite transport Hardy radius"
         )
