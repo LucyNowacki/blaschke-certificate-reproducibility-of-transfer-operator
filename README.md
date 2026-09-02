@@ -167,7 +167,9 @@ The committed notebook preserves the thesis-result layout: 141 ordered cells,
 68 code cells, 18 digest-checked inline helpers, stable display labels, and the
 terminal auditor Cell `110M`. Its GitHub display copy retains all 34 plot
 positions across 20 visual cells. For practical GitHub rendering, those
-embedded previews are compact JPEGs and non-visual runtime chatter is omitted;
+embedded previews are compact JPEGs, while all tables, text, streams, and
+other non-image outputs remain in their original cells and order; only
+machine-local scratch paths are replaced by portable display markers;
 cell IDs, order, sources, helper positions, execution counts, and plot
 positions remain aligned with the executed thesis-result notebook. The
 full-resolution figures remain beside it. The source-only replay does not

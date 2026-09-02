@@ -117,11 +117,13 @@ digests are not accepted as substitutes for primitive theorem evidence.
 
 The checked-in
 [`blaschke_deformation_certifier_thesis_math.ipynb`](../Numerics/blaschke_deformation_certifier_thesis_math.ipynb)
-is a generated presentation copy with all plot positions retained as compact
-GitHub previews. Full-resolution images are stored in the adjacent
+is a generated presentation copy with every executed output retained in its
+original cell and order; embedded plots are compact GitHub previews.
+Full-resolution images are stored in the adjacent
 [`figures`](../Numerics/outputs/blaschke_deformation_certifier/figures/) directory.
-Non-visual runtime chatter is omitted from that GitHub-facing copy so scratch
-paths cannot become publication metadata.
+Tables, text, streams, and other non-image outputs remain present. Only
+machine-local scratch paths are replaced by portable display markers so they
+cannot become publication metadata.
 The [dependency-map explanation](../Numerics/blaschke_deformation_notebook_dependency_map.md)
 and [standalone SVG](../Numerics/blaschke_deformation_notebook_dependency_map.svg)
 record which branches are theorem-facing and which are diagnostic.

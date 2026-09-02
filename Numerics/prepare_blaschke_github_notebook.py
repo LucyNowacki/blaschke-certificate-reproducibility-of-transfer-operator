@@ -2,9 +2,12 @@
 
 The numerical execution notebook embeds full-resolution PNG payloads.  That is
 useful locally but makes GitHub decline to render the file.  This publication
-step keeps every code cell, execution count and plot position, replaces each
-embedded PNG with a small JPEG preview, and omits non-visual runtime chatter
-that can contain scratch paths. Full-resolution PNG files remain in
+step keeps every cell, execution count, output object and output position, and
+replaces only each embedded PNG payload with a small JPEG preview.  Text,
+streams, tables and all other MIME representations remain in their original
+output objects.  Ephemeral local paths in output text are replaced by stable
+``<local-path>/...`` display markers; the transformation fails closed if any
+private-path marker remains.  Full-resolution PNG files remain in
 ``outputs/blaschke_deformation_certifier/figures``.
 
 This is a presentation-only transformation.  Before writing anything it
@@ -23,6 +26,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 from typing import Any
 
@@ -39,6 +43,24 @@ DEFAULT_MAX_WIDTH = 480
 DEFAULT_JPEG_QUALITY = 40
 MAX_GITHUB_NOTEBOOK_BYTES = 2_000_000
 
+_PRIVATE_PATH_RE = re.compile(
+    r"(?:file://)?/(?:private/tmp|var/tmp|tmp|home|Users)/"
+    r"[A-Za-z0-9_.@%+~=:/-]+"
+    r"|[A-Za-z]:[\\/](?:Users|Temp)[\\/]"
+    r"[A-Za-z0-9_.@%+~=:\\/\-]+"
+)
+_PRIVATE_PATH_MARKERS = (
+    "/tmp/",
+    "/var/tmp/",
+    "/private/tmp/",
+    "/home/",
+    "/Users/",
+    "file://",
+)
+_WINDOWS_PRIVATE_PATH_RE = re.compile(
+    r"[A-Za-z]:[\\/](?:Users|Temp)[\\/]", re.IGNORECASE
+)
+
 
 def _source_text(cell: dict[str, Any]) -> str:
     source = cell.get("source", "")
@@ -47,6 +69,59 @@ def _source_text(cell: dict[str, Any]) -> str:
 
 def _payload_text(value: Any) -> str:
     return "".join(value) if isinstance(value, list) else str(value)
+
+
+def _display_path(match: re.Match[str]) -> str:
+    """Return a non-private display path while retaining the useful filename."""
+
+    raw = match.group(0).replace("\\", "/")
+    line_suffix = ""
+    line_match = re.search(r"(:\d+(?::\d+)?)$", raw)
+    if line_match is not None:
+        line_suffix = line_match.group(1)
+        raw = raw[: line_match.start()]
+    filename = raw.rstrip("/").rsplit("/", 1)[-1]
+    if not filename or filename in {"tmp", "home", "Users", "Temp"}:
+        return "<local-path>"
+    return f"<local-path>/{filename}{line_suffix}"
+
+
+def _sanitize_output_text(value: Any) -> tuple[Any, int]:
+    """Redact local paths recursively without changing JSON container shapes."""
+
+    if isinstance(value, str):
+        return _PRIVATE_PATH_RE.subn(_display_path, value)
+    if isinstance(value, list):
+        sanitized: list[Any] = []
+        replacement_count = 0
+        for item in value:
+            clean, count = _sanitize_output_text(item)
+            sanitized.append(clean)
+            replacement_count += count
+        return sanitized, replacement_count
+    if isinstance(value, dict):
+        sanitized_dict: dict[str, Any] = {}
+        replacement_count = 0
+        for key, item in value.items():
+            # Image payloads are opaque encoded bytes, not output text.
+            if key in {"image/png", "image/jpeg"}:
+                sanitized_dict[key] = item
+                continue
+            clean, count = _sanitize_output_text(item)
+            sanitized_dict[key] = clean
+            replacement_count += count
+        return sanitized_dict, replacement_count
+    return value, 0
+
+
+def _contains_private_path_marker(value: Any) -> str | None:
+    serialized = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    for marker in _PRIVATE_PATH_MARKERS:
+        if marker in serialized:
+            return marker
+    if _WINDOWS_PRIVATE_PATH_RE.search(serialized):
+        return "a Windows user or temporary path"
+    return None
 
 
 def _require_current_sources(notebook: dict[str, Any]) -> None:
@@ -111,22 +186,33 @@ def prepare(
     visual_cell_count = 0
     original_png_bytes = 0
     preview_jpeg_bytes = 0
-    omitted_non_plot_outputs = 0
+    original_output_count = sum(len(cell.get("outputs", [])) for cell in code_cells)
+    non_image_output_count = 0
+    sanitized_private_path_count = 0
     for cell in code_cells:
         visual = False
-        retained_outputs = []
-        for output in cell.get("outputs", []):
+        prepared_outputs = []
+        for original_output in cell.get("outputs", []):
+            output, path_count = _sanitize_output_text(original_output)
+            sanitized_private_path_count += path_count
             if output.get("output_type") == "error":
                 raise RuntimeError(
                     f"Executed cell {cell.get('id')} contains an error output."
                 )
             data = output.get("data", {})
             if "image/png" not in data:
-                omitted_non_plot_outputs += 1
+                non_image_output_count += 1
+                prepared_outputs.append(output)
                 continue
+            if "image/jpeg" in data:
+                raise RuntimeError(
+                    f"Executed cell {cell.get('id')} has both PNG and JPEG image data."
+                )
             visual = True
             plot_count += 1
-            raw_png = base64.b64decode(_payload_text(data.pop("image/png")), validate=True)
+            raw_png = base64.b64decode(
+                _payload_text(data["image/png"]), validate=True
+            )
             preview, original_size = _jpeg_preview(
                 raw_png,
                 max_width=max_width,
@@ -134,7 +220,13 @@ def prepare(
             )
             original_png_bytes += len(raw_png)
             preview_jpeg_bytes += len(preview)
-            data["image/jpeg"] = base64.b64encode(preview).decode("ascii")
+            preview_payload = base64.b64encode(preview).decode("ascii")
+            output["data"] = {
+                ("image/jpeg" if mime == "image/png" else mime): (
+                    preview_payload if mime == "image/png" else payload
+                )
+                for mime, payload in data.items()
+            }
             metadata = output.setdefault("metadata", {})
             metadata["github_plot_preview"] = {
                 "full_resolution_png_sha256": hashlib.sha256(raw_png).hexdigest(),
@@ -144,9 +236,15 @@ def prepare(
                 "preview_quality": quality,
                 "preview_width_limit": max_width,
             }
-            retained_outputs.append(output)
-        cell["outputs"] = retained_outputs
+            prepared_outputs.append(output)
+        cell["outputs"] = prepared_outputs
         visual_cell_count += int(visual)
+
+    prepared_output_count = sum(len(cell.get("outputs", [])) for cell in code_cells)
+    if prepared_output_count != original_output_count:
+        raise RuntimeError(
+            "The GitHub display transformation changed the number of output objects."
+        )
 
     if plot_count != EXPECTED_PLOT_COUNT:
         raise RuntimeError(f"Expected 34 plot outputs, found {plot_count}.")
@@ -180,7 +278,10 @@ def prepare(
         ),
         "plot_count": EXPECTED_PLOT_COUNT,
         "presentation_only": True,
-        "non_plot_outputs_omitted": omitted_non_plot_outputs,
+        "non_image_outputs_preserved": non_image_output_count,
+        "non_plot_outputs_omitted": 0,
+        "output_count": prepared_output_count,
+        "private_output_paths_sanitized": sanitized_private_path_count,
         "source_cells_sha256": source_cells_sha256,
         "source_cells_match_locked_builder": True,
         "theorem_gate": False,
@@ -196,24 +297,23 @@ def prepare(
             for cell in result["cells"]
         ],
     }
-    presentation_text = json.dumps(
-        presentation_surface,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    for forbidden in ("/tmp/", "/home/", "file://"):
-        if forbidden in presentation_text:
-            raise RuntimeError(
-                f"The GitHub display metadata or outputs expose {forbidden!r}."
-            )
+    private_marker = _contains_private_path_marker(presentation_surface)
+    if private_marker is not None:
+        raise RuntimeError(
+            "The GitHub display metadata or outputs still expose "
+            f"{private_marker!r}."
+        )
     report = {
         "cell_count": len(result["cells"]),
         "code_cell_count": len(code_cells),
         "error_output_count": 0,
-        "omitted_non_plot_outputs": omitted_non_plot_outputs,
+        "non_image_outputs_preserved": non_image_output_count,
+        "omitted_non_plot_outputs": 0,
         "original_png_bytes": original_png_bytes,
+        "output_count": prepared_output_count,
         "plot_count": plot_count,
         "preview_jpeg_bytes": preview_jpeg_bytes,
+        "private_output_paths_sanitized": sanitized_private_path_count,
         "visual_cell_count": visual_cell_count,
     }
     return result, report
@@ -223,6 +323,16 @@ def _serialise(notebook: dict[str, Any]) -> bytes:
     return (json.dumps(notebook, separators=(",", ":"), ensure_ascii=False) + "\n").encode(
         "utf-8"
     )
+
+
+def _require_size_limit(
+    payload: bytes, *, maximum_bytes: int = MAX_GITHUB_NOTEBOOK_BYTES
+) -> None:
+    if len(payload) > maximum_bytes:
+        raise RuntimeError(
+            "The GitHub display notebook is still too large: "
+            f"{len(payload)} > {maximum_bytes} bytes."
+        )
 
 
 def main() -> None:
@@ -246,11 +356,7 @@ def main() -> None:
         quality=args.jpeg_quality,
     )
     payload = _serialise(prepared)
-    if len(payload) > MAX_GITHUB_NOTEBOOK_BYTES:
-        raise RuntimeError(
-            "The GitHub display notebook is still too large: "
-            f"{len(payload)} > {MAX_GITHUB_NOTEBOOK_BYTES} bytes."
-        )
+    _require_size_limit(payload)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
         mode="wb", dir=output.parent, prefix=f".{output.name}.", delete=False
