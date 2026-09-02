@@ -9,7 +9,7 @@
   "inline_helper_count": 18,
   "notebook_cell_count": 141,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "155586f476183c959ff11427a06520fe9869b79a85b206be9a77a4017aec7c03",
+  "notebook_sha256": "d293444be410f12c4ffeb546eed96706fee0582680ff9fef5b6f81036504fd03",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",
@@ -2936,7 +2936,7 @@
       "cell_id": "6a823024",
       "qualname": "phase1_gradient_palette",
       "classification": "plotting",
-      "line": 44
+      "line": 46
     },
     {
       "scope": "notebook_cell",
@@ -2944,7 +2944,7 @@
       "cell_id": "6a823024",
       "qualname": "gradient_colours",
       "classification": "plotting",
-      "line": 45
+      "line": 47
     },
     {
       "scope": "notebook_cell",
@@ -2952,7 +2952,7 @@
       "cell_id": "6a823024",
       "qualname": "display",
       "classification": "plotting",
-      "line": 46
+      "line": 48
     },
     {
       "scope": "notebook_cell",

@@ -87,6 +87,8 @@ class ReplayThreadEnvironmentTests(unittest.TestCase):
 
     def test_live_preflight_accepts_one_thread_and_rejects_four(self) -> None:
         base = dict(os.environ)
+        base["BLASCHKE_AUTHENTICATED_REPLAY_ROOT"] = str(HERE.parent)
+        base["PYTHONPATH"] = os.pathsep.join((str(HERE.parent), str(HERE)))
         one = dict(base)
         one.update({key: "1" for key in replay.BLAS_THREAD_ENVIRONMENT})
         accepted = subprocess.run(
@@ -132,8 +134,12 @@ class GeneratedKernelSetupTests(unittest.TestCase):
         ):
             self.assertLess(cap_position, authoritative.index(import_text))
         self.assertNotIn("os.environ.setdefault", authoritative)
+        limiter_position = authoritative.index("threadpool_limits(limits=1, user_api='blas')")
+        info_position = authoritative.index("threadpool_info()")
+        self.assertLess(limiter_position, info_position)
+        self.assertIn("_BLAS_THREAD_LIMIT", authoritative)
         self.assertIn("threadpool_info()", authoritative)
-        self.assertIn("Cell 5N requires every loaded BLAS runtime", authoritative)
+        self.assertIn("Cell 5N could not constrain every loaded BLAS runtime", authoritative)
 
         generated, _ = notebook_builder.build_curated()
         generated_cell = next(
@@ -141,6 +147,69 @@ class GeneratedKernelSetupTests(unittest.TestCase):
         )
         generated_source = "".join(generated_cell.get("source", []))
         self.assertIn(authoritative, generated_source)
+
+    def test_generated_cell_5_constrains_an_already_loaded_blas_runtime(self) -> None:
+        program = textwrap.dedent(
+            f"""
+            import json
+            import os
+            from pathlib import Path
+            import sys
+
+            sys.path.insert(0, {str(HERE)!r})
+            import numpy as np
+            from threadpoolctl import threadpool_info, threadpool_limits
+
+            np.linalg.svd(np.eye(2))
+            before = [r for r in threadpool_info() if r.get('user_api') == 'blas']
+            replacement = json.loads(
+                (Path({str(HERE)!r}) / 'plotting_cell_replacements.json').read_text(
+                    encoding='utf-8'
+                )
+            )['6a823024']
+            namespace = {{'__name__': '__main__'}}
+            exec(replacement, namespace)
+            after_first = [r for r in threadpool_info() if r.get('user_api') == 'blas']
+            exec(replacement, namespace)
+            after_second = [r for r in threadpool_info() if r.get('user_api') == 'blas']
+            with threadpool_limits(limits=24, user_api='blas'):
+                inside = [r for r in threadpool_info() if r.get('user_api') == 'blas']
+            restored = [r for r in threadpool_info() if r.get('user_api') == 'blas']
+            print('WARM_KERNEL_REPORT=' + json.dumps({{
+                'before': before,
+                'after_first': after_first,
+                'after_second': after_second,
+                'inside': inside,
+                'restored': restored,
+                'limiter_retained': '_BLAS_THREAD_LIMIT' in namespace,
+            }}, sort_keys=True))
+            """
+        )
+        environment = dict(os.environ)
+        environment.update({key: "24" for key in replay.BLAS_THREAD_ENVIRONMENT})
+        with tempfile.TemporaryDirectory(prefix="warm-notebook-kernel-") as temporary:
+            completed = subprocess.run(
+                [sys.executable, "-B", "-c", program],
+                cwd=temporary,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        self.assertEqual(completed.returncode, 0, msg=completed.stderr)
+        line = next(
+            item
+            for item in completed.stdout.splitlines()
+            if item.startswith("WARM_KERNEL_REPORT=")
+        )
+        report = json.loads(line.removeprefix("WARM_KERNEL_REPORT="))
+        self.assertTrue(report["before"])
+        self.assertTrue(any(row["num_threads"] == 24 for row in report["before"]))
+        self.assertTrue(all(row["num_threads"] == 1 for row in report["after_first"]))
+        self.assertTrue(all(row["num_threads"] == 1 for row in report["after_second"]))
+        self.assertTrue(all(row["num_threads"] == 24 for row in report["inside"]))
+        self.assertTrue(all(row["num_threads"] == 1 for row in report["restored"]))
+        self.assertTrue(report["limiter_retained"])
 
 
 class ScopedCompatibilityKernelTests(unittest.TestCase):

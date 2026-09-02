@@ -321,6 +321,15 @@ full-resolution figures remain beside it. The source-only replay does not
 trust notebook outputs: it rebuilds the locked output-free source notebook in
 a fresh scratch tree before regenerating theorem evidence.
 
+For a manual cell-by-cell rerun, select the locked Python `3.13.2`
+environment, restart the kernel, and run the cells from top to bottom. Cell
+`5N` actively constrains an already-loaded BLAS runtime to one outer thread,
+so the notebook is robust when Jupyter or an IDE has preloaded OpenBLAS with a
+machine-dependent thread count. Later explicitly scoped 24-worker operations
+restore that one-thread outer state when they finish. This warm-kernel route
+has been exercised through all 68 code cells, including all 43 table outputs
+and 34 plots, with zero cell errors.
+
 ### Reader's guide to cells, helpers, and thesis roles
 
 | Stable notebook cells | What the reader sees | Principal helper modules | Thesis/evidence role |
@@ -509,6 +518,7 @@ rational arithmetic.
 - Linux x86_64;
 - Bash, Git, and Python 3;
 - Conda or Micromamba for first-time creation of the exact environment;
+- at least 24 logical CPUs for the complete 141-cell publication notebook;
 - at least 8 GiB RAM and 8 GiB free scratch disk;
 - approximately 3.1 GB for the locked environment.
 
