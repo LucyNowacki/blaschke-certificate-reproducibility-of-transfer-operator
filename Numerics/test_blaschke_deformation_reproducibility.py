@@ -608,9 +608,9 @@ class TemporaryDeployment:
             "legacy_seed_dependency": False,
             "source_extraction": {
                 "notebook": {
-                    "path": packager.SOURCE_NOTEBOOK_RELATIVE.as_posix(),
+                    "path": packager.TEMPLATE_NOTEBOOK_RELATIVE.as_posix(),
                     "sha256": _sha256(
-                        self.root.joinpath(*packager.SOURCE_NOTEBOOK_RELATIVE.parts)
+                        self.root.joinpath(*packager.TEMPLATE_NOTEBOOK_RELATIVE.parts)
                     ),
                     "cells": {
                         "Cell 100": {
@@ -1572,7 +1572,7 @@ class ReproducibilityBundleTests(unittest.TestCase):
         )
         audit_report["source_extraction"]["notebook"][
             "path"
-        ] = "/temporary/replay/Numerics/blaschke_deformation_certifier.ipynb"
+        ] = "/temporary/replay/Numerics/blaschke_deformation_certifier_template.ipynb"
         audit_report["source_extraction"]["producer"][
             "path"
         ] = "/temporary/replay/Numerics/blaschke_deformation_diagnostic_audits.py"

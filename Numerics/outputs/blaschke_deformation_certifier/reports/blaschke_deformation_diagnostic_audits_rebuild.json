@@ -51,7 +51,7 @@
       "kind": "explicit_generated_path",
       "path": "Numerics/outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_active_geometry.csv",
       "rows": 1,
-      "sha256": "67b59a437d3d7403a538be45acc6b29e2ca17e6cc4f11d857afedc6fff7934e4"
+      "sha256": "6b786aaa2f4adebf3e3eb154a6521e8949b6f3d345406882dfb4dd845d4569aa"
     },
     "moat_rows": {
       "columns": [
@@ -88,7 +88,7 @@
       "kind": "explicit_generated_path",
       "path": "Numerics/outputs/blaschke_deformation_certifier/data/branch_image_wide_candidate_first15_contour_moats_N600_M610_J128.csv",
       "rows": 15,
-      "sha256": "1185ac9a89f111fda27a568ec8acdade3abcaaa3e2085fd1e5da0b785ce3b7d2"
+      "sha256": "e10d4f6777f507563029df0571148d7baa13093be11cd3ef6ff3ec0261cfddf9"
     },
     "schur_rows": {
       "columns": [
@@ -114,7 +114,7 @@
       "kind": "explicit_generated_path",
       "path": "Numerics/outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_generic_sampled_schur_envelope.csv",
       "rows": 6,
-      "sha256": "b044b18cbf8cb2329d9c2ba10c4487a81fc8bddb7d77986d5803c15c06951027"
+      "sha256": "594725907fa2a33719eada7773e9cd2dfc662687a6965d36e40279c20f16ab32"
     },
     "targets": {
       "columns": [
@@ -199,7 +199,7 @@
       "diagnostic_only": true,
       "path": "Numerics/outputs/blaschke_deformation_certifier/data/transfer_lab_blaschke_mu_0p3_universal_certification_audit.csv",
       "rows": 7,
-      "sha256": "37a5da4c04ac911bddeb98bd7484e412da556da7ccb9e2888283af98c2737088"
+      "sha256": "0ae661e2ebac75cae84d824aff470822a1387a1f898eef1093fa6eab236066b6"
     }
   },
   "producer_schema": "blaschke-deformation-diagnostic-audits-v1",
@@ -215,12 +215,12 @@
           "source_sha256": "bdb603bcd97a79e0c4148d5465e697e4131ae2ab595c8e33019f0dc89127adda"
         }
       },
-      "path": "Numerics/blaschke_deformation_certifier.ipynb",
-      "sha256": "c854850df88b257b54c982e504155867882d04fb691d62d134c7a5ce1fcbf6de"
+      "path": "Numerics/blaschke_deformation_certifier_template.ipynb",
+      "sha256": "7e8a7b156f329665ff2f4673e0bcb6b3362408ab8c0d5a48256adef6129cfc31"
     },
     "producer": {
       "path": "Numerics/blaschke_deformation_diagnostic_audits.py",
-      "sha256": "d1d63f19ec117b5d1c913847ed984902a5db55a01f3541a9f027353e42867e70"
+      "sha256": "8152af709e7679f3d26cc442f2dc7586aa000bec104f7c3f0247add3a62d86cd"
     }
   }
 }

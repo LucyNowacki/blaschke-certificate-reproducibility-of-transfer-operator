@@ -1169,7 +1169,7 @@ def _load_frame(value: FrameInput, label: str) -> _LoadedFrame:
 
 def _notebook_source_record() -> dict[str, Any]:
     notebook_path = _canonical_numerics_file(
-        "blaschke_deformation_certifier.ipynb"
+        "blaschke_deformation_certifier_template.ipynb"
     )
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     cells: dict[str, dict[str, str]] = {}

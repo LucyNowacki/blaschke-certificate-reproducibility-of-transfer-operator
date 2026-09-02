@@ -330,6 +330,12 @@ restore that one-thread outer state when they finish. This warm-kernel route
 has been exercised through all 68 code cells, including all 43 table outputs
 and 34 plots, with zero cell errors.
 
+Direct notebook execution does not require the generated base notebook
+`blaschke_deformation_certifier.ipynb`. Cell `95N` reads its stable Cell
+100/102 provenance from the committed immutable template and then creates the
+audit table consumed by Cell `97N`; this is the same source boundary used by
+the source-only ZIP.
+
 ### Reader's guide to cells, helpers, and thesis roles
 
 | Stable notebook cells | What the reader sees | Principal helper modules | Thesis/evidence role |

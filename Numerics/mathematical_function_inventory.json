@@ -9,7 +9,7 @@
   "inline_helper_count": 18,
   "notebook_cell_count": 141,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "d293444be410f12c4ffeb546eed96706fee0582680ff9fef5b6f81036504fd03",
+  "notebook_sha256": "615949bf94ed9da3078d0ea7ce28e9628c7f898fc89c06afd9e159055ad20ce0",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",
@@ -23,7 +23,7 @@
     "blaschke_deformation_historical_comparisons.py": "1252279e45116f8f8ad3b5271b7565750ddb1bb6c047e52bd9619624b0b05b30",
     "hardy_moat_surface_worker.py": "463a3190357fb5650a9ac28bd92c06436dd8da6e340a471a5840090d44fd6b01",
     "blaschke_deformation_historical_phase4.py": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
-    "blaschke_deformation_diagnostic_audits.py": "0fe900bcd620b3588375976a32547088fbe1165db0f73429c900dffd1705ea1f",
+    "blaschke_deformation_diagnostic_audits.py": "8152af709e7679f3d26cc442f2dc7586aa000bec104f7c3f0247add3a62d86cd",
     "blaschke_deformation_phase2_finite_m.py": "8918b6aa9a25dfd5b11d2b328331c9c85dbe456991893e1d6a6547117cb8a8db",
     "blaschke_deformation_phase2_resolved_response.py": "343a4a534fc29c0674120aa221d0dd0452fcc6f6153348d9e32ca3189d9e5a28",
     "blaschke_deformation_phase2_final_aggregation.py": "17616d14d108faa13b09bd1c7ee39531ce4160d4d125cdf917d09ff85cb94076",

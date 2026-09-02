@@ -1880,7 +1880,7 @@ def _validate_diagnostic_audit_report(
     for source, filename, source_label in (
         (
             notebook_source,
-            "blaschke_deformation_certifier.ipynb",
+            TEMPLATE_NOTEBOOK_RELATIVE.name,
             "notebook",
         ),
         (

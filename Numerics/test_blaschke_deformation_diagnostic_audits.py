@@ -206,7 +206,30 @@ class DiagnosticAuditWriterTests(unittest.TestCase):
                 notebook_record = audits._notebook_source_record()
             self.assertEqual(
                 notebook_record["path"],
-                "Numerics/blaschke_deformation_certifier.ipynb",
+                "Numerics/blaschke_deformation_certifier_template.ipynb",
+            )
+            self.assertEqual(
+                set(notebook_record["cells"]), {"Cell 100", "Cell 102"}
+            )
+
+    def test_notebook_source_record_needs_no_generated_base_notebook(self) -> None:
+        with tempfile.TemporaryDirectory(
+            prefix="diagnostic-audits-source-only-"
+        ) as temporary:
+            root = Path(temporary)
+            numerics = root / "Numerics"
+            numerics.mkdir()
+            template = HERE / "blaschke_deformation_certifier_template.ipynb"
+            (numerics / template.name).write_bytes(template.read_bytes())
+            self.assertFalse(
+                (numerics / "blaschke_deformation_certifier.ipynb").exists()
+            )
+            with mock.patch.object(audits, "_deployment_root", return_value=root):
+                notebook_record = audits._notebook_source_record()
+
+            self.assertEqual(
+                notebook_record["path"],
+                "Numerics/blaschke_deformation_certifier_template.ipynb",
             )
             self.assertEqual(
                 set(notebook_record["cells"]), {"Cell 100", "Cell 102"}
