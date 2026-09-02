@@ -12,6 +12,151 @@ Reproduction is judged by the mathematical certificate, not by byte-for-byte
 equality of paths, archives, plots, compression containers, timings, or
 toolchain-sensitive witness arrays.
 
+## Start here — reproduce the results on a new machine
+
+> **New to Git or numerical software?** Follow the numbered blocks below in
+> order and copy each block into the same terminal. The supported platform is
+> **Linux x86_64**. On Windows, use an x86_64 Ubuntu installation under WSL2.
+> The exact lock is not currently provided for macOS, ARM, or native Windows.
+
+### One-screen guide
+
+| Step | What you do | Exact command | Successful result |
+| --- | --- | --- | --- |
+| **0** | Check the machine | `uname -s && uname -m` | Prints `Linux` and `x86_64`. You also need at least 8 GiB RAM, 8 GiB free space under `/tmp`, and about 3.1 GB for the environment. |
+| **1** | Download the fixed v2 release | Copy **Block 1** below. | Prints `Checkout identity OK` and a 40-character commit ID. |
+| **2** | Check setup without numerical work | `./reproduce-certificate.sh dry-run --expected-git-commit "$EXPECTED_RELEASE_COMMIT" --receipt "$PWD/certificate-equivalence-receipt.json"` | Receipt status: `DRY_RUN_READY_NO_CERTIFICATION`. |
+| **3** | Check the results already shipped in the repository | `./reproduce-certificate.sh quick --expected-git-commit "$EXPECTED_RELEASE_COMMIT" --receipt "$PWD/certificate-equivalence-receipt.json"` | Receipt status: `ARTIFACT_SEMANTICS_CONFIRMED_NON_INDEPENDENT`. |
+| **4** | Recompute the theorem-facing results from source | `./reproduce-certificate.sh full --expected-git-commit "$EXPECTED_RELEASE_COMMIT" --receipt "$PWD/certificate-equivalence-receipt.json"` | Receipt status: `CERTIFICATION_CONFIRMED` and `independent_theorem_recomputation: true`. |
+| **5** | Read the numerical conclusion | Copy **Block 5** below or open the [executed notebook](Numerics/blaschke_deformation_certifier_thesis_math.ipynb). | Reports 24 target contours with total multiplicity 30, the Schur/Laurent route counts, and the moat/small-gain bounds. |
+
+`dry-run` starts no theorem producer, but the **first** invocation still
+downloads and creates the exact locked environment. Keep an internet
+connection during that first setup. Later invocations reuse
+`.certificate-replay-env/`. The numerical duration is machine-dependent; do
+not worry if the full step runs for many minutes.
+
+### Block 0 — install the three prerequisite tools once
+
+First check whether they are already available:
+
+```bash
+git --version
+python3 --version
+conda --version || micromamba --version
+```
+
+If `git` or `python3` is missing on Ubuntu/WSL2:
+
+```bash
+sudo apt update
+sudo apt install -y git python3 curl
+```
+
+If both `conda` and `micromamba` are missing, install Miniforge:
+
+```bash
+curl -L -o "$HOME/Miniforge3.sh" \
+  https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+bash "$HOME/Miniforge3.sh" -b -p "$HOME/miniforge3"
+source "$HOME/miniforge3/etc/profile.d/conda.sh"
+conda --version
+```
+
+The project wrapper, not the user, installs the scientific Python packages
+from the committed exact locks.
+
+### Block 1 — download and enter the exact tagged release
+
+```bash
+export REPO_URL='https://github.com/LucyNowacki/blaschke-certificate-reproducibility-of-transfer-operator.git'
+export RELEASE_TAG='certificate-equivalent-v2'
+
+export EXPECTED_RELEASE_COMMIT="$(
+  git ls-remote "$REPO_URL" "refs/tags/${RELEASE_TAG}^{}" | awk '{print $1}'
+)"
+test "${#EXPECTED_RELEASE_COMMIT}" -eq 40
+
+git clone --branch "$RELEASE_TAG" --single-branch "$REPO_URL"
+cd blaschke-certificate-reproducibility-of-transfer-operator
+test "$(git rev-parse HEAD)" = "$EXPECTED_RELEASE_COMMIT"
+printf 'Checkout identity OK: %s\n' "$EXPECTED_RELEASE_COMMIT"
+```
+
+This queries the immutable annotated tag from GitHub and then checks that the
+downloaded files are at exactly that commit. Do not use **Download ZIP** for
+this beginner route because a ZIP has no Git identity.
+
+### Blocks 2–4 — choose how much work to run
+
+Start with the no-compute preflight:
+
+```bash
+./reproduce-certificate.sh dry-run \
+  --expected-git-commit "$EXPECTED_RELEASE_COMMIT" \
+  --receipt "$PWD/certificate-equivalence-receipt.json"
+```
+
+Then inspect the committed results without recomputing the Hardy/Laurent
+witnesses:
+
+```bash
+./reproduce-certificate.sh quick \
+  --expected-git-commit "$EXPECTED_RELEASE_COMMIT" \
+  --receipt "$PWD/certificate-equivalence-receipt.json"
+```
+
+For the independent source recomputation, run:
+
+```bash
+./reproduce-certificate.sh full \
+  --expected-git-commit "$EXPECTED_RELEASE_COMMIT" \
+  --receipt "$PWD/certificate-equivalence-receipt.json"
+```
+
+The full route works in a fresh temporary directory and does not overwrite the
+checked-out source or stored notebook. The receipt is deliberately written to
+the easy-to-find, Git-ignored file
+`certificate-equivalence-receipt.json` in the repository root.
+
+### Block 5 — print the answer from the receipt
+
+```bash
+python3 - <<'PY'
+import json
+
+with open("certificate-equivalence-receipt.json", encoding="utf-8") as handle:
+    receipt = json.load(handle)
+
+result = receipt["semantic_projection"]
+print("status:", receipt["status"])
+print("independent recomputation:", receipt["independent_theorem_recomputation"])
+print("target contours:", result["target_count"])
+print("total multiplicity:", result["total_multiplicity"])
+print("routes:", result["route_counts"])
+print("minimum lifted moat:", result["minimum_derived_lifted_moat_lower"])
+print("maximum small-gain product:", result["maximum_derived_small_gain_upper"])
+PY
+```
+
+The expected mathematical conclusion is 24 nontrivial target contours with
+total algebraic multiplicity 30. Small harmless floating-point differences
+are acceptable only when the same one-sided inequalities, positive moats,
+small-gain tests, ordered counts, and rank-transfer gates still pass.
+
+### If something fails
+
+| Message or symptom | What to do |
+| --- | --- |
+| `conda or micromamba is required` | Complete **Block 0**, then rerun the same command. |
+| Platform is not `Linux x86_64` | Use an x86_64 Linux machine or an x86_64 Ubuntu WSL2/virtual machine. |
+| Fewer than 8 GiB RAM or free scratch space | Use a larger machine or free space under `/tmp`; the wrapper intentionally stops before full computation. |
+| `Checkout identity OK` does not appear | Remove the incomplete clone and repeat **Block 1** exactly. |
+| A replay exits without the expected status | Keep the terminal error and `certificate-equivalence-receipt.json`; do not interpret partial output as a successful result. |
+
+For the detailed trust model, archive route, receipt interpretation, and
+failure semantics, see the [auditor replay guide](release/REPLAY.md).
+
 ## Thesis abstract
 
 This thesis develops a certified approximation framework for the spectra of
@@ -362,7 +507,7 @@ rational arithmetic.
 ## System requirements
 
 - Linux x86_64;
-- Bash and Git;
+- Bash, Git, and Python 3;
 - Conda or Micromamba for first-time creation of the exact environment;
 - at least 8 GiB RAM and 8 GiB free scratch disk;
 - approximately 3.1 GB for the locked environment.

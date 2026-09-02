@@ -1,5 +1,10 @@
 # Auditor replay guide
 
+New users should begin with the prominent
+[Start here — reproduce the results on a new machine](../README.md#start-here--reproduce-the-results-on-a-new-machine)
+table in the repository README. This guide gives the stricter operational and
+trust details behind those commands.
+
 The release unit is the checked-out Git tree.  Do not substitute the historical
 raw-comparison archive for it, and do not load retained pickle evidence before
 the release inventory has been authenticated by the supplied stager/verifier.
