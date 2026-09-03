@@ -259,11 +259,31 @@ if not final_certification_ladder_df["passed"].all():
 FINAL_CERTIFICATION_LADDER_RESULT = plot_certification_ladder(
     final_certification_ladder_df,
     title=(
-        "Blaschke mu=0.3: final twenty-four-target certification ladder"
+        r"Blaschke $\\mu=0.3$: final certification ladder"
     ),
     item_colours=phase1_gradient_palette(
         final_certification_ladder_df["audit_item"]
     ),
+    display_labels={
+        "ordered target inventory and zero exclusion": (
+            "ordered target inventory\\nand zero exclusion"
+        ),
+        "exact-dyadic finite-matrix count transport": (
+            "exact-dyadic finite-matrix\\ncount transport"
+        ),
+        "sampled values excluded from theorem gates": (
+            "sampled values excluded\\nfrom theorem gates"
+        ),
+        "overall finite-to-exact Riesz ranks": (
+            "overall finite-to-exact\\nRiesz ranks"
+        ),
+    },
+    figsize=(11.5, 6.8),
+    title_fontsize=22,
+    label_fontsize=18,
+    status_fontsize=14,
+    bar_height=0.76,
+    title_pad=14,
     output_dir=FIG_DIR,
     stem=(
         "transfer_lab_blaschke_mu_0p3_"

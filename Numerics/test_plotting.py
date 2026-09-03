@@ -258,6 +258,40 @@ class CertificationLadderTests(unittest.TestCase):
         finally:
             plt.close(result.figure)
 
+    def test_ladder_sizing_is_tuned_by_the_calling_plot(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "audit_item": ["long theorem-facing gate"],
+                "status": ["theorem_certified"],
+            }
+        )
+        result = plotting.plot_certification_ladder(
+            frame,
+            title="Final certificate",
+            display_labels={
+                "long theorem-facing gate": "long theorem-facing\ngate"
+            },
+            figsize=(11.5, 6.8),
+            title_fontsize=22,
+            label_fontsize=18,
+            status_fontsize=14,
+            bar_height=0.76,
+            title_pad=14,
+            show=False,
+        )
+        try:
+            self.assertEqual(tuple(result.figure.get_size_inches()), (11.5, 6.8))
+            self.assertEqual(result.axes.title.get_fontsize(), 22)
+            self.assertEqual(
+                result.axes.get_yticklabels()[0].get_text(),
+                "long theorem-facing\ngate",
+            )
+            self.assertEqual(result.axes.get_yticklabels()[0].get_fontsize(), 18)
+            self.assertEqual(result.axes.texts[0].get_fontsize(), 14)
+            self.assertAlmostEqual(result.axes.patches[0].get_height(), 0.76)
+        finally:
+            plt.close(result.figure)
+
 
 if __name__ == "__main__":
     unittest.main()

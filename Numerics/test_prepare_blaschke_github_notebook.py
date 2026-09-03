@@ -20,15 +20,21 @@ if str(HERE) not in sys.path:
 
 from build_blaschke_deformation_thesis_math_notebook import build_curated
 from prepare_blaschke_github_notebook import (
+    DEFAULT_JPEG_QUALITY,
+    DEFAULT_MAX_WIDTH,
+    READABLE_PREVIEW_BY_CELL_ID,
     _require_size_limit,
     _source_text,
     prepare,
 )
 
 
-def _png_payload() -> str:
+def _png_payload(width: int = 24, height: int = 12) -> str:
     target = io.BytesIO()
-    Image.new("RGBA", (24, 12), (20, 80, 140, 180)).save(target, format="PNG")
+    Image.new("RGBA", (width, height), (20, 80, 140, 180)).save(
+        target,
+        format="PNG",
+    )
     return base64.b64encode(target.getvalue()).decode("ascii")
 
 
@@ -38,6 +44,7 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
         notebook, _ = build_curated()
         cls.base_notebook = notebook
         cls.png = _png_payload()
+        cls.large_png = _png_payload(1200, 600)
 
     def fixture(self) -> dict:
         notebook = deepcopy(self.base_notebook)
@@ -50,8 +57,9 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
             cell["execution_count"] = execution_count
             cell["outputs"] = []
 
-        # Fourteen cells have two plots and seven have one: 35 plots in 21 cells.
-        for index, cell in enumerate(code_cells[:21]):
+        # Fourteen cells have two plots and six have one; the final ladder has
+        # one larger readable preview: 35 plots in 21 cells.
+        for index, cell in enumerate(code_cells[:20]):
             for plot_index in range(2 if index < 14 else 1):
                 cell["outputs"].append(
                     {
@@ -60,6 +68,16 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
                         "output_type": "display_data",
                     }
                 )
+        final_ladder = next(
+            cell for cell in code_cells if cell.get("id") == "3e8b784c"
+        )
+        final_ladder["outputs"].append(
+            {
+                "data": {"image/png": self.large_png},
+                "metadata": {"fixture_plot": ["final-ladder", 0]},
+                "output_type": "display_data",
+            }
+        )
 
         first = code_cells[0]
         first_plot, second_plot = first["outputs"]
@@ -141,6 +159,26 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
             io.BytesIO(base64.b64decode(converted["data"]["image/jpeg"]))
         ) as image:
             self.assertEqual(image.format, "JPEG")
+
+    def test_final_ladder_receives_an_individually_readable_preview(self) -> None:
+        notebook = self.fixture()
+        prepared, _ = prepare(notebook)
+        final_ladder = next(
+            cell
+            for cell in prepared["cells"]
+            if cell.get("id") == "3e8b784c"
+        )
+        output = final_ladder["outputs"][0]
+        preview = output["metadata"]["github_plot_preview"]
+        expected_width, expected_quality = READABLE_PREVIEW_BY_CELL_ID["3e8b784c"]
+        self.assertEqual(preview["preview_width_limit"], expected_width)
+        self.assertEqual(preview["preview_quality"], expected_quality)
+        self.assertGreater(expected_width, DEFAULT_MAX_WIDTH)
+        self.assertGreaterEqual(expected_quality, DEFAULT_JPEG_QUALITY)
+        with Image.open(
+            io.BytesIO(base64.b64decode(output["data"]["image/jpeg"]))
+        ) as image:
+            self.assertEqual(image.width, expected_width)
 
     def test_private_output_paths_are_sanitized_without_structure_loss(self) -> None:
         notebook = self.fixture()
@@ -230,7 +268,10 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
             for cell in missing_visual_cell["cells"]
             if cell.get("cell_type") == "code"
         ]
-        moved_plot = code_cells[20]["outputs"].pop()
+        final_ladder = next(
+            cell for cell in code_cells if cell.get("id") == "3e8b784c"
+        )
+        moved_plot = final_ladder["outputs"].pop()
         code_cells[0]["outputs"].append(moved_plot)
         with self.assertRaisesRegex(RuntimeError, "Expected 21 visual code cells"):
             prepare(missing_visual_cell)

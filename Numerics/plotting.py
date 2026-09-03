@@ -3045,11 +3045,18 @@ def plot_certification_ladder(
     title: str,
     status_colours: Mapping[str, str] | None = None,
     item_colours: Mapping[Any, str] | None = None,
+    display_labels: Mapping[Any, str] | None = None,
+    figsize: tuple[float, float] = (11.0, 5.8),
+    title_fontsize: float = 20.0,
+    label_fontsize: float = 17.0,
+    status_fontsize: float = 11.0,
+    bar_height: float = 0.8,
+    title_pad: float = 6.0,
     output_dir: str | Path | None = None,
     stem: str = "universal_certification_ladder",
     show: bool = True,
 ) -> PlotResult:
-    """Render a certification-status ladder from an already checked table."""
+    """Render a ladder with call-specific sizing for its labels and context."""
 
     _require_columns(frame, ("audit_item", "status"), name="certification audit")
     colours = dict(status_colours or {
@@ -3062,7 +3069,7 @@ def plot_certification_ladder(
         "diagnostic_not_theorem_certified": THESIS_PALETTE["main"],
     })
     y = np.arange(len(frame))
-    fig, ax = plt.subplots(figsize=(11.0, 5.8), facecolor="white")
+    fig, ax = plt.subplots(figsize=figsize, facecolor="white")
     item_palette = dict(item_colours or {})
     bar_colours = [
         (
@@ -3075,16 +3082,28 @@ def plot_certification_ladder(
         )
         for item, status in zip(frame["audit_item"], frame["status"], strict=True)
     ]
-    ax.barh(y, np.ones_like(y, dtype=float), color=bar_colours, alpha=0.86)
-    ax.set_yticks(y, frame["audit_item"])
-    ax.tick_params(axis="y", labelsize=17)
+    ax.barh(
+        y,
+        np.ones_like(y, dtype=float),
+        color=bar_colours,
+        alpha=0.86,
+        height=bar_height,
+    )
+    label_map = dict(display_labels or {})
+    tick_labels = [label_map.get(item, str(item)) for item in frame["audit_item"]]
+    ax.set_yticks(y, tick_labels)
+    ax.tick_params(axis="y", labelsize=label_fontsize)
     ax.invert_yaxis()
     ax.set_xlim(0.0, 1.0)
     ax.set_xticks([])
     for index, row in frame.reset_index(drop=True).iterrows():
         ax.text(0.02, index, str(row["status"]).replace("_", " "), va="center",
-                color="white", fontsize=11, fontweight="bold")
-    ax.set_title(_reviewed_map_title(title), fontsize=20)
+                color="white", fontsize=status_fontsize, fontweight="bold")
+    ax.set_title(
+        _reviewed_map_title(title),
+        fontsize=title_fontsize,
+        pad=title_pad,
+    )
     for spine in ax.spines.values():
         spine.set_visible(False)
     return _finish_plot(fig, ax, output_dir=output_dir, stem=stem,

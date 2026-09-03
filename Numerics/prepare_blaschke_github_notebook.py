@@ -40,8 +40,11 @@ EXPECTED_CODE_CELL_COUNT = 68
 EXPECTED_VISUAL_CELL_COUNT = 21
 EXPECTED_PLOT_COUNT = 35
 DEFAULT_MAX_WIDTH = 480
-DEFAULT_JPEG_QUALITY = 38
+DEFAULT_JPEG_QUALITY = 34
 MAX_GITHUB_NOTEBOOK_BYTES = 2_000_000
+READABLE_PREVIEW_BY_CELL_ID: dict[str, tuple[int, int]] = {
+    "3e8b784c": (840, 38),
+}
 
 _PRIVATE_PATH_RE = re.compile(
     r"(?:file://)?/(?:private/tmp|var/tmp|tmp|home|Users)/"
@@ -192,6 +195,10 @@ def prepare(
     for cell in code_cells:
         visual = False
         prepared_outputs = []
+        cell_max_width, cell_quality = READABLE_PREVIEW_BY_CELL_ID.get(
+            str(cell.get("id", "")),
+            (max_width, quality),
+        )
         for original_output in cell.get("outputs", []):
             output, path_count = _sanitize_output_text(original_output)
             sanitized_private_path_count += path_count
@@ -215,8 +222,8 @@ def prepare(
             )
             preview, original_size = _jpeg_preview(
                 raw_png,
-                max_width=max_width,
-                quality=quality,
+                max_width=cell_max_width,
+                quality=cell_quality,
             )
             original_png_bytes += len(raw_png)
             preview_jpeg_bytes += len(preview)
@@ -233,8 +240,8 @@ def prepare(
                 "original_height": original_size[1],
                 "original_width": original_size[0],
                 "preview_format": "jpeg",
-                "preview_quality": quality,
-                "preview_width_limit": max_width,
+                "preview_quality": cell_quality,
+                "preview_width_limit": cell_max_width,
             }
             prepared_outputs.append(output)
         cell["outputs"] = prepared_outputs
