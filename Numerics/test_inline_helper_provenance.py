@@ -404,8 +404,15 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         for item in expected_items:
             self.assertIn(f'"audit_item": "{item}"', FINAL_CERTIFICATION_LADDER_SOURCE)
         self.assertIn("class: presentation_only", FINAL_CERTIFICATION_LADDER_SOURCE)
-        self.assertIn('"theorem_certified": "#009E73"', FINAL_CERTIFICATION_LADDER_SOURCE)
-        self.assertIn('"gate_failed": "#D55E00"', FINAL_CERTIFICATION_LADDER_SOURCE)
+        self.assertIn(
+            "from plotting import display_table, phase1_gradient_palette, "
+            "plot_certification_ladder",
+            FINAL_CERTIFICATION_LADDER_SOURCE,
+        )
+        self.assertIn(
+            'item_colours=phase1_gradient_palette(',
+            FINAL_CERTIFICATION_LADDER_SOURCE,
+        )
         self.assertLess(
             FINAL_CERTIFICATION_LADDER_SOURCE.index(
                 'if not final_certification_ladder_df["passed"].all():'

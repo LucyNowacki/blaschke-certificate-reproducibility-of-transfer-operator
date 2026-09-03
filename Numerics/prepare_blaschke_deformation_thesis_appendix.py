@@ -91,7 +91,7 @@ EXPECTED_RETAINED_CODE_CELL_COUNT = 68
 
 FINAL_CERTIFICATION_LADDER_SOURCE = '''#108N
 # notebook-provenance: begin
-# helpers: plotting: display_table; plotting: plot_certification_ladder; direct imports in this cell: plotting: display_table, plot_certification_ladder
+# helpers: plotting: display_table; plotting: phase1_gradient_palette; plotting: plot_certification_ladder; direct imports in this cell: plotting: display_table, phase1_gradient_palette, plot_certification_ladder
 # data_sources: Cell 107N::spectral_contour_certificate_df; Cell 107N::SPECTRAL_CONTOUR_CERTIFICATE
 # prior_results: Cell 107N::_computed_multiplicity; Cell 107N::_expected_multiplicity; Cell 107N::_schur_moat_rows; Cell 107N::_laurent_moat_rows; Cell 107N::CELL103_MINIMUM_CERTIFIED_MOAT_TEXT; Cell 107N::CELL103_MAXIMUM_SMALL_GAIN; Cell 107N::CELL103_MAXIMUM_SMALL_GAIN_TEXT
 # execution_mode: arithmetic: Boolean reaggregation of Cell 107N theorem gates only; cache_policy: none; kind: final_certificate_presentation; parallelism: single process
@@ -101,7 +101,7 @@ FINAL_CERTIFICATION_LADDER_SOURCE = '''#108N
 # notebook-provenance: end
 # Final theorem-facing certification ladder, derived only from Cell 107N.
 
-from plotting import display_table, plot_certification_ladder
+from plotting import display_table, phase1_gradient_palette, plot_certification_ladder
 
 _final_bool_column = lambda field: (
     spectral_contour_certificate_df[field]
@@ -261,10 +261,9 @@ FINAL_CERTIFICATION_LADDER_RESULT = plot_certification_ladder(
     title=(
         "Blaschke mu=0.3: final twenty-four-target certification ladder"
     ),
-    status_colours={
-        "theorem_certified": "#009E73",
-        "gate_failed": "#D55E00",
-    },
+    item_colours=phase1_gradient_palette(
+        final_certification_ladder_df["audit_item"]
+    ),
     output_dir=FIG_DIR,
     stem=(
         "transfer_lab_blaschke_mu_0p3_"
@@ -425,7 +424,11 @@ EXPECTED_RESTORED_PLOTTING_HELPER_CALLS: Mapping[str, frozenset[str]] = {
     "a2b9f84258b4": frozenset({"plot_certification_ladder"}),
     "fd3908b317fe": frozenset({"plot_packet_contours"}),
     "3e8b784c": frozenset(
-        {"display_table", "plot_certification_ladder"}
+        {
+            "display_table",
+            "phase1_gradient_palette",
+            "plot_certification_ladder",
+        }
     ),
 }
 

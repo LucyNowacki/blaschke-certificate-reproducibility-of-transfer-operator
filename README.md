@@ -366,8 +366,8 @@ labels such as `35AM`, `52AM`, and `78AM` occur at their fixed physical
 positions in the notebook. In particular, `101N` and `107N` are the
 theorem-producing cells; the immediately preceding helper cells expose the
 source used by those producers. Cell `108N` only renders a final-stage ladder
-from the already checked Cell `107N` result, so a green bar or table row is a
-readable report of a passed gate rather than an additional proof step.
+from the already checked Cell `107N` result, so a palette-gradient bar or table
+row is a readable report of a passed gate rather than an additional proof step.
 
 The longer [dependency-map explanation](Numerics/blaschke_deformation_notebook_dependency_map.md)
 records individual producer boundaries, persisted paths, arrow semantics, and

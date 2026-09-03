@@ -3044,6 +3044,7 @@ def plot_certification_ladder(
     *,
     title: str,
     status_colours: Mapping[str, str] | None = None,
+    item_colours: Mapping[Any, str] | None = None,
     output_dir: str | Path | None = None,
     stem: str = "universal_certification_ladder",
     show: bool = True,
@@ -3062,7 +3063,18 @@ def plot_certification_ladder(
     })
     y = np.arange(len(frame))
     fig, ax = plt.subplots(figsize=(11.0, 5.8), facecolor="white")
-    bar_colours = [colours.get(str(value), THESIS_PALETTE["ref"]) for value in frame["status"]]
+    item_palette = dict(item_colours or {})
+    bar_colours = [
+        (
+            colours.get(str(status), THESIS_PALETTE["ref"])
+            if str(status) == "gate_failed"
+            else item_palette.get(
+                item,
+                colours.get(str(status), THESIS_PALETTE["ref"]),
+            )
+        )
+        for item, status in zip(frame["audit_item"], frame["status"], strict=True)
+    ]
     ax.barh(y, np.ones_like(y, dtype=float), color=bar_colours, alpha=0.86)
     ax.set_yticks(y, frame["audit_item"])
     ax.tick_params(axis="y", labelsize=17)

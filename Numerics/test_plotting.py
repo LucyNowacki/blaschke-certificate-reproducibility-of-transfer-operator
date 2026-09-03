@@ -220,6 +220,44 @@ class CertificationLadderTests(unittest.TestCase):
         finally:
             plt.close(result.figure)
 
+    def test_item_colours_use_notebook_gradient_but_keep_failure_colour(
+        self,
+    ) -> None:
+        labels = ("first gate", "middle gate", "final gate", "failed gate")
+        frame = pd.DataFrame(
+            {
+                "audit_item": labels,
+                "status": [
+                    "theorem_certified",
+                    "theorem_certified",
+                    "theorem_certified",
+                    "gate_failed",
+                ],
+            }
+        )
+        gradient = plotting.phase1_gradient_palette(labels)
+        result = plotting.plot_certification_ladder(
+            frame,
+            title="Final certificate",
+            item_colours=gradient,
+            show=False,
+        )
+        try:
+            face_colours = [patch.get_facecolor() for patch in result.axes.patches]
+            for index, label in enumerate(labels[:3]):
+                self.assertEqual(
+                    face_colours[index],
+                    matplotlib.colors.to_rgba(gradient[label], alpha=0.86),
+                )
+            self.assertEqual(
+                face_colours[3],
+                matplotlib.colors.to_rgba(
+                    plotting.THESIS_EXTRA_PALETTE["vermillion"], alpha=0.86
+                ),
+            )
+        finally:
+            plt.close(result.figure)
+
 
 if __name__ == "__main__":
     unittest.main()
