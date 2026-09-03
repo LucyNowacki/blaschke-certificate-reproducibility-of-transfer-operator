@@ -317,9 +317,12 @@ other non-image outputs remain in their original cells and order; only
 machine-local scratch paths are replaced by portable display markers;
 cell IDs, order, sources, helper positions, execution counts, and plot
 positions remain aligned with the executed thesis-result notebook. The
-full-resolution figures remain beside it. The long-label ladder in Cell
-`108N` receives its own larger preview and plot-specific font scale so it
-remains legible beside the surrounding table. The source-only replay does not
+full-resolution figures remain beside it. Ordinary plot previews are rendered
+at up to 720 pixels wide, while the unusually wide three-panel bridge and the
+long-label ladder in Cell `108N` use restrained 840-pixel previews. Cell `108N`
+also receives its own plot-specific font scale, so every figure remains legible
+beside the surrounding prose and tables without globally inflating simple
+plots. The source-only replay does not
 trust notebook outputs: it rebuilds the locked output-free source notebook in
 a fresh scratch tree before regenerating theorem evidence.
 

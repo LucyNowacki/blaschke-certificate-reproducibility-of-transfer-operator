@@ -22,6 +22,7 @@ from build_blaschke_deformation_thesis_math_notebook import build_curated
 from prepare_blaschke_github_notebook import (
     DEFAULT_JPEG_QUALITY,
     DEFAULT_MAX_WIDTH,
+    MAX_GITHUB_NOTEBOOK_BYTES,
     READABLE_PREVIEW_BY_CELL_ID,
     _require_size_limit,
     _source_text,
@@ -57,9 +58,9 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
             cell["execution_count"] = execution_count
             cell["outputs"] = []
 
-        # Fourteen cells have two plots and six have one; the final ladder has
-        # one larger readable preview: 35 plots in 21 cells.
-        for index, cell in enumerate(code_cells[:20]):
+        # Fourteen cells have two plots and five have one.  The unusually wide
+        # bridge and final ladder each have one plot: 35 plots in 21 cells.
+        for index, cell in enumerate(code_cells[:19]):
             for plot_index in range(2 if index < 14 else 1):
                 cell["outputs"].append(
                     {
@@ -68,6 +69,16 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
                         "output_type": "display_data",
                     }
                 )
+        wide_bridge = next(
+            cell for cell in code_cells if cell.get("id") == "e4cd9776"
+        )
+        wide_bridge["outputs"].append(
+            {
+                "data": {"image/png": self.large_png},
+                "metadata": {"fixture_plot": ["wide-bridge", 0]},
+                "output_type": "display_data",
+            }
+        )
         final_ladder = next(
             cell for cell in code_cells if cell.get("id") == "3e8b784c"
         )
@@ -180,6 +191,34 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
         ) as image:
             self.assertEqual(image.width, expected_width)
 
+    def test_general_and_wide_previews_use_restrained_readable_scales(self) -> None:
+        notebook = self.fixture()
+        ordinary_plot = self.outputs(notebook)[1]
+        ordinary_plot["data"]["image/png"] = self.large_png
+        prepared, _ = prepare(notebook)
+        code_by_id = {
+            cell.get("id"): cell
+            for cell in prepared["cells"]
+            if cell.get("cell_type") == "code"
+        }
+
+        ordinary_output = self.outputs(prepared)[1]
+        wide_output = code_by_id["e4cd9776"]["outputs"][0]
+        final_output = code_by_id["3e8b784c"]["outputs"][0]
+        expected = (
+            (ordinary_output, DEFAULT_MAX_WIDTH, DEFAULT_JPEG_QUALITY),
+            (wide_output, *READABLE_PREVIEW_BY_CELL_ID["e4cd9776"]),
+            (final_output, *READABLE_PREVIEW_BY_CELL_ID["3e8b784c"]),
+        )
+        for output, width, quality in expected:
+            preview = output["metadata"]["github_plot_preview"]
+            self.assertEqual(preview["preview_width_limit"], width)
+            self.assertEqual(preview["preview_quality"], quality)
+            with Image.open(
+                io.BytesIO(base64.b64decode(output["data"]["image/jpeg"]))
+            ) as image:
+                self.assertEqual(image.width, width)
+
     def test_private_output_paths_are_sanitized_without_structure_loss(self) -> None:
         notebook = self.fixture()
         first_code = next(
@@ -291,11 +330,10 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
     def test_checked_in_notebook_retains_the_complete_executed_output_contract(
         self,
     ) -> None:
-        notebook = json.loads(
-            (HERE / "blaschke_deformation_certifier_thesis_math.ipynb").read_text(
-                encoding="utf-8"
-            )
-        )
+        notebook_path = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
+        raw_notebook = notebook_path.read_bytes()
+        self.assertLessEqual(len(raw_notebook), MAX_GITHUB_NOTEBOOK_BYTES)
+        notebook = json.loads(raw_notebook)
         code_cells = [
             cell for cell in notebook["cells"] if cell.get("cell_type") == "code"
         ]
@@ -313,6 +351,29 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
         )
         self.assertFalse(
             any(output.get("output_type") == "error" for output in outputs)
+        )
+        image_outputs = [
+            (cell.get("id"), output)
+            for cell in code_cells
+            for output in cell.get("outputs", [])
+            if "image/jpeg" in output.get("data", {})
+        ]
+        decoded_widths = []
+        for cell_id, output in image_outputs:
+            preview = output["metadata"]["github_plot_preview"]
+            expected_width, expected_quality = READABLE_PREVIEW_BY_CELL_ID.get(
+                cell_id,
+                (DEFAULT_MAX_WIDTH, DEFAULT_JPEG_QUALITY),
+            )
+            self.assertEqual(preview["preview_width_limit"], expected_width)
+            self.assertEqual(preview["preview_quality"], expected_quality)
+            with Image.open(
+                io.BytesIO(base64.b64decode(output["data"]["image/jpeg"]))
+            ) as image:
+                decoded_widths.append(image.width)
+        self.assertEqual(
+            Counter(decoded_widths),
+            Counter({DEFAULT_MAX_WIDTH: 33, 840: 2}),
         )
         cells_by_label = {
             _source_text(cell).splitlines()[0]: cell

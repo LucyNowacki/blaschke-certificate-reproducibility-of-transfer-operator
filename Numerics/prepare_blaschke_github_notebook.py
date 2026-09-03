@@ -3,7 +3,7 @@
 The numerical execution notebook embeds full-resolution PNG payloads.  That is
 useful locally but makes GitHub decline to render the file.  This publication
 step keeps every cell, execution count, output object and output position, and
-replaces only each embedded PNG payload with a small JPEG preview.  Text,
+replaces only each embedded PNG payload with a readable JPEG preview.  Text,
 streams, tables and all other MIME representations remain in their original
 output objects.  Ephemeral local paths in output text are replaced by stable
 ``<local-path>/...`` display markers; the transformation fails closed if any
@@ -39,10 +39,14 @@ EXPECTED_CELL_COUNT = 141
 EXPECTED_CODE_CELL_COUNT = 68
 EXPECTED_VISUAL_CELL_COUNT = 21
 EXPECTED_PLOT_COUNT = 35
-DEFAULT_MAX_WIDTH = 480
+DEFAULT_MAX_WIDTH = 720
 DEFAULT_JPEG_QUALITY = 34
-MAX_GITHUB_NOTEBOOK_BYTES = 2_000_000
+MAX_GITHUB_NOTEBOOK_BYTES = 3_000_000
 READABLE_PREVIEW_BY_CELL_ID: dict[str, tuple[int, int]] = {
+    # The three-panel Phase 3 bridge is unusually wide and needs extra width
+    # for its axes and legends to remain comparable with surrounding text.
+    "e4cd9776": (840, 34),
+    # The final long-label ladder uses its own larger typography and preview.
     "3e8b784c": (840, 38),
 }
 
