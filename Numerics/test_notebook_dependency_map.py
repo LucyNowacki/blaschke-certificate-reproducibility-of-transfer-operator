@@ -202,6 +202,28 @@ class NotebookDependencyMapTests(unittest.TestCase):
         )
         _by_id(self.root, "phase4-certified-branch")
 
+    def test_terminal_ladder_is_explicitly_presentation_only(self) -> None:
+        self.assertIn("Cell 107N remains the computation authority", self.markdown)
+        self.assertIn("Cell 109N remains an intentional no-op", self.markdown)
+        self.assertIn(
+            "The sampled Cell 95N diagnostic ladder is retained",
+            self.markdown,
+        )
+        self.assertIn(
+            "Cell 108N does not recompute a contour, change a gate, or add theorem evidence",
+            self.markdown,
+        )
+
+        authority = _by_id(self.root, "cell-107-certificate-authority")
+        presentation = _by_id(self.root, "cell-108-final-ladder")
+        edge = _by_id(self.root, "cell-107-to-108-presentation")
+        self.assertIn("dep-result", _classes(authority))
+        self.assertIn("dep-data", _classes(presentation))
+        self.assertEqual(_classes(edge), {"dep-provenance-arrow"})
+        presentation_text = " ".join(self.root.itertext())
+        self.assertIn("presentation only", presentation_text)
+        self.assertIn("no new theorem evidence", presentation_text)
+
     def test_executed_notebook_text_is_split_inside_its_box(self) -> None:
         group = _by_id(self.root, "executed-final-notebook")
         box = _by_id(self.root, "executed-final-notebook-box")

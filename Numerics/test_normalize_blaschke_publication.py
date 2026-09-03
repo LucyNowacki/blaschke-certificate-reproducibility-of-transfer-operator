@@ -54,7 +54,7 @@ def _valid_source_sync() -> dict[str, object]:
             },
             "candidate_raw_members_sha256": "6" * 64,
             "candidate_raw_member_count": 239,
-            "generated_member_count": 166,
+            "generated_member_count": 167,
             "comparator_sha256": "7" * 64,
             "comparison_rules_sha256": "8" * 64,
             "theorem_projection_sha256": "9" * 64,
@@ -537,11 +537,11 @@ class PublicationPortabilityTests(unittest.TestCase):
     def test_kernel_visual_assets_remain_exact(self) -> None:
         self.assertEqual(
             _sha256(HERE / "blaschke_deformation_notebook_dependency_map.svg"),
-            "73350903855419daff396bb341d978d4f685f109d31a9ca9924b4fa20a0d73a7",
+            "64723143031434af62a9cb31200cae72d8b60d1cc6f9d81d66991493ba4159a1",
         )
         self.assertEqual(
             _sha256(HERE / "test_notebook_dependency_map.py"),
-            "11ec47d4ee8b6d8b1bf312dad0e30d90af66ce557c70fb711a4799332b1b0b07",
+            "d4636c1e29c3d4a349b28d67b6642bfbcad0b937531de7821451c7f1904c8181",
         )
 
 

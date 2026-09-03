@@ -50,8 +50,8 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
             cell["execution_count"] = execution_count
             cell["outputs"] = []
 
-        # Fourteen cells have two plots and six have one: 34 plots in 20 cells.
-        for index, cell in enumerate(code_cells[:20]):
+        # Fourteen cells have two plots and seven have one: 35 plots in 21 cells.
+        for index, cell in enumerate(code_cells[:21]):
             for plot_index in range(2 if index < 14 else 1):
                 cell["outputs"].append(
                     {
@@ -135,8 +135,8 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
         self.assertEqual(converted["metadata"]["fixture_plot"], [0, 0])
         preview = converted["metadata"]["github_plot_preview"]
         self.assertEqual(preview["preview_format"], "jpeg")
-        self.assertEqual(report["plot_count"], 34)
-        self.assertEqual(report["visual_cell_count"], 20)
+        self.assertEqual(report["plot_count"], 35)
+        self.assertEqual(report["visual_cell_count"], 21)
         with Image.open(
             io.BytesIO(base64.b64decode(converted["data"]["image/jpeg"]))
         ) as image:
@@ -221,7 +221,7 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
             if cell.get("cell_type") == "code"
         ]
         missing_plot_code[0]["outputs"].pop()
-        with self.assertRaisesRegex(RuntimeError, "Expected 34 plot outputs"):
+        with self.assertRaisesRegex(RuntimeError, "Expected 35 plot outputs"):
             prepare(missing_plot)
 
         missing_visual_cell = self.fixture()
@@ -230,9 +230,9 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
             for cell in missing_visual_cell["cells"]
             if cell.get("cell_type") == "code"
         ]
-        moved_plot = code_cells[19]["outputs"].pop()
+        moved_plot = code_cells[20]["outputs"].pop()
         code_cells[0]["outputs"].append(moved_plot)
-        with self.assertRaisesRegex(RuntimeError, "Expected 20 visual code cells"):
+        with self.assertRaisesRegex(RuntimeError, "Expected 21 visual code cells"):
             prepare(missing_visual_cell)
 
     def test_existing_jpeg_alongside_png_fails_closed(self) -> None:
@@ -268,7 +268,7 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
         # below.
         self.assertGreaterEqual(len(outputs), 250)
         self.assertEqual(
-            sum("text/html" in output.get("data", {}) for output in outputs), 43
+            sum("text/html" in output.get("data", {}) for output in outputs), 44
         )
         self.assertFalse(
             any(output.get("output_type") == "error" for output in outputs)
@@ -286,6 +286,19 @@ class PrepareGitHubNotebookTests(unittest.TestCase):
                 for output in cells_by_label["#107N"].get("outputs", [])
             ),
             3,
+        )
+        self.assertTrue(
+            any(
+                "image/jpeg" in output.get("data", {})
+                for output in cells_by_label["#108N"].get("outputs", [])
+            )
+        )
+        self.assertEqual(
+            sum(
+                "text/html" in output.get("data", {})
+                for output in cells_by_label["#108N"].get("outputs", [])
+            ),
+            1,
         )
         display = notebook["metadata"]["github_display_artifact"]
         self.assertEqual(display["output_count"], len(outputs))

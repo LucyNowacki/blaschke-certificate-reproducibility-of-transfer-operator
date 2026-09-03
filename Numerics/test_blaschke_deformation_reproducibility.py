@@ -1615,8 +1615,8 @@ class ReproducibilityBundleTests(unittest.TestCase):
             semantic["diagnostic_audits"]["csv_row_counts"],
             {"universal_audit": 7, "first14_audit": 14},
         )
-        self.assertEqual(semantic["diagnostic_audits"]["plot_count"], 2)
-        self.assertEqual(len(semantic["png_critical_chunk_visual_digests"]), 17)
+        self.assertEqual(semantic["diagnostic_audits"]["plot_count"], 3)
+        self.assertEqual(len(semantic["png_critical_chunk_visual_digests"]), 18)
         self.assertTrue(summary["executed_replay_root_compared"])
         self.assertFalse(summary["replay_root_compared"])
 

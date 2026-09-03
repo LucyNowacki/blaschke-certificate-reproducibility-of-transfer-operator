@@ -808,7 +808,7 @@ $$
 \underline s_{\mathrm{lift}}=\min\{\underline s_{\Gamma,N}^{\mathrm H},d_{\Gamma,0}\},\qquad
 \widehat\varepsilon/\underline s_{\mathrm{lift}}<1
 $$
-to transport each finite Schur count to the exact operator's Riesz rank.  All twenty-four counts are Schur-derived; Laurent witnesses certify moats only.  The external Blaschke formula subsequently identifies the packet names and exhausts the exterior tail, so that exterior classification is a hybrid theorem-plus-external conclusion.  Cells 108N and 109N are locked no-op terminals and add no claim.'''
+to transport each finite Schur count to the exact operator's Riesz rank.  All twenty-four counts are Schur-derived; Laurent witnesses certify moats only.  The external Blaschke formula subsequently identifies the packet names and exhausts the exterior tail, so that exterior classification is a hybrid theorem-plus-external conclusion.  Cell 108N reaggregates exactly these checked Cell 107N results into an eight-row fail-closed ladder and adds no theorem claim; Cell 109N remains a locked no-op terminal.'''
 
 [terminal_auditor]
 cell_id = "terminal-certificate-auditor-110m"
@@ -839,7 +839,7 @@ chapter_labels = [
   "legEDMD:cor-certified-exterior-Blaschke-spectrum",
 ]
 evidence_status = ["validation_test", "certified_spectral_transfer", "presentation_only"]
-mathematics = '''The certificate output immediately above is emitted by execution Cell 107N.  Cells 108N and 109N contain only their labels and perform no computation; if a notebook interface visually associates the preceding output with Cell 108N, the stable source label remains Cell 107N.  This distinction matters because an auditor should attribute every numerical claim to the code that actually formed and checked it.
+mathematics = '''Execution Cell 107N forms and checks the twenty-four-target certificate.  Cell 108N consumes only those already-validated Cell 107N results, rechecks eight summary predicates, raises before drawing if any predicate fails, and then presents the surviving conclusions as the final ladder and table.  Its evidence status is `presentation_only`: the numerical and theorem claims remain attributable to Cell 107N.  Cell 109N contains only its label and performs no computation.
 
 #### Meaning of `computed_and_certified`
 
@@ -1160,7 +1160,7 @@ $$
 $$
 Each proposal produces that many $600\times600$ coefficient matrices.  They are transient because they are reconstructed during the recorded run, frozen and validated as exact dyadic candidates, used to form the rigorous coefficient and residual sums, and then represented by compact witness records rather than required as pre-existing tensor inputs.
 
-For each witness, `coefficient_sha256` is also compared with a historical reference digest.  `Historical Laurent tensor digest parity: all seven` means that all seven reconstructed byte sequences equal those recorded earlier.  This is a chain-of-custody and reproducibility fact only.  The theorem gate uses
+For each witness, `coefficient_sha256` is also compared with a historical reference digest.  Cell 107N reports the observed result as `Historical Laurent tensor digest parity: x of 7 match recorded references`, where $x$ is computed from the seven regenerated manifest rows rather than assumed to equal seven.  This is a chain-of-custody diagnostic only and is explicitly not a theorem gate.  The theorem gate uses
 $$
 \Delta_\Gamma^{\mathrm F}<1,
 \qquad

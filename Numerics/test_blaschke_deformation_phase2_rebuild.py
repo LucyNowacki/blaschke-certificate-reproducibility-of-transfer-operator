@@ -248,6 +248,40 @@ class Phase2ProducerTests(unittest.TestCase):
 
 
 class Phase2NotebookIntegrationTests(unittest.TestCase):
+    def test_cell107_reports_observed_laurent_digest_parity_as_non_gating(self) -> None:
+        notebook = json.loads(
+            (HERE / "blaschke_deformation_certifier_template.ipynb").read_text(
+                encoding="utf-8"
+            )
+        )
+        integration._update_cell103(notebook, current=False)
+        source = integration._source(
+            next(
+                cell
+                for cell in notebook["cells"]
+                if cell.get("id") == "code-b33b0f47"
+            )
+        )
+        self.assertIn(
+            'f"{int(_laurent_manifest_digest_parity.sum())} of "',
+            source,
+        )
+        self.assertIn(
+            'f"{len(_laurent_manifest_digest_parity)} match recorded references; "',
+            source,
+        )
+        self.assertIn("provenance-only, not a theorem gate", source)
+        self.assertNotIn("digest parity: all seven", source)
+
+        terminal = integration._source(counterpart_builder.terminal_auditor_cell())
+        self.assertIn(
+            "digest parity: x of 7 match recorded references",
+            terminal,
+        )
+        self.assertIn("computed from the seven regenerated manifest rows", terminal)
+        self.assertIn("explicitly not a theorem gate", terminal)
+        self.assertNotIn("digest parity: all seven", terminal)
+
     def test_diagnostic_audit_cell_uses_explicit_generated_inputs(self) -> None:
         built, _ = counterpart_builder.build_curated()
         source = next(

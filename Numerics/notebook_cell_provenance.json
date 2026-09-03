@@ -3,19 +3,19 @@
   "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
   "notebook": {
     "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-    "sha256_at_manifest_creation": "990646b5634f0c91f37adb2a29decfc61f4fa907526b7c2c1feb45612ea8a469",
-    "transformation_source_sha256": "c854850df88b257b54c982e504155867882d04fb691d62d134c7a5ce1fcbf6de",
+    "sha256_at_manifest_creation": "56a69cd21a65deb018ebeca0cc050e44bfbaa56567797620e84d951bad976855",
+    "transformation_source_sha256": "4db157150053bb559db22904db6c5ea6eecec740e04bed23326123d622bebe1c",
     "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
     "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 141-cell, 68-code-cell notebook, including Cell 0M, the two source-only diagnostic producers and final auditor Markdown Cell 110M.",
     "expected_retained_cell_count": 141,
     "expected_retained_code_cell_count": 68,
-    "expected_visual_cell_count": 20,
-    "expected_stored_png_output_count": 34,
+    "expected_visual_cell_count": 21,
+    "expected_stored_png_output_count": 35,
     "map_label": "blaschke_mu_0p3",
     "execution_order": "top-to-bottom stateful Jupyter execution",
-    "thesis_math_builder_sha256": "6379883a48a5680c1f90a4cd4bfb15d3b2a26738ca3bc4d8004c68722490e68d",
-    "chapter_math_map_sha256": "dd99f0b4fe7eab87f334d324e1859d98082439f26c0d1142d9f9aac99cd5fab6",
-    "stored_png_count_note": "The 34-payload contract includes both PNG outputs in Cell 80N: the selected sampled profile and the restored alpha^11 profile."
+    "thesis_math_builder_sha256": "04061b673e738910b3bf956589eeb0ad13edef00bc5ea66d5adc0b33f293f3ce",
+    "chapter_math_map_sha256": "3e0b2628283fdfddd1678d4994824b5efbfaec9907d443b31307860b853c1f70",
+    "stored_png_count_note": "The 35-position plot contract includes both plots in Cell 80N: the selected sampled profile and the restored alpha^11 profile, plus the presentation-only final certification ladder in Cell 108N. The canonical execution stores PNG payloads; the GitHub display stores JPEG previews in the same output positions."
   },
   "prepared_cell_indices": {
     "Cell 3": 4,
@@ -897,7 +897,7 @@
     "blaschke_deformation_phase2_geometry": {
       "cell_index": 38,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_geometry.py",
-      "source_sha256": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
+      "source_sha256": "32acf4126e12ad954f4362e47fb2eaec80aa42e1981236d638a94741238a74e8",
       "defined_functions": [
         "certify_geometry_scan"
       ],
@@ -930,7 +930,7 @@
     "blaschke_deformation_phase2_transport": {
       "cell_index": 40,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py",
-      "source_sha256": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5",
+      "source_sha256": "36e93ce0e8bb2822799192ce73680923bb669f5eafd30b9feb034ca063737410",
       "defined_functions": [
         "connection_matrix_float",
         "connection_matrix_arb",
@@ -967,7 +967,7 @@
     "blaschke_deformation_phase2_matrix": {
       "cell_index": 42,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_matrix.py",
-      "source_sha256": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
+      "source_sha256": "3d76d72ae71e3970d35c19eba5a5dbc9b848e95eb99e40700437c1500683d3a3",
       "defined_functions": [
         "certify_matrix_row"
       ],
@@ -1003,7 +1003,7 @@
     "blaschke_deformation_phase2_pipeline": {
       "cell_index": 44,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_pipeline.py",
-      "source_sha256": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
+      "source_sha256": "f91794e2f5d62199682108d1484e747c2d938224613d9aec5b1dbb3aa47567d9",
       "defined_functions": [
         "rebuild_phase2_inputs"
       ],
@@ -1036,7 +1036,7 @@
     "blaschke_deformation_historical_comparisons": {
       "cell_index": 46,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_historical_comparisons.py",
-      "source_sha256": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
+      "source_sha256": "1252279e45116f8f8ad3b5271b7565750ddb1bb6c047e52bd9619624b0b05b30",
       "defined_functions": [
         "rebuild_historical_comparisons"
       ],
@@ -1373,7 +1373,7 @@
     "blaschke_deformation_certification": {
       "cell_index": 65,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_certification.py",
-      "source_sha256": "f46d403cfe1e2458e9455592f0d5e33fb95697dfabfd18d10dab53da84daf2ec",
+      "source_sha256": "af7f5883679bf7a516f521f6542e4678fb7af1137c548ab3c4badcbf6d8f098d",
       "helper_functions": {},
       "helper_symbols": {},
       "defined_functions": [
@@ -2447,7 +2447,7 @@
     "blaschke_deformation_spectral_certification": {
       "cell_index": 157,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py",
-      "source_sha256": "b20bac59a78a8233ce7d1e11f10e54f5fbbf10d2c6951a983c76c15328c31824",
+      "source_sha256": "c0788babd8d1fca83b90c5ba81b7ceb827d3da29c6e9264d16fb389dc8295833",
       "helper_functions": {},
       "helper_symbols": {},
       "defined_functions": [
@@ -2554,7 +2554,7 @@
     "blaschke_deformation_contour_certification": {
       "cell_index": 161,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_contour_certification.py",
-      "source_sha256": "1aebcc004a19a6d09366c75a76a31fb297bad657666d6f91506f068401c95675",
+      "source_sha256": "6bb57c99d833bc0dbdb72158240a9d7a1f6d32e50ac87590d5ee38970537ec54",
       "helper_functions": {
         "blaschke_deformation_spectral_certification": [
           "sha256_file",
@@ -2734,50 +2734,50 @@
   },
   "unresolved_provenance": {},
   "source_hash_refresh": {
-    "date": "2026-08-30",
+    "date": "2026-09-03",
     "method": "refresh_notebook_cell_provenance.py",
-    "notebook_sha256": "990646b5634f0c91f37adb2a29decfc61f4fa907526b7c2c1feb45612ea8a469",
-    "transformation_source_sha256": "c854850df88b257b54c982e504155867882d04fb691d62d134c7a5ce1fcbf6de",
-    "thesis_math_builder_sha256": "6379883a48a5680c1f90a4cd4bfb15d3b2a26738ca3bc4d8004c68722490e68d",
-    "chapter_math_map_sha256": "dd99f0b4fe7eab87f334d324e1859d98082439f26c0d1142d9f9aac99cd5fab6",
-    "visual_cell_count": 20,
-    "stored_png_output_count": 34,
+    "notebook_sha256": "56a69cd21a65deb018ebeca0cc050e44bfbaa56567797620e84d951bad976855",
+    "transformation_source_sha256": "4db157150053bb559db22904db6c5ea6eecec740e04bed23326123d622bebe1c",
+    "thesis_math_builder_sha256": "04061b673e738910b3bf956589eeb0ad13edef00bc5ea66d5adc0b33f293f3ce",
+    "chapter_math_map_sha256": "3e0b2628283fdfddd1678d4994824b5efbfaec9907d443b31307860b853c1f70",
+    "visual_cell_count": 21,
+    "stored_png_output_count": 35,
     "standalone_source_count": 9,
     "standalone_source_sha256": {
-      "Final Deployment/Numerics/blaschke_deformation_certification.py": "f46d403cfe1e2458e9455592f0d5e33fb95697dfabfd18d10dab53da84daf2ec",
-      "Final Deployment/Numerics/blaschke_deformation_contour_certification.py": "1aebcc004a19a6d09366c75a76a31fb297bad657666d6f91506f068401c95675",
-      "Final Deployment/Numerics/blaschke_deformation_historical_comparisons.py": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
-      "Final Deployment/Numerics/blaschke_deformation_phase2_geometry.py": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
-      "Final Deployment/Numerics/blaschke_deformation_phase2_matrix.py": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
-      "Final Deployment/Numerics/blaschke_deformation_phase2_pipeline.py": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
-      "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5",
-      "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py": "b20bac59a78a8233ce7d1e11f10e54f5fbbf10d2c6951a983c76c15328c31824",
+      "Final Deployment/Numerics/blaschke_deformation_certification.py": "af7f5883679bf7a516f521f6542e4678fb7af1137c548ab3c4badcbf6d8f098d",
+      "Final Deployment/Numerics/blaschke_deformation_contour_certification.py": "6bb57c99d833bc0dbdb72158240a9d7a1f6d32e50ac87590d5ee38970537ec54",
+      "Final Deployment/Numerics/blaschke_deformation_historical_comparisons.py": "1252279e45116f8f8ad3b5271b7565750ddb1bb6c047e52bd9619624b0b05b30",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_geometry.py": "32acf4126e12ad954f4362e47fb2eaec80aa42e1981236d638a94741238a74e8",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_matrix.py": "3d76d72ae71e3970d35c19eba5a5dbc9b848e95eb99e40700437c1500683d3a3",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_pipeline.py": "f91794e2f5d62199682108d1484e747c2d938224613d9aec5b1dbb3aa47567d9",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py": "36e93ce0e8bb2822799192ce73680923bb669f5eafd30b9feb034ca063737410",
+      "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py": "c0788babd8d1fca83b90c5ba81b7ceb827d3da29c6e9264d16fb389dc8295833",
       "Final Deployment/Numerics/mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c"
     },
     "inline_helper_count": 18,
     "inline_helper_sha256": {
-      "blaschke_deformation_certification.py": "f46d403cfe1e2458e9455592f0d5e33fb95697dfabfd18d10dab53da84daf2ec",
-      "blaschke_deformation_contour_certification.py": "1aebcc004a19a6d09366c75a76a31fb297bad657666d6f91506f068401c95675",
-      "blaschke_deformation_diagnostic_audits.py": "d1d63f19ec117b5d1c913847ed984902a5db55a01f3541a9f027353e42867e70",
-      "blaschke_deformation_historical_comparisons.py": "2ca8481bb180ed9f52ccd839185b2c0fde07f8b7df554cd6734080c0bb80c5e5",
+      "blaschke_deformation_certification.py": "af7f5883679bf7a516f521f6542e4678fb7af1137c548ab3c4badcbf6d8f098d",
+      "blaschke_deformation_contour_certification.py": "6bb57c99d833bc0dbdb72158240a9d7a1f6d32e50ac87590d5ee38970537ec54",
+      "blaschke_deformation_diagnostic_audits.py": "8152af709e7679f3d26cc442f2dc7586aa000bec104f7c3f0247add3a62d86cd",
+      "blaschke_deformation_historical_comparisons.py": "1252279e45116f8f8ad3b5271b7565750ddb1bb6c047e52bd9619624b0b05b30",
       "blaschke_deformation_historical_phase4.py": "6617b2e76ed26a6ac4b4aaa8207903284a922179f97e911d42eaec0545490e73",
       "blaschke_deformation_phase1_diagnostics.py": "93dcebd2450f92df3e488fb5f5765a6ad9cb34d954e01000b29edb61613fdaf9",
-      "blaschke_deformation_phase2_final_aggregation.py": "064b43bcf83e4d24c49cca81c45905b780a40f681e8486ab54e5b46ece7855bb",
-      "blaschke_deformation_phase2_finite_m.py": "5c1c9cd5034b0520f66a5565e60184a263958af53e1b555a725ad25103c0d86f",
-      "blaschke_deformation_phase2_geometry.py": "73e28c41f719e212a8121d1dbb64426250508c4741ef50291f3d8c1e626820aa",
-      "blaschke_deformation_phase2_matrix.py": "6aead4f3a16fabd251c509ee51d2e0f06573bfda20c34e05463ea03066a4cff8",
-      "blaschke_deformation_phase2_pipeline.py": "408e5b9cdf2d6b8b5e3a5c76d7348456b9cfac3c1f83a624a1939763a7be80c5",
-      "blaschke_deformation_phase2_resolved_response.py": "3047063eba4c36e27dc2824e62e76b9a8b070f3ab3e6334b59c99027fb7a238e",
-      "blaschke_deformation_phase2_transport.py": "666bbd3802d146374919a3cba7fd8d8d26ad7f6557f960d1105100fb203931e5",
-      "blaschke_deformation_sampled_schur_diagnostics.py": "15f3cc33ed067043f3845493aa11c2230e94876d2d8993fe1fdf63f178fe2eea",
-      "blaschke_deformation_spectral_certification.py": "b20bac59a78a8233ce7d1e11f10e54f5fbbf10d2c6951a983c76c15328c31824",
-      "hardy_moat_surface_worker.py": "fe2614db853182a5e7ed73da3e4e2746e719308ab0b71d85474c564102cc9b46",
+      "blaschke_deformation_phase2_final_aggregation.py": "17616d14d108faa13b09bd1c7ee39531ce4160d4d125cdf917d09ff85cb94076",
+      "blaschke_deformation_phase2_finite_m.py": "8918b6aa9a25dfd5b11d2b328331c9c85dbe456991893e1d6a6547117cb8a8db",
+      "blaschke_deformation_phase2_geometry.py": "32acf4126e12ad954f4362e47fb2eaec80aa42e1981236d638a94741238a74e8",
+      "blaschke_deformation_phase2_matrix.py": "3d76d72ae71e3970d35c19eba5a5dbc9b848e95eb99e40700437c1500683d3a3",
+      "blaschke_deformation_phase2_pipeline.py": "f91794e2f5d62199682108d1484e747c2d938224613d9aec5b1dbb3aa47567d9",
+      "blaschke_deformation_phase2_resolved_response.py": "343a4a534fc29c0674120aa221d0dd0452fcc6f6153348d9e32ca3189d9e5a28",
+      "blaschke_deformation_phase2_transport.py": "36e93ce0e8bb2822799192ce73680923bb669f5eafd30b9feb034ca063737410",
+      "blaschke_deformation_sampled_schur_diagnostics.py": "692358513b7e81330f1a4ec382f35f4bd519c950c201b6009040d4d0ce810e6f",
+      "blaschke_deformation_spectral_certification.py": "c0788babd8d1fca83b90c5ba81b7ceb827d3da29c6e9264d16fb389dc8295833",
+      "hardy_moat_surface_worker.py": "463a3190357fb5650a9ac28bd92c06436dd8da6e340a471a5840090d44fd6b01",
       "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
       "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a"
     },
     "arithmetic_baseline_commit": "5ad612aed00e667f46bb176e7e09e3a51cb11676",
     "source_sync_scope": "research-thesis locators and Cell 110M explanatory Markdown plus public portability metadata and path-display normalization",
     "replay_status": "No notebook cell or numerical producer was executed for this source synchronisation or public portability normalization.",
-    "stored_output_status": "All code-cell sources, execution counts, and mathematical or numerical stored outputs are retained from the authenticated arithmetic baseline; environment-specific display paths and runtime metadata are normalized for the public bundle; Cell 107N remains the compute authority and Cell 110M adds no theorem gate."
+    "stored_output_status": "All mathematical or numerical stored outputs are retained from the authenticated arithmetic baseline; Cell 108N adds only a deterministic presentation of the already checked Cell 107N result. Environment-specific display paths and runtime metadata are normalized for the public bundle; Cell 107N remains the compute authority, Cell 109N remains a no-op, and Cell 110M adds no theorem gate."
   }
 }

@@ -3048,11 +3048,12 @@ def plot_certification_ladder(
     stem: str = "universal_certification_ladder",
     show: bool = True,
 ) -> PlotResult:
-    """Render the universal certification-status ladder."""
+    """Render a certification-status ladder from an already checked table."""
 
     _require_columns(frame, ("audit_item", "status"), name="certification audit")
     colours = dict(status_colours or {
         "theorem_certified": THESIS_PALETTE["real"],
+        "gate_failed": THESIS_EXTRA_PALETTE["vermillion"],
         "sampled_pass": THESIS_PALETTE["imag"],
         "sampled_not_interval_certified": THESIS_PALETTE["imag"],
         "sampled_not_theorem_certified": THESIS_PALETTE["imag"],

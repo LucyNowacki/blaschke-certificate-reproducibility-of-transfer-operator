@@ -19,7 +19,10 @@ bridge under `Research thesis source`, exact chapter labels and an evidence-stat
 without changing any pre-existing cell ID or type. The distinct `Distilled thesis source` heading
 is reserved for a later alternative mapping and is not emitted by the current contract. The builder
 appends Cell 110M after Cell 109N so the final certificate explanation is
-visible below the stored output. The contract also keeps sampled diagnostics, presentation cells and theorem-facing
+visible below the stored output. Cell 107N remains the computation authority;
+Cell 108N renders a presentation-only final certification ladder from those
+already checked results, and Cell 109N remains an intentional no-op. The
+contract also keeps sampled diagnostics, presentation cells and theorem-facing
 producers distinct. Its regression rejects an unmapped code cell, a duplicated owner, a missing
 chapter label or an evidence-class drift.
 
@@ -45,6 +48,16 @@ amber) semantics: the Phase 1 products support empirical comparison, and the sam
 support the diagnostic ladder, but neither branch enters a count, moat, small-gain or Riesz-rank
 theorem gate. No new solid-arrow theorem dependency is introduced; the theorem-facing Phase 2 and
 Phase 4 chain is unchanged.
+
+**Terminal presentation boundary.** The sampled Cell 95N diagnostic ladder is
+retained as a historical/diagnostic view. It is distinct from the final-stage
+Cell 108N ladder. Cell 108N consumes the fail-closed, twenty-four-row result
+already established by Cell 107N and presents ordered-target/zero-exclusion,
+Schur-count, exact-dyadic transport, complete-circle moat, positive-lifted-moat,
+sampled-exclusion, small-gain and rank-transfer gates in a compact plot and
+table. Cell 108N does not recompute a contour, change a gate, or add theorem
+evidence; Cell 107N and its named source artifacts remain the certificate
+authority.
 
 **Clean-room diagnostic rule.** A generated diagnostic is recreated from the selected map,
 explicit schedules and displayed mathematical routines rather than accepted from its destination

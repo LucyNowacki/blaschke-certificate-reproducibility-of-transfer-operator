@@ -30,6 +30,9 @@ from build_blaschke_deformation_thesis_math_notebook import (
     validate_curated_counterpart,
     validate_inline_helper_sync,
 )
+from prepare_blaschke_deformation_thesis_appendix import (
+    FINAL_CERTIFICATION_LADDER_SOURCE,
+)
 
 
 HERE = Path(__file__).resolve().parent
@@ -294,7 +297,7 @@ class InlineHelperProvenanceTests(unittest.TestCase):
         )
         for required in (
             "110M",
-            "The certificate output immediately above is emitted by execution Cell 107N.",
+            "Cell 107N forms and checks the final certificate.",
             "Meaning of `computed_and_certified`",
             "How the deterministic perturbation envelope is obtained",
             "How the finite Hardy matrix and Schur constants are certified",
@@ -325,7 +328,9 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             "display/provenance drift",
             "44+36+48+48+36+40+48=300",
             "`digest_used_in_theorem_gate = False`",
-            "Cells 108N and 109N contain only their labels",
+            "Cell 108N consumes only those already-validated Cell 107N results",
+            "raises before drawing if any predicate fails",
+            "Cell 109N contains only its label",
             "Starting from an empty output directory does not ask the digest to prove the result.",
         ):
             self.assertIn(required, source)
@@ -363,15 +368,51 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             'SPECTRAL_CONTOUR_CERTIFICATE["execution_status"])',
             certificate_source,
         )
-        for terminal_id, label in (
-            ("3e8b784c", "#108N\n"),
-            ("128b5369", "#109N\n"),
-        ):
-            terminal = cells[terminal_id]
-            self.assertEqual("".join(terminal.get("source", [])), label)
-            self.assertEqual(terminal.get("outputs", []), [])
+        final_ladder = cells["3e8b784c"]
+        self.assertEqual(
+            "".join(final_ladder.get("source", [])),
+            FINAL_CERTIFICATION_LADDER_SOURCE,
+        )
+        self.assertFalse(
+            any(
+                output.get("output_type") == "error"
+                for output in final_ladder.get("outputs", [])
+            )
+        )
+        terminal_no_op = cells["128b5369"]
+        self.assertEqual("".join(terminal_no_op.get("source", [])), "#109N\n")
+        self.assertEqual(terminal_no_op.get("outputs", []), [])
         self.assertEqual(
             self.notebook["cells"][-2].get("id"), "128b5369"
+        )
+
+    def test_cell_108n_is_an_eight_row_fail_closed_presentation(self) -> None:
+        expected_items = (
+            "ordered target inventory and zero exclusion",
+            "Schur-derived finite counts",
+            "exact-dyadic finite-matrix count transport",
+            "complete-circle moat coverage",
+            "positive lifted Hardy-space moats",
+            "sampled values excluded from theorem gates",
+            "certified small-gain inequality",
+            "overall finite-to-exact Riesz ranks",
+        )
+        self.assertEqual(
+            FINAL_CERTIFICATION_LADDER_SOURCE.count('"audit_item":'),
+            len(expected_items),
+        )
+        for item in expected_items:
+            self.assertIn(f'"audit_item": "{item}"', FINAL_CERTIFICATION_LADDER_SOURCE)
+        self.assertIn("class: presentation_only", FINAL_CERTIFICATION_LADDER_SOURCE)
+        self.assertIn('"theorem_certified": "#009E73"', FINAL_CERTIFICATION_LADDER_SOURCE)
+        self.assertIn('"gate_failed": "#D55E00"', FINAL_CERTIFICATION_LADDER_SOURCE)
+        self.assertLess(
+            FINAL_CERTIFICATION_LADDER_SOURCE.index(
+                'if not final_certification_ladder_df["passed"].all():'
+            ),
+            FINAL_CERTIFICATION_LADDER_SOURCE.index(
+                "FINAL_CERTIFICATION_LADDER_RESULT = plot_certification_ladder("
+            ),
         )
 
     def test_all_current_cell_sources_match_a_fresh_output_free_build(self) -> None:
@@ -452,12 +493,12 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             )
             for cell in self.notebook["cells"]
         )
-        self.assertEqual(actual_preview_count, 34)
-        self.assertEqual(actual_visual_cells, 20)
+        self.assertEqual(actual_preview_count, 35)
+        self.assertEqual(actual_visual_cells, 21)
         self.assertEqual(
-            provenance["notebook"]["expected_stored_png_output_count"], 34
+            provenance["notebook"]["expected_stored_png_output_count"], 35
         )
-        self.assertEqual(provenance["notebook"]["expected_visual_cell_count"], 20)
+        self.assertEqual(provenance["notebook"]["expected_visual_cell_count"], 21)
         self.assertFalse(
             any(
                 "image/png" in output.get("data", {})
@@ -466,11 +507,11 @@ class InlineHelperProvenanceTests(unittest.TestCase):
             )
         )
         display = self.notebook.get("metadata", {}).get("github_display_artifact", {})
-        self.assertEqual(display.get("plot_count"), 34)
-        self.assertEqual(display.get("visual_cell_count"), 20)
+        self.assertEqual(display.get("plot_count"), 35)
+        self.assertEqual(display.get("visual_cell_count"), 21)
         self.assertTrue(display.get("presentation_only"))
         self.assertFalse(display.get("theorem_gate"))
-        self.assertNotEqual(
+        self.assertEqual(
             provenance["notebook"]["sha256_at_manifest_creation"],
             hashlib.sha256(NOTEBOOK.read_bytes()).hexdigest(),
         )

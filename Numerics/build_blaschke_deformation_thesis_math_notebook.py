@@ -7,9 +7,11 @@ their first use, and two source-only diagnostic producers are inserted before
 their consumers.  The appendix transformer then applies the locked provenance
 and plotting rules to curate the 187-cell intermediate into the 139-cell
 computational body.  A non-executable dependency map is prepended as Cell 0M
-and a non-executable auditor explanation is appended as Cell 110M, giving the
-final 141-cell thesis-mathematics notebook without renumbering existing cells
-or altering any existing code cell.  The source notebook is required and is never
+and a non-executable auditor explanation is appended as Cell 110M.  Builder-owned
+Cell 108N renders a fail-closed presentation of Cell 107N's final certificate,
+while Cell 109N remains a no-op.  The result is the final 141-cell
+thesis-mathematics notebook without renumbering or altering source-owned code
+cells.  The source notebook is required and is never
 reconstructed from a generated counterpart; the provenance direction is
 always locked template to source to curated counterpart.
 """
@@ -780,9 +782,10 @@ def terminal_auditor_cell() -> dict[str, Any]:
         "source": (
             "110M\n\n"
             "## Final auditor reading of the twenty-four-target spectral certificate\n\n"
-            "This terminal Markdown cell is intentionally placed after Cells 108N "
-            "and 109N so that the explanation remains visible directly below the "
-            "stored Cell 107N certificate output.\n\n"
+            "Cell 107N forms and checks the final certificate. Cell 108N then "
+            "reaggregates those checked results into a fail-closed final ladder; "
+            "it adds no theorem claim. Cell 109N remains a no-op, so this terminal "
+            "interpretation stays directly below the final presentation.\n\n"
             f"{bridge}\n"
         ),
     }
@@ -1309,17 +1312,16 @@ def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
     )
     if code_count != 68:
         raise AssertionError("The curated thesis counterpart must contain 68 code cells.")
-    expected_terminal = {
-        "3e8b784c": "#108N\n",
-        "128b5369": "#109N\n",
-    }
+    import prepare_blaschke_deformation_thesis_appendix as preparation
+
+    expected_terminal = dict(preparation.TERMINAL_NUMBERED_CELLS)
     actual_terminal = {
         str(cell.get("id")): _normalise_source(cell.get("source", ""))
         for cell in counterpart.get("cells", [])
         if str(cell.get("id")) in expected_terminal
     }
     if actual_terminal != expected_terminal:
-        raise AssertionError("The Cell 108N and Cell 109N labels changed.")
+        raise AssertionError("The Cell 108N or Cell 109N source changed.")
     final_cell = cells[-1]
     if (
         final_cell.get("cell_type") != "markdown"

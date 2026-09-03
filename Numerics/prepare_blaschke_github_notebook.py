@@ -13,7 +13,7 @@ private-path marker remains.  Full-resolution PNG files remain in
 This is a presentation-only transformation.  Before writing anything it
 requires exact cell/source/attachment identity with a fresh locked builder
 output, complete execution of all code cells, zero error outputs, and the
-fixed 20-visual-cell/34-plot contract.
+fixed 21-visual-cell/35-plot contract.
 """
 
 from __future__ import annotations
@@ -37,10 +37,10 @@ from build_blaschke_deformation_thesis_math_notebook import build_curated
 
 EXPECTED_CELL_COUNT = 141
 EXPECTED_CODE_CELL_COUNT = 68
-EXPECTED_VISUAL_CELL_COUNT = 20
-EXPECTED_PLOT_COUNT = 34
+EXPECTED_VISUAL_CELL_COUNT = 21
+EXPECTED_PLOT_COUNT = 35
 DEFAULT_MAX_WIDTH = 480
-DEFAULT_JPEG_QUALITY = 40
+DEFAULT_JPEG_QUALITY = 38
 MAX_GITHUB_NOTEBOOK_BYTES = 2_000_000
 
 _PRIVATE_PATH_RE = re.compile(
@@ -247,10 +247,13 @@ def prepare(
         )
 
     if plot_count != EXPECTED_PLOT_COUNT:
-        raise RuntimeError(f"Expected 34 plot outputs, found {plot_count}.")
+        raise RuntimeError(
+            f"Expected {EXPECTED_PLOT_COUNT} plot outputs, found {plot_count}."
+        )
     if visual_cell_count != EXPECTED_VISUAL_CELL_COUNT:
         raise RuntimeError(
-            f"Expected 20 visual code cells, found {visual_cell_count}."
+            f"Expected {EXPECTED_VISUAL_CELL_COUNT} visual code cells, found "
+            f"{visual_cell_count}."
         )
 
     execution_sha256 = hashlib.sha256(

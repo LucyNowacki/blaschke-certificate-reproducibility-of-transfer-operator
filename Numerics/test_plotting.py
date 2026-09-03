@@ -192,5 +192,34 @@ class Phase4LocalMoatSurfaceTests(unittest.TestCase):
                     )
 
 
+class CertificationLadderTests(unittest.TestCase):
+    def test_gate_failed_has_a_distinct_default_colour(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "audit_item": ["certified gate", "failed gate"],
+                "status": ["theorem_certified", "gate_failed"],
+            }
+        )
+        result = plotting.plot_certification_ladder(
+            frame,
+            title="Final certificate",
+            show=False,
+        )
+        try:
+            face_colours = [patch.get_facecolor() for patch in result.axes.patches]
+            self.assertEqual(
+                face_colours[0],
+                matplotlib.colors.to_rgba(plotting.THESIS_PALETTE["real"], alpha=0.86),
+            )
+            self.assertEqual(
+                face_colours[1],
+                matplotlib.colors.to_rgba(
+                    plotting.THESIS_EXTRA_PALETTE["vermillion"], alpha=0.86
+                ),
+            )
+        finally:
+            plt.close(result.figure)
+
+
 if __name__ == "__main__":
     unittest.main()

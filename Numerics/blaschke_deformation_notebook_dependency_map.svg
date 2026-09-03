@@ -214,7 +214,7 @@
   <text class="dep-micro" x="78" y="1681">Writes diagnostic datasets, figures and rebuild reports.</text>
   <text class="dep-micro dep-amber" x="78" y="1713">No sampled value enters a theorem gate.</text>
 
-  <rect id="phase4-certified-branch" class="dep-theorem" x="610" y="1470" width="925" height="270" rx="7"/>
+  <rect id="phase4-certified-branch" class="dep-theorem" x="610" y="1470" width="925" height="300" rx="7"/>
   <text class="dep-label dep-purple" x="628" y="1498">Certified branch, Cells 98M--107N</text>
   <rect class="dep-cell" x="630" y="1520" width="245" height="86" rx="5"/>
   <text class="dep-small" x="648" y="1545">100N spectral helper</text>
@@ -230,19 +230,23 @@
   <text class="dep-micro" x="1213" y="1590">Schur counts and Laurent moats</text>
   <path class="dep-theorem-arrow" d="M875 1563 H900"/>
   <path class="dep-theorem-arrow" d="M1165 1563 H1190"/>
-  <rect class="dep-cell" x="630" y="1640" width="245" height="72" rx="5"/>
-  <text class="dep-small" x="648" y="1666">106N structural tests</text>
-  <text class="dep-micro" x="648" y="1689">count, moat and provenance failures</text>
-  <rect class="dep-result" x="905" y="1632" width="610" height="86" rx="6"/>
-  <text class="dep-label dep-magenta" x="923" y="1658">107N final 24-contour certificate</text>
-  <text class="dep-small" x="923" y="1683">24 Schur counts; 17 Schur moats; 7 Laurent moats</text>
-  <text class="dep-small" x="923" y="1706">total certified algebraic multiplicity 30</text>
-  <path class="dep-theorem-arrow" d="M875 1676 H900"/>
+  <rect class="dep-cell" x="630" y="1625" width="245" height="72" rx="5"/>
+  <text class="dep-small" x="648" y="1651">106N structural tests</text>
+  <text class="dep-micro" x="648" y="1674">count, moat and provenance failures</text>
+  <rect id="cell-107-certificate-authority" class="dep-result" x="905" y="1625" width="610" height="72" rx="6"/>
+  <text class="dep-label dep-magenta" x="923" y="1650">107N final 24-contour certificate</text>
+  <text class="dep-small" x="923" y="1673">24 Schur counts; 17 Schur moats; 7 Laurent moats; multiplicity 30</text>
+  <text class="dep-micro" x="923" y="1691">computation and certificate authority</text>
+  <path class="dep-theorem-arrow" d="M875 1661 H900"/>
   <path class="dep-theorem-arrow" d="M1355 1606 V1627"/>
+  <rect id="cell-108-final-ladder" class="dep-data" x="905" y="1712" width="610" height="48" rx="6"/>
+  <text class="dep-label" x="923" y="1734">108N final-stage certification ladder</text>
+  <text class="dep-micro" x="923" y="1753">presentation only; re-renders Cell 107N gates; no new theorem evidence</text>
+  <path id="cell-107-to-108-presentation" class="dep-provenance-arrow" d="M1210 1697 V1707"/>
   <path class="dep-diagnostic-arrow" d="M760 1385 C520 1400 320 1420 300 1465"/>
   <path class="dep-theorem-arrow" d="M1320 1080 C1500 1190 1510 1370 1390 1465"/>
 
   <rect class="dep-result" x="180" y="1802" width="1240" height="56" rx="7"/>
   <text class="dep-label dep-magenta" x="210" y="1836">Certified conclusion: N=600, M=610; 24 nontrivial Riesz packets; algebraic multiplicity 30</text>
-  <path class="dep-theorem-arrow" d="M1210 1740 C1210 1770 1110 1787 1090 1798"/>
+  <path class="dep-theorem-arrow" d="M1515 1661 C1570 1690 1545 1775 1390 1800"/>
 </svg>

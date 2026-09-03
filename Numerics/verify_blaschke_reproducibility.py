@@ -262,6 +262,7 @@ DIAGNOSTIC_AUDIT_PLOT_RELATIVES = tuple(
     for name in (
         "transfer_lab_blaschke_mu_0p3_Cell_100_universal_certification_ladder.png",
         "transfer_lab_blaschke_mu_0p3_Cell_102_first14_packet_audit.png",
+        "transfer_lab_blaschke_mu_0p3_Cell_108_final_spectral_certification_ladder.png",
     )
 )
 

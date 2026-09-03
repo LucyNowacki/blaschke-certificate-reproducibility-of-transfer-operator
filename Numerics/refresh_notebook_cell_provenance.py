@@ -18,8 +18,8 @@ FINAL_NOTEBOOK = HERE / "blaschke_deformation_certifier_thesis_math.ipynb"
 SOURCE_NOTEBOOK = HERE / "blaschke_deformation_certifier.ipynb"
 BUILDER = HERE / "build_blaschke_deformation_thesis_math_notebook.py"
 CHAPTER_MATH_MAP = HERE / "numerical_certification_transfer_markdown.toml"
-EXPECTED_VISUAL_CELL_COUNT = 20
-EXPECTED_STORED_PNG_OUTPUT_COUNT = 34
+EXPECTED_VISUAL_CELL_COUNT = 21
+EXPECTED_STORED_PNG_OUTPUT_COUNT = 35
 ALPHA11_PROFILE_CELL_ID = "32961420"
 SOURCE_SYNC_SCHEMA = publication.SOURCE_SYNC_SCHEMA
 
@@ -28,13 +28,17 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _source_sync_metadata(notebook: dict[str, object]) -> dict[str, object]:
+def _source_sync_metadata(
+    notebook: dict[str, object],
+) -> dict[str, object] | None:
     metadata = notebook.get("metadata")
     source_sync = (
         metadata.get("source_sync_after_execution")
         if isinstance(metadata, dict)
         else None
     )
+    if source_sync is None:
+        return None
     try:
         return publication._validated_source_sync(
             source_sync,
@@ -68,21 +72,32 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
         raise RuntimeError("Unexpected notebook provenance schema.")
     final_notebook = json.loads(FINAL_NOTEBOOK.read_text(encoding="utf-8"))
     source_sync = _source_sync_metadata(final_notebook)
-    source_sync_sha256 = hashlib.sha256(
-        json.dumps(
-            source_sync,
-            ensure_ascii=True,
-            separators=(",", ":"),
-            sort_keys=True,
-        ).encode("utf-8")
-    ).hexdigest()
+    source_sync_sha256 = (
+        hashlib.sha256(
+            json.dumps(
+                source_sync,
+                ensure_ascii=True,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest()
+        if source_sync is not None
+        else None
+    )
+
+    def has_stored_plot(output: dict[str, object]) -> bool:
+        data = output.get("data", {})
+        return isinstance(data, dict) and any(
+            mime in data for mime in ("image/png", "image/jpeg")
+        )
+
     visual_cell_count = sum(
         cell.get("cell_type") == "code"
-        and any("image/png" in output.get("data", {}) for output in cell.get("outputs", []))
+        and any(has_stored_plot(output) for output in cell.get("outputs", []))
         for cell in final_notebook.get("cells", [])
     )
-    stored_png_count = sum(
-        "image/png" in output.get("data", {})
+    stored_plot_count = sum(
+        has_stored_plot(output)
         for cell in final_notebook.get("cells", [])
         for output in cell.get("outputs", [])
     )
@@ -94,8 +109,8 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
         ),
         None,
     )
-    alpha11_png_count = sum(
-        "image/png" in output.get("data", {})
+    alpha11_plot_count = sum(
+        has_stored_plot(output)
         for output in (alpha11_cell or {}).get("outputs", [])
     )
     if visual_cell_count != EXPECTED_VISUAL_CELL_COUNT:
@@ -103,14 +118,14 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
             f"Expected {EXPECTED_VISUAL_CELL_COUNT} visual cells, found "
             f"{visual_cell_count}."
         )
-    if stored_png_count != EXPECTED_STORED_PNG_OUTPUT_COUNT:
+    if stored_plot_count != EXPECTED_STORED_PNG_OUTPUT_COUNT:
         raise RuntimeError(
-            f"Expected {EXPECTED_STORED_PNG_OUTPUT_COUNT} stored PNG outputs, "
-            f"found {stored_png_count}."
+            f"Expected {EXPECTED_STORED_PNG_OUTPUT_COUNT} stored plot outputs, "
+            f"found {stored_plot_count}."
         )
-    if alpha11_png_count != 2:
+    if alpha11_plot_count != 2:
         raise RuntimeError(
-            "Cell 80N must retain both the selected profile and alpha^11 PNG."
+            "Cell 80N must retain both the selected profile and alpha^11 plot."
         )
 
     notebook["sha256_at_manifest_creation"] = sha256_file(FINAL_NOTEBOOK)
@@ -118,10 +133,13 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
     notebook["thesis_math_builder_sha256"] = sha256_file(BUILDER)
     notebook["chapter_math_map_sha256"] = sha256_file(CHAPTER_MATH_MAP)
     notebook["expected_visual_cell_count"] = visual_cell_count
-    notebook["expected_stored_png_output_count"] = stored_png_count
+    notebook["expected_stored_png_output_count"] = stored_plot_count
     notebook["stored_png_count_note"] = (
-        "The 34-payload contract includes both PNG outputs in Cell 80N: the "
-        "selected sampled profile and the restored alpha^11 profile."
+        "The 35-position plot contract includes both plots in Cell 80N: the "
+        "selected sampled profile and the restored alpha^11 profile, plus the "
+        "presentation-only final certification ladder in Cell 108N. The "
+        "canonical execution stores PNG payloads; the GitHub display stores "
+        "JPEG previews in the same output positions."
     )
     refreshed: dict[str, str] = {}
     for label, record in entries.items():
@@ -141,22 +159,35 @@ def refreshed_payload(payload: dict[str, object]) -> dict[str, object]:
     }
     if len(inline_helper_hashes) != 18:
         raise RuntimeError("Expected exactly eighteen inline helper sources.")
+    previous_refresh = payload.get("source_hash_refresh", {})
     payload["source_hash_refresh"] = {
-        "date": "2026-08-30",
+        "date": "2026-09-03",
         "method": "refresh_notebook_cell_provenance.py",
         "notebook_sha256": notebook["sha256_at_manifest_creation"],
         "transformation_source_sha256": notebook["transformation_source_sha256"],
         "thesis_math_builder_sha256": notebook["thesis_math_builder_sha256"],
         "chapter_math_map_sha256": notebook["chapter_math_map_sha256"],
         "visual_cell_count": visual_cell_count,
-        "stored_png_output_count": stored_png_count,
+        "stored_png_output_count": stored_plot_count,
         "standalone_source_count": len(refreshed),
         "standalone_source_sha256": dict(sorted(refreshed.items())),
         "inline_helper_count": len(inline_helper_hashes),
         "inline_helper_sha256": dict(sorted(inline_helper_hashes.items())),
-        "source_sync_after_execution": source_sync,
-        "source_sync_after_execution_sha256": source_sync_sha256,
     }
+    if isinstance(previous_refresh, dict):
+        for key in (
+            "arithmetic_baseline_commit",
+            "source_sync_scope",
+            "replay_status",
+            "stored_output_status",
+        ):
+            if key in previous_refresh:
+                payload["source_hash_refresh"][key] = previous_refresh[key]
+    if source_sync is not None:
+        payload["source_hash_refresh"]["source_sync_after_execution"] = source_sync
+        payload["source_hash_refresh"][
+            "source_sync_after_execution_sha256"
+        ] = source_sync_sha256
     return payload
 
 

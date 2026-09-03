@@ -310,8 +310,8 @@ plotting products remain useful diagnostics but do not enter the theorem gate.
 
 The committed notebook preserves the thesis-result layout: 141 ordered cells,
 68 code cells, 18 digest-checked inline helpers, stable display labels, and the
-terminal auditor Cell `110M`. Its GitHub display copy retains all 34 plot
-positions across 20 visual cells. For practical GitHub rendering, those
+terminal auditor Cell `110M`. Its GitHub display copy retains all 35 plot
+positions across 21 visual cells. For practical GitHub rendering, those
 embedded previews are compact JPEGs, while all tables, text, streams, and
 other non-image outputs remain in their original cells and order; only
 machine-local scratch paths are replaced by portable display markers;
@@ -326,9 +326,12 @@ environment, restart the kernel, and run the cells from top to bottom. Cell
 `5N` actively constrains an already-loaded BLAS runtime to one outer thread,
 so the notebook is robust when Jupyter or an IDE has preloaded OpenBLAS with a
 machine-dependent thread count. Later explicitly scoped 24-worker operations
-restore that one-thread outer state when they finish. This warm-kernel route
-has been exercised through all 68 code cells, including all 43 table outputs
-and 34 plots, with zero cell errors.
+restore that one-thread outer state when they finish. The underlying
+warm-kernel arithmetic baseline was exercised through all 68 code cells with
+zero cell errors. The publication layer retains those outputs and adds Cell
+`108N`'s deterministic presentation of the Cell `107N` result; the checked-in
+notebook therefore contains 44 table outputs and 35 plots and has no stored
+error output.
 
 Direct notebook execution does not require the generated base notebook
 `blaschke_deformation_certifier.ipynb`. Cell `95N` reads its stable Cell
@@ -352,16 +355,19 @@ the source-only ZIP.
 | `54AM`--`64M` | Orthogonal RSS aggregation, promoted Phase 2 radius, audit tables, and component plots | [`blaschke_deformation_phase2_final_aggregation.py`](Numerics/blaschke_deformation_phase2_final_aggregation.py) | Produces and checks the final theorem-facing `X -> X` perturbation radius. |
 | `65M`--`75N` | Fitted rates compared with the deterministic bound | [`plotting.py`](Numerics/plotting.py) | Chapter 5 Phase 3 rate diagnostics and plots only. |
 | `76M`--`92N` | Historical Phase 4 singular-value profiles, surfaces, and dashboards | [`hardy_moat_surface_worker.py`](Numerics/hardy_moat_surface_worker.py), [`blaschke_deformation_historical_phase4.py`](Numerics/blaschke_deformation_historical_phase4.py) | Retained sampled diagnostics; explicitly non-authoritative and skipped by theorem-only replay. |
-| `93M`--`97N` | Sampled Schur ladder, status audits, and candidate-contour displays | [`blaschke_deformation_sampled_schur_diagnostics.py`](Numerics/blaschke_deformation_sampled_schur_diagnostics.py), [`blaschke_deformation_diagnostic_audits.py`](Numerics/blaschke_deformation_diagnostic_audits.py) | Diagnostic validation and presentation; sampled values do not certify complete contours. |
+| `93M`--`97N` | Sampled Schur ladder, status audits, and candidate-contour displays | [`blaschke_deformation_sampled_schur_diagnostics.py`](Numerics/blaschke_deformation_sampled_schur_diagnostics.py), [`blaschke_deformation_diagnostic_audits.py`](Numerics/blaschke_deformation_diagnostic_audits.py) | Retained diagnostic validation and presentation; the Cell `95N` ladder remains visible, but sampled values do not certify complete contours. |
 | `98M`--`101N` | Authoritative 2048-bit Hardy interval matrix, exact-dyadic midpoint, and `eta_A` gate | [`blaschke_deformation_spectral_certification.py`](Numerics/blaschke_deformation_spectral_certification.py), producer `101N` | Theorem-facing certified finite matrix; the 1024-bit starting row is optional diagnostic evidence. |
 | `102M`--`107N` | Exact-dyadic Schur counts, 17 Schur moats, seven Laurent moats, adversarial checks, and final producer | [`blaschke_deformation_contour_certification.py`](Numerics/blaschke_deformation_contour_certification.py), producer `107N` | Produces the final 24-target finite-to-exact Riesz-rank certificate. |
-| `108N`--`110M` | Certificate interpretation and terminal auditor boundary | none | Adds no new numerical evidence; explains the certified and diagnostic boundaries. |
+| `108N` | Final certification ladder and compact gate table | [`plotting.py`](Numerics/plotting.py), consuming only Cell `107N` results | Presentation-only summary of the final certified gates. It adds no new numerical evidence and is not the certificate authority. |
+| `109N`--`110M` | No-op terminal code cell and certificate interpretation | none | Cell `109N` intentionally does nothing; Cell `110M` explains the certified and diagnostic boundaries. |
 
 These are stable display labels, not a lexicographic sort key: inserted helper
 labels such as `35AM`, `52AM`, and `78AM` occur at their fixed physical
 positions in the notebook. In particular, `101N` and `107N` are the
 theorem-producing cells; the immediately preceding helper cells expose the
-source used by those producers.
+source used by those producers. Cell `108N` only renders a final-stage ladder
+from the already checked Cell `107N` result, so a green bar or table row is a
+readable report of a passed gate rather than an additional proof step.
 
 The longer [dependency-map explanation](Numerics/blaschke_deformation_notebook_dependency_map.md)
 records individual producer boundaries, persisted paths, arrow semantics, and

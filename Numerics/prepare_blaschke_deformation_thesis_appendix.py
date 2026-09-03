@@ -89,8 +89,198 @@ REMOVE_CELL_IDS = frozenset().union(*REMOVAL_GROUPS.values())
 EXPECTED_RETAINED_CELL_COUNT = 139
 EXPECTED_RETAINED_CODE_CELL_COUNT = 68
 
+FINAL_CERTIFICATION_LADDER_SOURCE = '''#108N
+# notebook-provenance: begin
+# helpers: plotting: display_table; plotting: plot_certification_ladder; direct imports in this cell: plotting: display_table, plot_certification_ladder
+# data_sources: Cell 107N::spectral_contour_certificate_df; Cell 107N::SPECTRAL_CONTOUR_CERTIFICATE
+# prior_results: Cell 107N::_computed_multiplicity; Cell 107N::_expected_multiplicity; Cell 107N::_schur_moat_rows; Cell 107N::_laurent_moat_rows; Cell 107N::CELL103_MINIMUM_CERTIFIED_MOAT_TEXT; Cell 107N::CELL103_MAXIMUM_SMALL_GAIN; Cell 107N::CELL103_MAXIMUM_SMALL_GAIN_TEXT
+# execution_mode: arithmetic: Boolean reaggregation of Cell 107N theorem gates only; cache_policy: none; kind: final_certificate_presentation; parallelism: single process
+# produces: files: FIG_DIR/transfer_lab_blaschke_mu_0p3_Cell_108_final_spectral_certification_ladder.png; prior_results: final_certification_ladder_df; FINAL_CERTIFICATION_LADDER_RESULT
+# proof_status: claim: Fail-closed presentation of the final twenty-four-target certificate already formed and checked by Cell 107N.; class: presentation_only
+# provenance_notes: This cell raises before plotting unless all eight displayed summaries follow from the final Cell 107N theorem gates.
+# notebook-provenance: end
+# Final theorem-facing certification ladder, derived only from Cell 107N.
+
+from plotting import display_table, plot_certification_ladder
+
+_final_bool_column = lambda field: (
+    spectral_contour_certificate_df[field]
+    .astype(str).str.lower().eq("true").all()
+)
+_final_rank_values = (
+    spectral_contour_certificate_df["rank"].astype(int).tolist()
+)
+_final_laurent_not_count = not (
+    spectral_contour_certificate_df.loc[
+        _laurent_moat_rows, "laurent_used_for_count"
+    ].astype(str).str.lower().eq("true").any()
+)
+_final_laurent_used_for_moat = (
+    spectral_contour_certificate_df.loc[
+        _laurent_moat_rows, "laurent_used_for_moat"
+    ].astype(str).str.lower().eq("true").all()
+)
+
+_final_ladder_rows = [
+    {
+        "audit_item": "ordered target inventory and zero exclusion",
+        "passed": bool(
+            len(spectral_contour_certificate_df) == 24
+            and _final_rank_values == list(range(1, 25))
+            and _expected_multiplicity == 30
+            and _final_bool_column("zero_outside_enclosed_region")
+        ),
+        "evidence": (
+            f"{len(spectral_contour_certificate_df)} ordered targets; "
+            f"expected multiplicity {_expected_multiplicity}; "
+            "zero outside every contour"
+        ),
+    },
+    {
+        "audit_item": "Schur-derived finite counts",
+        "passed": bool(
+            spectral_contour_certificate_df["count_method"]
+            .eq(COUNT_METHOD_SCHUR_DIAGONAL).all()
+            and _final_bool_column("schur_diagonal_membership_certified")
+            and _computed_multiplicity == 30
+            and _expected_multiplicity == 30
+            and _final_bool_column("finite_count_matches_expected")
+        ),
+        "evidence": (
+            "24 Schur-diagonal counts; "
+            f"computed/expected multiplicity "
+            f"{_computed_multiplicity}/{_expected_multiplicity}"
+        ),
+    },
+    {
+        "audit_item": "exact-dyadic finite-matrix count transport",
+        "passed": bool(
+            _final_bool_column("exact_dyadic_schur_upper_triangular_certified")
+            and _final_bool_column("A_N_circ_count_transport_certified")
+            and _final_bool_column(
+                "mathematical_finite_count_transport_certified"
+            )
+            and _final_bool_column("finite_count_certified")
+        ),
+        "evidence": (
+            "exact-dyadic triangular Schur counts transported to "
+            "the mathematical Hardy matrix"
+        ),
+    },
+    {
+        "audit_item": "complete-circle moat coverage",
+        "passed": bool(
+            int(_schur_moat_rows.sum()) == 17
+            and int(_laurent_moat_rows.sum()) == 7
+            and spectral_contour_certificate_df.loc[
+                _schur_moat_rows, "certificate_route"
+            ].eq(CERTIFICATE_ROUTE_SCHUR).all()
+            and spectral_contour_certificate_df.loc[
+                _laurent_moat_rows, "certificate_route"
+            ].eq(CERTIFICATE_ROUTE_LAURENT).all()
+            and _final_laurent_not_count
+            and _final_laurent_used_for_moat
+            and _final_bool_column("complete_circle_covered")
+        ),
+        "evidence": (
+            f"{int(_schur_moat_rows.sum())} Schur-triangular and "
+            f"{int(_laurent_moat_rows.sum())} Laurent complete-circle moats"
+        ),
+    },
+    {
+        "audit_item": "positive lifted Hardy-space moats",
+        "passed": bool(
+            spectral_contour_certificate_df[
+                "lifted_finite_section_moat_lower"
+            ].gt(0).all()
+        ),
+        "evidence": (
+            "minimum outward-safe lower endpoint "
+            f"{CELL103_MINIMUM_CERTIFIED_MOAT_TEXT}"
+        ),
+    },
+    {
+        "audit_item": "sampled values excluded from theorem gates",
+        "passed": bool(
+            not spectral_contour_certificate_df[
+                "sampled_values_used_in_theorem_gate"
+            ].astype(str).str.lower().eq("true").any()
+        ),
+        "evidence": "0 of 24 rows use sampled values in a theorem gate",
+    },
+    {
+        "audit_item": "certified small-gain inequality",
+        "passed": bool(
+            _final_bool_column("certified_small_gain_pass")
+            and CELL103_MAXIMUM_SMALL_GAIN < 1
+        ),
+        "evidence": (
+            "maximum outward-safe upper endpoint "
+            f"{CELL103_MAXIMUM_SMALL_GAIN_TEXT} < 1"
+        ),
+    },
+    {
+        "audit_item": "overall finite-to-exact Riesz ranks",
+        "passed": bool(
+            _final_bool_column("finite_to_exact_rank_transfer_certified")
+            and _final_bool_column("theorem_certified")
+            and bool(
+                SPECTRAL_CONTOUR_CERTIFICATE[
+                    "all_24_targets_theorem_certified"
+                ]
+            )
+        ),
+        "evidence": (
+            f"24 theorem-certified contours; total algebraic multiplicity "
+            f"{_computed_multiplicity}"
+        ),
+    },
+]
+for _final_ladder_row in _final_ladder_rows:
+    _final_ladder_row["status"] = (
+        "theorem_certified"
+        if _final_ladder_row["passed"]
+        else "gate_failed"
+    )
+
+final_certification_ladder_df = pd.DataFrame(
+    _final_ladder_rows,
+    columns=("audit_item", "status", "evidence", "passed"),
+)
+if not final_certification_ladder_df["passed"].all():
+    _failed_final_ladder_items = final_certification_ladder_df.loc[
+        ~final_certification_ladder_df["passed"], "audit_item"
+    ].tolist()
+    raise AssertionError(
+        "The final certification ladder is not theorem-certified: "
+        f"{_failed_final_ladder_items}."
+    )
+
+FINAL_CERTIFICATION_LADDER_RESULT = plot_certification_ladder(
+    final_certification_ladder_df,
+    title=(
+        "Blaschke mu=0.3: final twenty-four-target certification ladder"
+    ),
+    status_colours={
+        "theorem_certified": "#009E73",
+        "gate_failed": "#D55E00",
+    },
+    output_dir=FIG_DIR,
+    stem=(
+        "transfer_lab_blaschke_mu_0p3_"
+        "Cell_108_final_spectral_certification_ladder"
+    ),
+    show=True,
+)
+_ = display_table(
+    final_certification_ladder_df,
+    columns=("audit_item", "status", "evidence"),
+)
+'''
+
+
 TERMINAL_NUMBERED_CELLS: tuple[tuple[str, str], ...] = (
-    ("3e8b784c", "#108N\n"),
+    ("3e8b784c", FINAL_CERTIFICATION_LADDER_SOURCE),
     ("128b5369", "#109N\n"),
 )
 TERMINAL_NUMBERED_CELL_IDS = frozenset(
@@ -234,6 +424,9 @@ EXPECTED_RESTORED_PLOTTING_HELPER_CALLS: Mapping[str, frozenset[str]] = {
     ),
     "a2b9f84258b4": frozenset({"plot_certification_ladder"}),
     "fd3908b317fe": frozenset({"plot_packet_contours"}),
+    "3e8b784c": frozenset(
+        {"display_table", "plot_certification_ladder"}
+    ),
 }
 
 PLOTTING_HELPER_SIGNATURE_CONTRACT: Mapping[str, str] = {
@@ -2027,11 +2220,13 @@ def validate_transformed_notebook(
             continue
         source = _source_text(cell)
         if cell_id in TERMINAL_NUMBERED_CELL_IDS:
-            if source not in {number for _, number in TERMINAL_NUMBERED_CELLS}:
+            expected_terminal_source = dict(TERMINAL_NUMBERED_CELLS)[cell_id]
+            if source != expected_terminal_source:
                 raise AppendixPreparationError(
                     f"Terminal numbered cell {cell_id!r} changed unexpectedly."
                 )
-            continue
+            if cell_id == "128b5369":
+                continue
         residue = _direct_plotting_residue(source)
         if residue:
             plotting_residue[cell_id] = residue

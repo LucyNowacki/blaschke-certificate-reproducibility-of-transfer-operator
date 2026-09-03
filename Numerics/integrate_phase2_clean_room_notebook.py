@@ -410,11 +410,21 @@ def _update_cell103(notebook: dict[str, Any], *, current: bool) -> None:
         display_marker + "display(laurent_witness_reconstruction_display_df)\n",
         1,
     )
-    summary_lines = (
+    obsolete_summary_lines = (
         'print("Laurent source reconstruction: 7 witnesses and 300 transient 600 by 600 coefficient matrices")\n'
         'print("Historical Laurent tensor digest parity: all seven; provenance-only, not a theorem gate")\n'
     )
-    source = source.replace(summary_lines, "")
+    summary_lines = (
+        'print("Laurent source reconstruction: 7 witnesses and 300 transient 600 by 600 coefficient matrices")\n'
+        'print(\n'
+        '    "Historical Laurent tensor digest parity: "\n'
+        '    f"{int(_laurent_manifest_digest_parity.sum())} of "\n'
+        '    f"{len(_laurent_manifest_digest_parity)} match recorded references; "\n'
+        '    "provenance-only, not a theorem gate"\n'
+        ')\n'
+    )
+    for existing_summary in (obsolete_summary_lines, summary_lines):
+        source = source.replace(existing_summary, "")
     final_marker = (
         'print("Displayed lower endpoints are rounded downward; '
         'displayed upper endpoints are rounded upward.")\n'
