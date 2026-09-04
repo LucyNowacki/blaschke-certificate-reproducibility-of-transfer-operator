@@ -1,0 +1,7 @@
+# Packages that a Google-managed Colab runtime may need in addition to its
+# preinstalled scientific Python stack.  Cell 5N installs only entries whose
+# import module is missing; it does not replace working Colab packages.
+python-flint==0.8.0
+pyarrow>=14,<25
+threadpoolctl>=3.5,<4
+tqdm>=4.66,<5

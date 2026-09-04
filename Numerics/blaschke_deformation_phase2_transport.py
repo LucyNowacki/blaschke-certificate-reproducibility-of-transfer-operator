@@ -39,15 +39,17 @@ except ImportError:
 
 
 MAP_LABEL = "blaschke_mu_0p3"
-PRODUCER_SCHEMA = "phase2-transport-v2"
-INVERSE_BLAS_THREADS = 24
-LOCKED_OPENBLAS_RUNTIME = {
-    "user_api": "blas",
-    "internal_api": "openblas",
-    "version": "0.3.30",
-    "threading_layer": "pthreads",
-    "architecture": "Haswell",
-}
+PRODUCER_SCHEMA = "phase2-transport-v3"
+INVERSE_BLAS_THREADS = max(1, min(24, os.cpu_count() or 1))
+BLAS_RUNTIME_FIELDS = (
+    "user_api",
+    "internal_api",
+    "version",
+    "threading_layer",
+    "architecture",
+    "prefix",
+    "num_threads",
+)
 
 
 @dataclass(frozen=True)
@@ -140,14 +142,12 @@ def _verified_openblas_runtime(
     *,
     stage: str,
 ) -> dict[str, Any]:
-    """Return portable evidence for the exact locked OpenBLAS runtime.
+    """Return evidence that every loaded BLAS runtime has the required limit.
 
-    The replay keeps every process and worker at one BLAS thread.  The two
-    explicitly authorised binary64 compatibility kernels temporarily use 24
-    threads, and only those kernels may do so.  Checking the live library here
-    prevents an ABI-compatible but numerically different BLAS implementation,
-    microarchitecture dispatch, or thread count from silently changing the
-    retained witness bytes.
+    The binary64 inverse is only a candidate witness: Arb subsequently embeds
+    it exactly and certifies the residual.  The BLAS implementation and host
+    architecture therefore need not be release-identical, but the runtime must
+    be present and its actual identity and thread count must be recorded.
     """
 
     if int(expected_threads) < 1:
@@ -157,44 +157,38 @@ def _verified_openblas_runtime(
         for record in threadpool_info()
         if record.get("user_api") == "blas"
     ]
+    if not records:
+        raise RuntimeError(
+            "The finite transport inverse requires at least one usable loaded "
+            f"BLAS runtime during {stage}; observed {records!r}."
+        )
     invalid = [
         record
         for record in records
-        if any(
-            str(record.get(key)) != value
-            for key, value in LOCKED_OPENBLAS_RUNTIME.items()
-        )
-        or int(record.get("num_threads") or 0) != int(expected_threads)
+        if int(record.get("num_threads") or 0) != int(expected_threads)
     ]
-    if len(records) != 1 or invalid:
+    if invalid:
         raise RuntimeError(
-            "The finite transport inverse requires exactly one live OpenBLAS "
-            "0.3.30 pthreads Haswell runtime at "
-            f"{int(expected_threads)} threads during {stage}; observed "
-            f"{records!r}."
+            "The finite transport inverse requires every loaded BLAS runtime "
+            f"to use exactly {int(expected_threads)} threads during {stage}; "
+            f"observed {records!r}."
         )
-    portable = {
-        key: records[0].get(key)
-        for key in (
-            "user_api",
-            "internal_api",
-            "version",
-            "threading_layer",
-            "architecture",
-            "num_threads",
-        )
-    }
+    portable = [
+        {key: record.get(key) for key in BLAS_RUNTIME_FIELDS}
+        for record in records
+    ]
     return {
         "stage": str(stage),
         "expected_threads": int(expected_threads),
-        "runtime": portable,
+        "runtime_count": len(portable),
+        "runtimes": portable,
     }
 
 
 def _invert_midpoint_with_locked_blas(
     midpoint: np.ndarray,
 ) -> tuple[np.ndarray, dict[str, Any]]:
-    """Invert one midpoint under the exact scoped compatibility runtime."""
+    """Invert one midpoint under a measured, CPU-portable BLAS scope."""
 
     outer_before = _verified_openblas_runtime(1, stage="outer-before-inverse")
     with threadpool_limits(limits=INVERSE_BLAS_THREADS, user_api="blas"):
@@ -205,9 +199,11 @@ def _invert_midpoint_with_locked_blas(
         inverse = np.linalg.inv(midpoint)
     outer_after = _verified_openblas_runtime(1, stage="outer-after-inverse")
     evidence = {
-        "schema": "numerics1-scoped-openblas-runtime-v1",
+        "schema": "numerics1-portable-scoped-blas-runtime-v2",
         "operation": "numpy.linalg.inv(midpoint)",
         "scope_threads": INVERSE_BLAS_THREADS,
+        "scope_thread_policy": "max(1,min(24,os.cpu_count() or 1))",
+        "detected_cpu_count": int(os.cpu_count() or 1),
         "outer_threads": 1,
         "outer_before": outer_before,
         "inside": inside,
@@ -473,8 +469,12 @@ def _configuration_digest(config: Phase2TransportConfig) -> str:
         "binary64_inverse_policy": {
             "operation": "numpy.linalg.inv(midpoint)",
             "scope_threads": INVERSE_BLAS_THREADS,
+            "scope_thread_policy": "max(1,min(24,os.cpu_count() or 1))",
             "outer_threads": 1,
-            **LOCKED_OPENBLAS_RUNTIME,
+            "runtime_identity_policy": (
+                "record every loaded BLAS runtime; do not prescribe vendor, "
+                "version, threading layer, or architecture"
+            ),
         },
         "basis_normalisation": "X-orthonormal Chebyshev packets",
         "coordinate_orientation": "c to y=D_r,N c to d=T_N(r)y",

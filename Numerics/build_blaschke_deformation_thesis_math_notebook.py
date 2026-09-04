@@ -1201,6 +1201,12 @@ def build_curated() -> tuple[dict[str, Any], dict[str, Any]]:
     ]
     curated["cells"].insert(0, dependency_map_cell())
     curated["cells"].append(terminal_auditor_cell())
+    metadata = curated.setdefault("metadata", {})
+    colab_metadata = metadata.get("colab")
+    if not isinstance(colab_metadata, dict):
+        colab_metadata = {}
+    colab_metadata["provenance"] = []
+    metadata["colab"] = colab_metadata
     return curated, report
 
 
@@ -1286,6 +1292,13 @@ def validate_chapter_math_coverage(counterpart: dict[str, Any]) -> None:
 def validate_curated_counterpart(counterpart: dict[str, Any]) -> None:
     """Validate the stable size, terminal numbering and helper digests."""
 
+    colab_metadata = counterpart.get("metadata", {}).get("colab", {})
+    if not isinstance(colab_metadata, dict) or not isinstance(
+        colab_metadata.get("provenance"), list
+    ):
+        raise AssertionError(
+            "The final notebook must expose Colab provenance as a list."
+        )
     cells = counterpart.get("cells", [])
     if len(cells) != 141:
         raise AssertionError("The final thesis counterpart must contain 141 cells.")

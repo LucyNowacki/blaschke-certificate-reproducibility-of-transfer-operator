@@ -245,7 +245,7 @@ def configure_thesis_style(
     }
     if serif:
         rc["font.family"] = "serif"
-        rc["font.serif"] = ["Computer Modern Roman", "DejaVu Serif"]
+        rc["font.serif"] = ["DejaVu Serif"]
     if use_tex:
         rc["text.latex.preamble"] = r"\usepackage{amsmath}"
     if extra:
@@ -286,7 +286,7 @@ def matplotlib_style(
     }
     if serif:
         rc["font.family"] = "serif"
-        rc["font.serif"] = ["Computer Modern Roman", "DejaVu Serif"]
+        rc["font.serif"] = ["DejaVu Serif"]
     if use_tex:
         rc["text.latex.preamble"] = r"\usepackage{amsmath}"
     if extra:
@@ -638,7 +638,7 @@ def plot_phase1_cluster_errors_vs_n(
     error_column: str = "err_float",
     output_dir: str | Path | None = None,
     stem: str = "phase1_raw_cluster_errors_vs_N_latex",
-    use_tex: bool = True,
+    use_tex: bool | None = None,
     show: bool = True,
 ) -> PlotResult:
     """Plot prepared raw square-block cluster errors against Legendre dimension."""
@@ -651,7 +651,12 @@ def plot_phase1_cluster_errors_vs_n(
         "ytick.labelsize": 14,
         "legend.fontsize": 11.5,
     }
-    with matplotlib_style(use_tex=use_tex, serif=True, extra=rc):
+    effective_use_tex = (
+        bool(plt.rcParams.get("text.usetex", False))
+        if use_tex is None
+        else bool(use_tex)
+    )
+    with matplotlib_style(use_tex=effective_use_tex, serif=True, extra=rc):
         fig, ax = plt.subplots(figsize=(10.5, 6.2), facecolor="white")
         alpha_names = tuple(
             name for name in target_names if str(name).startswith("alpha^")
@@ -905,10 +910,18 @@ def _plot_phase1_oversampling_displacement_impl(
                         dpi=320, show=show, tight=False)
 
 
-def _phase1_reviewed_style() -> dict[str, Any]:
-    return {
+def _phase1_reviewed_style(
+    *,
+    use_tex: bool | None = None,
+) -> dict[str, Any]:
+    effective_use_tex = (
+        bool(plt.rcParams.get("text.usetex", False))
+        if use_tex is None
+        else bool(use_tex)
+    )
+    rc: dict[str, Any] = {
         "font.family": "serif",
-        "font.serif": ["Computer Modern Roman"],
+        "font.serif": ["DejaVu Serif"],
         "mathtext.fontset": "cm",
         "axes.unicode_minus": False,
         "axes.titlesize": PHASE1_FONT_SIZES["title"],
@@ -916,9 +929,11 @@ def _phase1_reviewed_style() -> dict[str, Any]:
         "xtick.labelsize": PHASE1_FONT_SIZES["tick_label"],
         "ytick.labelsize": PHASE1_FONT_SIZES["tick_label"],
         "legend.fontsize": PHASE1_FONT_SIZES["legend"],
-        "text.usetex": True,
-        "text.latex.preamble": r"\usepackage{amsmath}",
+        "text.usetex": effective_use_tex,
     }
+    if effective_use_tex:
+        rc["text.latex.preamble"] = r"\usepackage{amsmath}"
+    return rc
 
 
 def plot_phase1_eigencloud_comparison(
@@ -2148,7 +2163,8 @@ def plot_phase4_single_packet_profile(
     small_gain = None if epsilon is None else float(epsilon) * lifted_resolvent
     safe = str(packet_label).replace("^", "")
     rc = {
-        "font.family": "DejaVu Sans", "mathtext.fontset": "cm",
+        "font.family": "serif", "font.serif": ["DejaVu Serif"],
+        "mathtext.fontset": "cm",
         "axes.titlesize": 22, "axes.labelsize": 18,
         "xtick.labelsize": 15, "ytick.labelsize": 15,
         "legend.fontsize": 14,

@@ -9,7 +9,7 @@
   "inline_helper_count": 18,
   "notebook_cell_count": 141,
   "notebook_code_cell_count": 68,
-  "notebook_sha256": "7f6ba0e35b7c55bf88e3d040bf5f150107be7dc74488ccb4b6d1f261b1a91cd1",
+  "notebook_sha256": "193e949819d5fbba771e28fffd61dfb53f86d4259e4d08edce4e1cb75fad94b8",
   "helper_sha256": {
     "mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c",
     "transfer_spectrum_certification.py": "6688ba2b86fb9638f648ae60e5685419e63d16d3ef16251ce761160d867cb85a",
@@ -17,7 +17,7 @@
     "blaschke_deformation_spectral_certification.py": "c0788babd8d1fca83b90c5ba81b7ceb827d3da29c6e9264d16fb389dc8295833",
     "blaschke_deformation_contour_certification.py": "6bb57c99d833bc0dbdb72158240a9d7a1f6d32e50ac87590d5ee38970537ec54",
     "blaschke_deformation_phase2_geometry.py": "32acf4126e12ad954f4362e47fb2eaec80aa42e1981236d638a94741238a74e8",
-    "blaschke_deformation_phase2_transport.py": "36e93ce0e8bb2822799192ce73680923bb669f5eafd30b9feb034ca063737410",
+    "blaschke_deformation_phase2_transport.py": "ea7d4645fbd7b428121fa67cc666b7d7579db2fa913b70262c5a39f68822d7d5",
     "blaschke_deformation_phase2_matrix.py": "3d76d72ae71e3970d35c19eba5a5dbc9b848e95eb99e40700437c1500683d3a3",
     "blaschke_deformation_phase2_pipeline.py": "f91794e2f5d62199682108d1484e747c2d938224613d9aec5b1dbb3aa47567d9",
     "blaschke_deformation_historical_comparisons.py": "1252279e45116f8f8ad3b5271b7565750ddb1bb6c047e52bd9619624b0b05b30",
@@ -1938,126 +1938,126 @@
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_atomic_text",
       "classification": "infrastructure",
-      "line": 73
+      "line": 75
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_atomic_csv",
       "classification": "infrastructure",
-      "line": 92
+      "line": 94
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_atomic_npz",
       "classification": "infrastructure",
-      "line": 113
+      "line": 115
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_sha256",
       "classification": "infrastructure",
-      "line": 130
+      "line": 132
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_verified_openblas_runtime",
       "classification": "infrastructure",
-      "line": 138
+      "line": 140
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_invert_midpoint_with_locked_blas",
       "classification": "infrastructure",
-      "line": 194
+      "line": 188
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_alpha_values",
       "classification": "mathematical",
-      "line": 220
+      "line": 216
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "connection_matrix_float",
       "classification": "mathematical",
-      "line": 230
+      "line": 226
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_alpha_values_arb",
       "classification": "mathematical",
-      "line": 253
+      "line": 249
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "connection_matrix_arb",
       "classification": "mathematical",
-      "line": 264
+      "line": 260
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_connection_entry_arb",
       "classification": "mathematical",
-      "line": 290
+      "line": 286
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_partition_rows",
       "classification": "infrastructure",
-      "line": 312
+      "line": 308
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_transport_row_block",
       "classification": "mathematical",
-      "line": 326
+      "line": 322
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_certify_transport_by_row_blocks",
       "classification": "mathematical",
-      "line": 384
+      "line": 380
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_float_matrix_as_arb",
       "classification": "mathematical",
-      "line": 433
+      "line": 429
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_identity",
       "classification": "mathematical",
-      "line": 446
+      "line": 442
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_frobenius_upper",
       "classification": "mathematical",
-      "line": 455
+      "line": 451
     },
     {
       "scope": "inline_helper",
       "source": "blaschke_deformation_phase2_transport.py",
       "qualname": "_configuration_digest",
       "classification": "infrastructure",
-      "line": 468
+      "line": 464
     },
     {
       "scope": "inline_helper",
@@ -2936,7 +2936,7 @@
       "cell_id": "6a823024",
       "qualname": "phase1_gradient_palette",
       "classification": "plotting",
-      "line": 46
+      "line": 135
     },
     {
       "scope": "notebook_cell",
@@ -2944,7 +2944,7 @@
       "cell_id": "6a823024",
       "qualname": "gradient_colours",
       "classification": "plotting",
-      "line": 47
+      "line": 136
     },
     {
       "scope": "notebook_cell",
@@ -2952,7 +2952,7 @@
       "cell_id": "6a823024",
       "qualname": "display",
       "classification": "plotting",
-      "line": 48
+      "line": 137
     },
     {
       "scope": "notebook_cell",

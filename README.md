@@ -12,6 +12,30 @@ Reproduction is judged by the mathematical certificate, not by byte-for-byte
 equality of paths, archives, plots, compression containers, timings, or
 toolchain-sensitive witness arrays.
 
+## Google Colab — run the complete notebook from scratch
+
+Anyone who can open the shared notebook can run it from a fresh Colab account;
+the deployment folder does not have to appear in that account's `My Drive`.
+Open `blaschke_deformation_certifier_thesis_math.ipynb` with Google
+Colaboratory and use this sequence:
+
+| Step | Action | What should happen |
+| --- | --- | --- |
+| 1 | Select **Runtime → Disconnect and delete runtime**. | Colab discards any stale imports or partial execution. |
+| 2 | Select **Runtime → Run all**. Do not start from an intermediate cell. | Cell 5N downloads the public helper set when the complete Drive deployment is not already mounted, then installs only missing Colab packages. |
+| 3 | Leave the tab connected until Cell 110M is reached. | All 68 code cells run in order. For a guest, regenerated data, reports, and figures are written under `/content/blaschke-certificate-reproducibility-of-transfer-operator/Numerics/outputs`. |
+
+No Google Drive mount, password, token, or two-factor code is required for a
+guest run. Lucy can retain regenerated outputs in Drive by mounting Drive
+before **Run all**; Cell 5N then detects the complete
+`My Drive/Thesis Numerical/Numerics` deployment and uses its `outputs` folder.
+
+The notebook adapts computational worker counts to the available CPU count;
+the mathematical target inventory remains fixed at 24 contours with total
+algebraic multiplicity 30. A standard two-CPU Colab runtime may require many
+hours and can exceed a free-session lifetime. A high-CPU Colab runtime is
+recommended for a complete from-scratch run.
+
 ## Start here — reproduce the results on a new machine
 
 > **New to Git or numerical software?** Follow the numbered blocks below in

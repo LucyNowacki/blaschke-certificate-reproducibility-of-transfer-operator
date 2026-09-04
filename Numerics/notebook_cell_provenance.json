@@ -3,8 +3,8 @@
   "manifest_purpose": "Static provenance graph for every retained symmetric code cell in the thesis-mathematics certifier.",
   "notebook": {
     "path": "Final Deployment/Numerics/blaschke_deformation_certifier_thesis_math.ipynb",
-    "sha256_at_manifest_creation": "7f6ba0e35b7c55bf88e3d040bf5f150107be7dc74488ccb4b6d1f261b1a91cd1",
-    "transformation_source_sha256": "4db157150053bb559db22904db6c5ea6eecec740e04bed23326123d622bebe1c",
+    "sha256_at_manifest_creation": "ae0ddb439502a6c5675383f6ce4fdee17cf0e73362eec33db4138578e51f2c39",
+    "transformation_source_sha256": "e36986b76f9dcc7d8a012aabb1397bad4fe7c4984f731d007dbfe2bacdf9872e",
     "cell_indexing": "entry cell_index values refer to the zero-based transformation-source notebook",
     "prepared_index_contract": "The builder constructs a 187-cell inline counterpart in memory and the stable-ID curation produces the current 141-cell, 68-code-cell notebook, including Cell 0M, the two source-only diagnostic producers and final auditor Markdown Cell 110M.",
     "expected_retained_cell_count": 141,
@@ -13,7 +13,7 @@
     "expected_stored_png_output_count": 35,
     "map_label": "blaschke_mu_0p3",
     "execution_order": "top-to-bottom stateful Jupyter execution",
-    "thesis_math_builder_sha256": "04061b673e738910b3bf956589eeb0ad13edef00bc5ea66d5adc0b33f293f3ce",
+    "thesis_math_builder_sha256": "fcec600a56c9e82cbd8dbc08f84590a215c48208a1cd061683169968d4fd7a4c",
     "chapter_math_map_sha256": "3e0b2628283fdfddd1678d4994824b5efbfaec9907d443b31307860b853c1f70",
     "stored_png_count_note": "The 35-position plot contract includes both plots in Cell 80N: the selected sampled profile and the restored alpha^11 profile, plus the presentation-only final certification ladder in Cell 108N. The canonical execution stores PNG payloads; the GitHub display stores JPEG previews in the same output positions."
   },
@@ -346,7 +346,7 @@
       ],
       "execution_mode": {
         "kind": "output_tree_bootstrap",
-        "parallelism": "configures exactly 24 process workers",
+        "parallelism": "configures between 1 and 24 process workers according to the available CPU count",
         "arithmetic": "none",
         "cache_policy": "copy only retained historical diagnostic artifacts when the dedicated target is absent; retired seed-only aliases are forbidden"
       },
@@ -930,7 +930,7 @@
     "blaschke_deformation_phase2_transport": {
       "cell_index": 40,
       "source_file": "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py",
-      "source_sha256": "36e93ce0e8bb2822799192ce73680923bb669f5eafd30b9feb034ca063737410",
+      "source_sha256": "ea7d4645fbd7b428121fa67cc666b7d7579db2fa913b70262c5a39f68822d7d5",
       "defined_functions": [
         "connection_matrix_float",
         "connection_matrix_arb",
@@ -2736,9 +2736,9 @@
   "source_hash_refresh": {
     "date": "2026-09-03",
     "method": "refresh_notebook_cell_provenance.py",
-    "notebook_sha256": "7f6ba0e35b7c55bf88e3d040bf5f150107be7dc74488ccb4b6d1f261b1a91cd1",
-    "transformation_source_sha256": "4db157150053bb559db22904db6c5ea6eecec740e04bed23326123d622bebe1c",
-    "thesis_math_builder_sha256": "04061b673e738910b3bf956589eeb0ad13edef00bc5ea66d5adc0b33f293f3ce",
+    "notebook_sha256": "ae0ddb439502a6c5675383f6ce4fdee17cf0e73362eec33db4138578e51f2c39",
+    "transformation_source_sha256": "e36986b76f9dcc7d8a012aabb1397bad4fe7c4984f731d007dbfe2bacdf9872e",
+    "thesis_math_builder_sha256": "fcec600a56c9e82cbd8dbc08f84590a215c48208a1cd061683169968d4fd7a4c",
     "chapter_math_map_sha256": "3e0b2628283fdfddd1678d4994824b5efbfaec9907d443b31307860b853c1f70",
     "visual_cell_count": 21,
     "stored_png_output_count": 35,
@@ -2750,7 +2750,7 @@
       "Final Deployment/Numerics/blaschke_deformation_phase2_geometry.py": "32acf4126e12ad954f4362e47fb2eaec80aa42e1981236d638a94741238a74e8",
       "Final Deployment/Numerics/blaschke_deformation_phase2_matrix.py": "3d76d72ae71e3970d35c19eba5a5dbc9b848e95eb99e40700437c1500683d3a3",
       "Final Deployment/Numerics/blaschke_deformation_phase2_pipeline.py": "f91794e2f5d62199682108d1484e747c2d938224613d9aec5b1dbb3aa47567d9",
-      "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py": "36e93ce0e8bb2822799192ce73680923bb669f5eafd30b9feb034ca063737410",
+      "Final Deployment/Numerics/blaschke_deformation_phase2_transport.py": "ea7d4645fbd7b428121fa67cc666b7d7579db2fa913b70262c5a39f68822d7d5",
       "Final Deployment/Numerics/blaschke_deformation_spectral_certification.py": "c0788babd8d1fca83b90c5ba81b7ceb827d3da29c6e9264d16fb389dc8295833",
       "Final Deployment/Numerics/mpmath_pf_raw.py": "47bc69aa28149d6bc4c59b536a872f7b9afdc1eef72bc2e32dd171c87ac66d9c"
     },
@@ -2768,7 +2768,7 @@
       "blaschke_deformation_phase2_matrix.py": "3d76d72ae71e3970d35c19eba5a5dbc9b848e95eb99e40700437c1500683d3a3",
       "blaschke_deformation_phase2_pipeline.py": "f91794e2f5d62199682108d1484e747c2d938224613d9aec5b1dbb3aa47567d9",
       "blaschke_deformation_phase2_resolved_response.py": "343a4a534fc29c0674120aa221d0dd0452fcc6f6153348d9e32ca3189d9e5a28",
-      "blaschke_deformation_phase2_transport.py": "36e93ce0e8bb2822799192ce73680923bb669f5eafd30b9feb034ca063737410",
+      "blaschke_deformation_phase2_transport.py": "ea7d4645fbd7b428121fa67cc666b7d7579db2fa913b70262c5a39f68822d7d5",
       "blaschke_deformation_sampled_schur_diagnostics.py": "692358513b7e81330f1a4ec382f35f4bd519c950c201b6009040d4d0ce810e6f",
       "blaschke_deformation_spectral_certification.py": "c0788babd8d1fca83b90c5ba81b7ceb827d3da29c6e9264d16fb389dc8295833",
       "hardy_moat_surface_worker.py": "463a3190357fb5650a9ac28bd92c06436dd8da6e340a471a5840090d44fd6b01",

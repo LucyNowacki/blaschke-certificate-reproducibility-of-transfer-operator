@@ -136,6 +136,41 @@ class Phase3PlotLayoutTests(unittest.TestCase):
             plt.close(result.figure)
 
 
+class PortableMatplotlibStyleTests(unittest.TestCase):
+    def tearDown(self) -> None:
+        plotting.configure_thesis_style(use_tex=False)
+
+    def test_reviewed_phase1_style_honours_disabled_external_latex(self) -> None:
+        plotting.configure_thesis_style(use_tex=False, serif=True)
+        style = plotting._phase1_reviewed_style()
+        self.assertFalse(style["text.usetex"])
+        self.assertEqual(style["font.serif"], ["DejaVu Serif"])
+        self.assertNotIn("text.latex.preamble", style)
+
+    def test_phase1_n_sweep_renders_with_mathtext_by_default(self) -> None:
+        plotting.configure_thesis_style(use_tex=False, serif=True)
+        frame = pd.DataFrame(
+            {
+                "N": [10, 20, 10, 20],
+                "name": ["alpha^1", "alpha^1", "mu^1", "mu^1"],
+                "err_float": [1.0e-6, 1.0e-9, 2.0e-6, 2.0e-9],
+            }
+        )
+        result = plotting.plot_phase1_cluster_errors_vs_n(
+            frame,
+            ("alpha^1", "mu^1"),
+            map_label="blaschke_mu_0p3",
+            show=False,
+        )
+        try:
+            result.figure.canvas.draw()
+            text_artists = result.figure.findobj(matplotlib.text.Text)
+            self.assertTrue(text_artists)
+            self.assertTrue(all(not artist.get_usetex() for artist in text_artists))
+        finally:
+            plt.close(result.figure)
+
+
 class Phase4LocalMoatSurfaceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.axis = np.linspace(0.06, 0.12, 25)

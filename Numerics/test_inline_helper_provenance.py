@@ -440,6 +440,20 @@ class InlineHelperProvenanceTests(unittest.TestCase):
                 msg=str(actual_cell.get("id")),
             )
 
+    def test_colab_provenance_metadata_is_a_list(self) -> None:
+        expected, _ = build_curated()
+        self.assertIsInstance(
+            expected.get("metadata", {}).get("colab", {}).get("provenance"),
+            list,
+        )
+        validate_curated_counterpart(expected)
+        altered = deepcopy(expected)
+        altered.setdefault("metadata", {}).setdefault("colab", {})[
+            "provenance"
+        ] = {}
+        with self.assertRaisesRegex(AssertionError, "Colab provenance"):
+            validate_curated_counterpart(altered)
+
     def test_cell_0m_matches_its_builder_owned_source(self) -> None:
         validate_curated_counterpart(self.notebook)
         expected = dependency_map_cell()
